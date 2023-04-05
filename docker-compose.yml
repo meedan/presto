@@ -1,0 +1,15 @@
+version: '3.9'
+services:
+  app:
+    build: .
+    environment:
+      QUEUE_TYPE: ${QUEUE_TYPE}
+      INPUT_QUEUE_NAME: ${INPUT_QUEUE_NAME}
+      OUTPUT_QUEUE_NAME: ${OUTPUT_QUEUE_NAME}
+      MODEL_NAME: ${MODEL_NAME}
+    depends_on:
+      - redis
+    links:
+      - redis
+  redis:
+    image: redis
