@@ -1,5 +1,5 @@
 boto3==1.18.64
-redis==3.5.3
+redis==4.4.4
 sentence-transformers==2.2.0
 torch==1.9.0
 transformers==4.10.2
