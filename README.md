@@ -19,8 +19,10 @@ Depending on your environment, and if you are using Docker directly or not, thes
 ### Setup
 To run the project, you can use the provided `Dockerfile`, or start via `docker-compose build && docker-compose up`. This file sets up the environment by installing the required dependencies and running the `run.py` file when the container is started. To build and run the Docker image from the Dockerfile directly, run the following commands:
 
+```
 docker build -t text-vectorization .
 docker run -e QUEUE_TYPE=<queue_type> -e INPUT_QUEUE_NAME=<input_queue_name> -e OUTPUT_QUEUE_NAME=<output_queue_name> -e MODEL_NAME=<model_name> 
+```
 
 Here, we require at least three environment variables - `queue_type`, `input_queue_name`, and `model_name`. If left unspecified, `output_queue_name` will be automatically set to `input_queue_name[-output]`. Depending on your usage, you may need to replace `<queue_type>`, `<input_queue_name>`, `<output_queue_name>`, and `<model_name>` with the appropriate values.
 
