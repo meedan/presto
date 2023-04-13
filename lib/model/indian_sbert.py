@@ -1,6 +1,6 @@
 from sentence_transformers import SentenceTransformer
 
-from lib.model.generic import GenericTransformerModel
+from lib.model.generic_transformer import GenericTransformerModel
 MODEL_NAME = 'meedan/indian-sbert'
 class IndianSbert(GenericTransformerModel):
     def __init__(self):

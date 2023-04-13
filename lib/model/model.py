@@ -1,10 +1,10 @@
+from abc import ABC, abstractmethod
 import os
 import importlib
 
 class Model(ABC):
-    @abstractmethod
     def respond(self, messages):
-        pass
+        return []
     
     @classmethod
     def create(cls, model_name):
