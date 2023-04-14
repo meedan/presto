@@ -1,13 +1,11 @@
 from abc import ABC
-import importlib
+
+from lib.helpers import get_class
 
 class Queue(ABC):
     @classmethod
     def create(cls, queue_name, input_queue_name, output_queue_name, batch_size):
-        module = 'lib.queue.'+str.join(".", queue_name.split('.')[:-1])
-        queue_module = importlib.import_module(module)
-        queue_class = getattr(queue_module, queue_name.split('.')[-1])
-        return queue_class(input_queue_name, output_queue_name, batch_size)
+        return get_class('lib.queue.', queue_name)(input_queue_name, output_queue_name, batch_size)
 
     def __init__(self, input_queue_name, output_queue_name, batch_size):
         self.input_queue_name = input_queue_name

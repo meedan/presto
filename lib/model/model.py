@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 import os
-import importlib
+
+from lib.helpers import get_class
 
 class Model(ABC):
     def respond(self, messages):
@@ -8,7 +9,4 @@ class Model(ABC):
     
     @classmethod
     def create(cls, model_name):
-        module_name, class_name = model_name.rsplit('.', 1)
-        module = importlib.import_module(module_name)
-        model_class = getattr(module, class_name)
-        return model_class()
+        return get_class('lib.model.', model_name)()
