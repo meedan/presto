@@ -1,4 +1,6 @@
 import os
+import json
+
 import redis
 
 from lib.queue.queue import Queue
@@ -6,20 +8,23 @@ from lib.queue.queue import Queue
 class RedisQueue(Queue):
     def __init__(self, input_queue_name, output_queue_name, batch_size):
         super().__init__(input_queue_name, output_queue_name, batch_size)
-        self.redis = redis.Redis(host=os.getenv("redis_host", "localhost"), port=os.getenv("redis_port", 6379), db=os.getenv("redis_db", 0))
+        self.redis = redis.Redis(host=os.getenv("REDIS_HOST", "redis"), port=os.getenv("REDIS_PORT", 6379), db=os.getenv("REDIS_DB", 0))
+
+    def add_message(self, message):
+        self.redis.rpush(self.input_queue_name, message)
 
     def receive_messages(self):
         messages = []
         for i in range(self.batch_size):
-            message = self.redis.lpop(self.input_queue_name)
-            if message:
-                messages.append(message.decode())
+            raw_message = self.redis.lpop(self.input_queue_name)
+            if raw_message:
+                messages.append(json.loads(raw_message))
             else:
                 break
         return messages
 
     def delete_message(self, message):
-        self.redis.lrem(self.input_queue_name, 0, message)
+        self.redis.lrem(self.input_queue_name, 0, json.dumps(message))
 
     def respond(self, response):
-        self.redis.rpush(self.output_queue_name, response)
+        self.redis.rpush(self.output_queue_name, json.dumps(response))

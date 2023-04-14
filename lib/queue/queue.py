@@ -23,6 +23,9 @@ class Queue(ABC):
             response = self.respond(message)
             self.send_message(response)
 
+    def add_message(self, message):
+        pass
+
     def receive_messages(self):
         pass
     

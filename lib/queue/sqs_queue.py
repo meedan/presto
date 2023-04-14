@@ -9,6 +9,9 @@ class SQSQueue(Queue):
         self.input_queue = self.sqs.get_queue_by_name(QueueName=input_queue_name)
         self.output_queue = self.sqs.get_queue_by_name(QueueName=output_queue_name)
 
+    def add_message(self, message):
+        self.input_queue.send_message(MessageBody=message)
+
     def receive_messages(self):
         messages = self.input_queue.receive_messages(MaxNumberOfMessages=self.batch_size)
         return messages
