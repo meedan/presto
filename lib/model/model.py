@@ -9,4 +9,4 @@ class Model(ABC):
     
     @classmethod
     def create(cls, model_name):
-        return get_class('lib.model.', model_name)()
+        return get_class('lib.model.', os.environ.get('MODEL_NAME'))()

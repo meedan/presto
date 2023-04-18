@@ -26,7 +26,7 @@ class AudioModel(Model):
     def fingerprint_audio(self, audio):
         remote_request = urllib.request.Request(audio["url"], headers={'User-Agent': 'Mozilla/5.0'})
         remote_response = urllib.request.urlopen(remote_request)
-        temp_file = tempfile.NamedTemporaryFile()
+        temp_file = self.get_tempfile()
         with open(temp_file.name, 'wb') as out_file:
             out_file.write(remote_response.read())
         return {"hash_value": self.audio_hasher(temp_file.name)}

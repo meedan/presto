@@ -33,6 +33,9 @@ class VideoModel(Model):
     def tmk_program_name(self):
         return "PrestoVideoEncoder"
 
+    def tmk_bucket(self):
+        return "presto_tmk_videos"
+
     def fingerprint_video(self, video):
         temp_video_file = self.get_tempfile()
         remote_request = urllib.request.Request(video["url"], headers={'User-Agent': 'Mozilla/5.0'})
@@ -45,5 +48,5 @@ class VideoModel(Model):
             self.tmk_file_path(video_filename),
             self.tmk_program_name()
         )
-        s3.upload_file_to_s3("presto_tmk_videos", self.tmk_file_path(video_filename))
-        return {"outfile": self.tmk_file_path(video_filename), "hash_value": hash_value}
+        s3.upload_file_to_s3(self.tmk_bucket(), self.tmk_file_path(video_filename))
+        return dict(**video, **{"bucket": self.tmk_bucket(), "outfile": self.tmk_file_path(video_filename), "hash_value": hash_value})
