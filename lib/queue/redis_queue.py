@@ -13,9 +13,9 @@ class RedisQueue(Queue):
     def add_message(self, message):
         self.redis.rpush(self.input_queue_name, message)
 
-    def receive_messages(self):
+    def receive_messages(self, batch_size=1):
         messages = []
-        for i in range(self.batch_size):
+        for i in range(batch_size):
             raw_message = self.redis.lpop(self.input_queue_name)
             if raw_message:
                 messages.append(json.loads(raw_message))
@@ -25,6 +25,3 @@ class RedisQueue(Queue):
 
     def delete_message(self, message):
         self.redis.lrem(self.input_queue_name, 0, json.dumps(message))
-
-    def respond(self, response):
-        self.redis.rpush(self.output_queue_name, json.dumps(response))

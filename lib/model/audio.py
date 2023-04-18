@@ -13,20 +13,25 @@ class AudioModel(Model):
         except acoustid.FingerprintGenerationError:
             return []
 
-    def get_tempfile(self):
-        return tempfile.NamedTemporaryFile()
-
     def respond(self, audios):
         if not isinstance(audios, list):
             audios = [audios]
         for audio in audios:
-            audio["response"] = fingerprint_audio(audio)
-        return videos
+            audio["response"] = self.fingerprint_audio(audio)
+        return audios
 
-    def fingerprint_audio(self, audio):
-        remote_request = urllib.request.Request(audio["url"], headers={'User-Agent': 'Mozilla/5.0'})
-        remote_response = urllib.request.urlopen(remote_request)
+    def get_audio_tempfile(self, audio):
         temp_file = self.get_tempfile()
         with open(temp_file.name, 'wb') as out_file:
-            out_file.write(remote_response.read())
-        return {"hash_value": self.audio_hasher(temp_file.name)}
+            out_file.write(
+                urllib.request.urlopen(
+                    urllib.request.Request(
+                        audio["url"],
+                        headers={'User-Agent': 'Mozilla/5.0'}
+                    )
+                ).read()
+            )
+        return temp_file
+        
+    def fingerprint_audio(self, audio):
+        return {"hash_value": self.audio_hasher(self.get_audio_tempfile(audio).name)}

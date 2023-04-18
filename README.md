@@ -26,14 +26,25 @@ docker run -e QUEUE_TYPE=<queue_type> -e INPUT_QUEUE_NAME=<input_queue_name> -e 
 
 Here, we require at least three environment variables - `queue_type`, `input_queue_name`, and `model_name`. If left unspecified, `output_queue_name` will be automatically set to `input_queue_name[-output]`. Depending on your usage, you may need to replace `<queue_type>`, `<input_queue_name>`, `<output_queue_name>`, and `<model_name>` with the appropriate values.
 
-Currently supported `model_name` values are:
+Currently supported `model_name` values are just module names keyed from the `model` directory, and currently are as follows:
 
-* `fptg` - uses `meedan/paraphrase-filipino-mpnet-base-v2`
-* `indian_sbert` - uses `meedan/indian-sbert`
-* `meantokens` - uses `xlm-r-bert-base-nli-stsb-mean-tokens`
+* `fptg.MdebertaFilipino` - text model, uses `meedan/paraphrase-filipino-mpnet-base-v2`
+* `indian_sbert.IndianSbert` - text model, uses `meedan/indian-sbert`
+* `mean_tokens.XlmRBertBaseNliStsbMeanTokens` - text model, uses `xlm-r-bert-base-nli-stsb-mean-tokens`
+* `video.VideoModel` - video model
+* `image.ImageModel` - image model
+* `audio.AudioModel` - audio model
 
 ### Makefile
 The Makefile contains a single target, `run`, which runs the `run.py` file when executed. Remember to have the environment variables described above defined.
 
 ### run.py
-The `run.py` file is the main routine that runs the vectorization process. It sets up the queue and model instances, receives messages from the queue, applies the model to the messages, responds to the queue with the vectorized text, and deletes the original messages. The `os.environ` statements retrieve environment variables to create the queue and model instances. The `batch_map` dictionary maps each model to its corresponding batch size.
+The `run.py` file is the main routine that runs the vectorization process. It sets up the queue and model instances, receives messages from the queue, applies the model to the messages, responds to the queue with the vectorized text, and deletes the original messages in a loop within the `queue.process_messages` function. The `os.environ` statements retrieve environment variables to create the queue and model instances.
+
+### Queues
+
+Presto is able to `process_messages` via redis or SQS. In practice, we use redis for local development, and SQS for production environments. Each queue type defines a `add_message`, `receive_messages`, and `delete_message` function, and optionally can `__init__` with whatever may be useful or required for that queue type.
+
+### Models
+
+Models are defined by inheriting from the `lib.model.model.Model` superclass - all models require a `respond` function which accepts one or more `messages` which are individual items popped from whatever `queue` is currently in use. It is the responsibility of anyone writing a new model to pack in whatever metadata is useful to transmit across the queue response into the return value of the `respond` function - including returning the individual original messages (eventually we'll abstract that requirement out, but not today).

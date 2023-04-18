@@ -12,12 +12,9 @@ class SQSQueue(Queue):
     def add_message(self, message):
         self.input_queue.send_message(MessageBody=message)
 
-    def receive_messages(self):
-        messages = self.input_queue.receive_messages(MaxNumberOfMessages=self.batch_size)
+    def receive_messages(self, batch_size=1):
+        messages = self.input_queue.receive_messages(MaxNumberOfMessages=batch_size)
         return messages
     
     def delete_message(self, message):
         message.delete()
-
-    def respond(self, response):
-        self.output_queue.send_message(MessageBody=response)

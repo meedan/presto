@@ -1,14 +1,8 @@
+import copy
 import os
 from abc import ABC
 
 from lib.helpers import get_class
-BATCH_MAP = {
-    "indian_sbert.IndianSbert": 100,
-    "mean_tokens.XlmRBertBaseNliStsbMeanTokens": 100,
-    "fptg.MdebertaFilipino": 100,
-    "video.VideoModel": 1,
-    "audio.AudioModel": 1
-}
 
 class Queue(ABC):
     @classmethod
@@ -25,18 +19,18 @@ class Queue(ABC):
     def __init__(self, input_queue_name, output_queue_name, batch_size):
         self.input_queue_name = input_queue_name
         self.output_queue_name = self.get_output_queue_name(input_queue_name, output_queue_name)
-        self.batch_size = batch_size or BATCH_MAP.get(os.environ.get('MODEL_NAME'), 10)
 
     def get_output_queue_name(self, input_queue_name, output_queue_name=None):
         if not output_queue_name:
             output_queue_name = f'{input_queue_name}-output'
         return output_queue_name
 
-    def process_messages(self):
-        messages = self.receive_messages(self.batch_size)
-        for message in messages:
-            response = self.respond(message)
-            self.send_message(response)
+    def process_messages(self, model):
+        messages = self.receive_messages(model.BATCH_SIZE)
+        responses = model.respond(copy.deepcopy(messages))
+        for message, response in zip(messages, responses):
+            self.respond(response)
+            self.delete_message(message)
 
     def add_message(self, message):
         pass
