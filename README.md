@@ -36,7 +36,7 @@ Currently supported `model_name` values are just module names keyed from the `mo
 * `audio.AudioModel` - audio model
 
 ### Makefile
-The Makefile contains a single target, `run`, which runs the `run.py` file when executed. Remember to have the environment variables described above defined.
+The Makefile contains two targets, `run` and `run_test`. `run` runs the `run.py` file when executed. Remember to have the environment variables described above defined. `run_test` runs the test suite which is expected to be passing currently - reach out if it fails on your hardware!
 
 ### run.py
 The `run.py` file is the main routine that runs the vectorization process. It sets up the queue and model instances, receives messages from the queue, applies the model to the messages, responds to the queue with the vectorized text, and deletes the original messages in a loop within the `queue.process_messages` function. The `os.environ` statements retrieve environment variables to create the queue and model instances.
