@@ -75,5 +75,5 @@ jobs:
             }]
           }
       env:
-        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        SLACK_WEBHOOK_URL: ${{ secrets.CHECK_DEV_BOTS_SLACK_WEBHOOK_URL }}
       if: always()
