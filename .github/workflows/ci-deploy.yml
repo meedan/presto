@@ -5,6 +5,7 @@ on:
     branches:
       - 'develop'
       - 'master'
+      - 'ecr-upload'
 
 permissions:
   id-token: write
@@ -121,7 +122,7 @@ jobs:
             ]
           }
       env:
-        SLACK_WEBHOOK_URL: ${{ secrets.ITS_BOTS_SLACK_WEBHOOK_URL }}
+        SLACK_WEBHOOK_URL: ${{ secrets.CHECK_DEV_BOTS_SLACK_WEBHOOK_URL }}
         SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
 
     - name: Send GitHub Action trigger data to Slack workflow on failure
