@@ -60,20 +60,38 @@ jobs:
         GIT_SHA: ${{ github.sha }}
         BUILD_NUMBER: ${{ github.run_number }}
       run: |
-        docker run --rm ${{ steps.build-image.outputs.image }} -e APP=presto -e DEPLOY_ENV=test make test
+        docker run -e APP=presto -e DEPLOY_ENV=test --rm ${{ steps.build-image.outputs.image }} make run_test
 
-    - uses: 8398a7/action-slack@v3
+    - name: Send GitHub Action trigger data to Slack workflow on success
+      id: slack-api-notify-success
+      if: ${{ success() }}
+      uses: slackapi/slack-github-action@v1.23.0
       with:
-        job_name: Notify Slack
-        status: custom
-        fields: all
-        custom_payload: |
+         payload: |
           {
-            attachments: [{
-              color: '${{ job.status }}' === 'success' ? 'good' : '${{ job.status }}' === 'failure' ? 'danger' : 'warning',
-              text: `${process.env.AS_WORKFLOW}\n${process.env.AS_MESSAGE} (${process.env.AS_COMMIT}) of ${process.env.AS_REPO} @ ${process.env.AS_REF}\nby ${process.env.AS_AUTHOR}\n${{ job.status }} in ${process.env.AS_TOOK}`,
-            }]
+            "attachments": [
+              {
+                "color": "#00FF00",
+                "blocks": [
+                  {
+                    "type": "section",
+                    "text": {
+                      "type": "mrkdwn",
+                      "text": "Kicked off by: ${{ github.triggering_actor }}\nWorkflow: https://github.com/meedan/presto/actions/runs/${{ github.run_id }}"
+                    }
+                  },
+                  {
+                    "type": "section",
+                    "text": {
+                      "type": "mrkdwn",
+                      "text": "Presto Unit Tests:\n${{ github.event.pull_request.html_url || github.event.head_commit.url }}"
+                    }
+                  }
+                ]
+              }
+            ]
           }
       env:
         SLACK_WEBHOOK_URL: ${{ secrets.CHECK_DEV_BOTS_SLACK_WEBHOOK_URL }}
-      if: always()
+        SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
+
