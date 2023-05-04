@@ -51,7 +51,7 @@ jobs:
         docker buildx build \
           --cache-from "type=local,src=/tmp/.buildx-cache" \
           --cache-to "type=local,dest=/tmp/.buildx-cache-new" \
-          --platform "linux/amd64"
+          --platform "linux/amd64" \
           --load \
           --tag $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG \
           --file ./Dockerfile ./
