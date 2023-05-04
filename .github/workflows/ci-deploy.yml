@@ -5,7 +5,6 @@ on:
     branches:
       - 'develop'
       - 'master'
-      - 'ecr-upload'
 
 permissions:
   id-token: write
@@ -51,7 +50,8 @@ jobs:
       run: |
         docker buildx build \
           --cache-from "type=local,src=/tmp/.buildx-cache" \
-          --cache-to "type=local,dest=/tmp/.buildx-cache" \
+          --cache-to "type=local,dest=/tmp/.buildx-cache-new" \
+          --platform "linux/amd64"
           --load \
           --tag $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG \
           --file ./Dockerfile ./
@@ -150,3 +150,10 @@ jobs:
       env:
         SLACK_WEBHOOK_URL: ${{ secrets.ITS_BOTS_SLACK_WEBHOOK_URL }}
         SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
+
+    - name: Reset cache
+      id: reset-cache
+      if: ${{ success() || failure() }}
+      run: |
+        rm -rf /tmp/.buildx-cache
+        mv /tmp/.buildx-cache-new /tmp/.buildx-cache
