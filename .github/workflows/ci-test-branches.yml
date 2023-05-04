@@ -1,0 +1,129 @@
+name: Build and Test Commits
+
+on:
+  push
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  unit-test:
+    runs-on: ubuntu-latest
+
+    outputs:
+      image: ${{ steps.build-image.outputs.image }}
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Configure AWS Credentials
+      uses: aws-actions/configure-aws-credentials@v2
+      with:
+        role-to-assume: ${{ vars.AWS_OIDC_ROLE_TO_ASSUME }}
+        aws-region: eu-west-1
+
+    - name: Login to Amazon ECR
+      id: login-ecr
+      uses: aws-actions/amazon-ecr-login@v1
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v1
+
+    - name: Cache Docker layers
+      uses: actions/cache@v2
+      id: cache
+      with:
+        path: /tmp/.buildx-cache
+        key: ${{ runner.os }}-buildx-${{ github.sha }}
+        restore-keys: |
+          ${{ runner.os }}-buildx-
+
+    - name: Docker Buildx (build)
+      id: build-image
+      env:
+        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        ECR_REPOSITORY: ${{ github.event.repository.name }}
+        IMAGE_TAG: ${{ github.sha }}
+      run: |
+        docker buildx build \
+          --cache-from "type=local,src=/tmp/.buildx-cache" \
+          --cache-to "type=local,dest=/tmp/.buildx-cache-new" \
+          --load \
+          --tag $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG \
+          --file ./Dockerfile ./
+        echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
+
+    - name: Run Unit Tests
+      id: run-unit-test
+      env:
+        GIT_SHA: ${{ github.sha }}
+        BUILD_NUMBER: ${{ github.run_number }}
+      run: |
+        docker run -e APP=presto -e DEPLOY_ENV=test --rm ${{ steps.build-image.outputs.image }} make run_test
+
+    - name: Send GitHub Action trigger data to Slack workflow on success
+      id: slack-api-notify-success
+      if: ${{ success() }}
+      uses: slackapi/slack-github-action@v1.23.0
+      with:
+         payload: |
+          {
+            "attachments": [
+              {
+                "color": "#00FF00",
+                "blocks": [
+                  {
+                    "type": "section",
+                    "text": {
+                      "type": "mrkdwn",
+                      "text": "Kicked off by: ${{ github.triggering_actor }}\nWorkflow: https://github.com/meedan/presto/actions/runs/${{ github.run_id }}"
+                    }
+                  },
+                  {
+                    "type": "section",
+                    "text": {
+                      "type": "mrkdwn",
+                      "text": "Presto Unit Tests:\n${{ github.event.pull_request.html_url || github.event.head_commit.url }}"
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+      env:
+        SLACK_WEBHOOK_URL: ${{ secrets.CHECK_DEV_BOTS_SLACK_WEBHOOK_URL }}
+        SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
+
+    - name: Send GitHub Action trigger data to Slack workflow on failure
+      id: slack-api-notify-failure
+      if: ${{ failure() }}
+      uses: slackapi/slack-github-action@v1.23.0
+      with:
+         payload: |
+          {
+            "attachments": [
+              {
+                "color": "#FF0000",
+                "blocks": [
+                  {
+                    "type": "section",
+                    "text": {
+                      "type": "mrkdwn",
+                      "text": "Presto Tests failed\nWorkflow: https://github.com/meedan/presto/actions/runs/${{ github.run_id }}"
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+      env:
+        SLACK_WEBHOOK_URL: ${{ secrets.ITS_BOTS_SLACK_WEBHOOK_URL }}
+        SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
+
+    - name: Reset cache
+      id: reset-cache
+      if: ${{ failure() || success() }}
+      run: |
+        rm -rf /tmp/.buildx-cache
+        mv /tmp/.buildx-cache-new /tmp/.buildx-cache
