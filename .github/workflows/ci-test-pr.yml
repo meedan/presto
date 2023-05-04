@@ -65,3 +65,10 @@ jobs:
         else
           docker run -e APP=presto -e DEPLOY_ENV=test -e GITHUB_TOKEN=none --rm  ${{ steps.build-image.outputs.image }} make run_test
         fi
+
+    - name: Reset cache
+      id: reset-cache
+      if: ${{ failure() || success() }}
+      run: |
+        rm -rf /tmp/.buildx-cache
+        mv /tmp/.buildx-cache-new /tmp/.buildx-cache
