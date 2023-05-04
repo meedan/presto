@@ -95,3 +95,28 @@ jobs:
         SLACK_WEBHOOK_URL: ${{ secrets.CHECK_DEV_BOTS_SLACK_WEBHOOK_URL }}
         SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
 
+    - name: Send GitHub Action trigger data to Slack workflow on failure
+      id: slack-api-notify-failure
+      if: ${{ failure() }}
+      uses: slackapi/slack-github-action@v1.23.0
+      with:
+         payload: |
+          {
+            "attachments": [
+              {
+                "color": "#FF0000",
+                "blocks": [
+                  {
+                    "type": "section",
+                    "text": {
+                      "type": "mrkdwn",
+                      "text": "Presto Tests failed\nWorkflow: https://github.com/meedan/presto/actions/runs/${{ github.run_id }}"
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+      env:
+        SLACK_WEBHOOK_URL: ${{ secrets.ITS_BOTS_SLACK_WEBHOOK_URL }}
+        SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
