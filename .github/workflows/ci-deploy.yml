@@ -107,7 +107,7 @@ jobs:
                     "type": "section",
                     "text": {
                       "type": "mrkdwn",
-                      "text": "Kicked off by: ${{ github.triggering_actor }}\nWorkflow: https://github.com/meedan/narcissus/actions/runs/${{ github.run_id }}"
+                      "text": "Kicked off by: ${{ github.triggering_actor }}\nWorkflow: https://github.com/meedan/presto/actions/runs/${{ github.run_id }}"
                     }
                   },
                   {
@@ -140,7 +140,7 @@ jobs:
                     "type": "section",
                     "text": {
                       "type": "mrkdwn",
-                      "text": "Pender Deploy failed\nWorkflow: https://github.com/meedan/narcissus/actions/runs/${{ github.run_id }}"
+                      "text": "Presto Deploy failed\nWorkflow: https://github.com/meedan/presto/actions/runs/${{ github.run_id }}"
                     }
                   }
                 ]
