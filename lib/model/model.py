@@ -13,6 +13,6 @@ class Model(ABC):
         return []
     
     @classmethod
-    def create(cls, model_name):
+    def create(cls):
         model = get_class('lib.model.', os.environ.get('MODEL_NAME'))
         return model()

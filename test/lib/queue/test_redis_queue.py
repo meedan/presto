@@ -11,9 +11,9 @@ class TestRedisQueue(unittest.TestCase):
         self.queue.redis = self.mock_redis
     
     def test_receive_messages(self):
-        self.mock_redis.lpop.side_effect = [b'msg1', b'msg2', None]
+        self.mock_redis.lpop.side_effect = ['{"text": "msg1"}', '{"text": "msg2"}', None]
         messages = self.queue.receive_messages()
-        self.assertEqual(messages, ['msg1', 'msg2'])
+        self.assertEqual(messages, [{"text": "msg1"}])
     
     def test_respond(self):
         self.mock_redis.rpush.return_value = None

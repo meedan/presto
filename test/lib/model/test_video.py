@@ -20,18 +20,17 @@ class TestVideoModel(unittest.TestCase):
         mock_named_tempfile.assert_called_once()
 
     @patch('urllib.request.urlopen')
-    @patch('shutil.copyfileobj')
     @patch('tmkpy.hashVideo')
     @patch('s3.upload_file_to_s3')
     @patch('pathlib.Path')
     def test_fingerprint_video(self, mock_pathlib, mock_upload_file_to_s3,
-                               mock_hash_video, mock_copyfileobj, mock_urlopen):
+                               mock_hash_video, mock_urlopen):
         mock_hash_video_output = MagicMock()
         mock_hash_video_output.getPureAverageFeature.return_value = "hash_value"
         mock_hash_video.return_value = mock_hash_video_output
+        mock_urlopen.return_value = MagicMock(read=MagicMock(return_value=open("data/test-video.mp4", "rb").read()))
         self.video_model.fingerprint_video({"url": "http://example.com/video.mp4"})
         mock_urlopen.assert_called_once()
-        mock_copyfileobj.assert_called_once()
         mock_hash_video.assert_called_once_with(ANY, "/usr/local/bin/ffmpeg")
 
     @patch('pathlib.Path')

@@ -1,3 +1,5 @@
+import os
+import tempfile
 import urllib.request
 
 from lib.model.model import Model
@@ -20,7 +22,7 @@ class AudioModel(Model):
         return audios
 
     def get_audio_tempfile(self, audio):
-        temp_file = self.get_tempfile()
+        temp_file = tempfile.NamedTemporaryFile(delete=False)
         with open(temp_file.name, 'wb') as out_file:
             out_file.write(
                 urllib.request.urlopen(
@@ -30,7 +32,12 @@ class AudioModel(Model):
                     )
                 ).read()
             )
-        return temp_file
-        
+        return temp_file        
+
     def fingerprint_audio(self, audio):
-        return {"hash_value": self.audio_hasher(self.get_audio_tempfile(audio).name)}
+        temp_file = self.get_audio_tempfile(audio)
+        try:
+            hash_value = self.audio_hasher(temp_file.name)
+        finally:
+            os.remove(temp_file.name)
+        return {"hash_value": hash_value}
