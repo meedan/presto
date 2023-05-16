@@ -43,7 +43,7 @@ The `run.py` file is the main routine that runs the vectorization process. It se
 
 ### Queues
 
-Presto is able to `process_messages` via redis or SQS. In practice, we use redis for local development, and SQS for production environments. Each queue type defines a `add_message`, `receive_messages`, and `delete_message` function, and optionally can `__init__` with whatever may be useful or required for that queue type.
+Presto is able to `process_messages` via redis or SQS. In practice, we use redis for local development, and SQS for production environments. Each queue type defines a `return_response` and `receive_messages` function, and optionally can `__init__` with whatever may be useful or required for that queue type.
 
 ### Models
 

@@ -15,13 +15,9 @@ class TestRedisQueue(unittest.TestCase):
         messages = self.queue.receive_messages()
         self.assertEqual(messages, ['msg1', 'msg2'])
     
-    def test_delete_message(self):
-        self.queue.delete_message('message')
-        self.mock_redis.lrem.assert_called_with('input', 0, 'message')
-    
     def test_respond(self):
         self.mock_redis.rpush.return_value = None
-        self.queue.respond('response')
+        self.queue.return_response('response')
         self.mock_redis.rpush.assert_called_with('output', 'response')
 
 if __name__ == '__main__':

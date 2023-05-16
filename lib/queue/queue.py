@@ -29,15 +29,10 @@ class Queue(ABC):
         messages = self.receive_messages(model.BATCH_SIZE)
         responses = model.respond(copy.deepcopy(messages))
         for message, response in zip(messages, responses):
-            self.respond(response)
-            self.delete_message(message)
+            self.return_response({"request": message, "response": response})
 
-    def add_message(self, message):
+    def return_response(self, message):
         pass
 
     def receive_messages(self):
         pass
-    
-    def delete_message(self, message):
-        pass
-

@@ -18,14 +18,9 @@ class TestSQSQueue(unittest.TestCase):
         messages = self.queue.receive_messages()
         self.assertEqual(messages, ['msg1', 'msg2'])
     
-    def test_delete_message(self):
-        message = MagicMock()
-        self.queue.delete_message(message)
-        message.delete.assert_called_once()
-    
     def test_respond(self):
         self.mock_sqs.get_queue_by_name.return_value.send_message.return_value = None
-        self.queue.respond('response')
+        self.queue.return_response('response')
         self.mock_sqs.get_queue_by_name.assert_called_with(QueueName='output')
         self.mock_sqs.get_queue_by_name.return_value.send_message.assert_called_with(MessageBody='response')
     

@@ -10,8 +10,8 @@ class RedisQueue(Queue):
         super().__init__(input_queue_name, output_queue_name, batch_size)
         self.redis = redis.Redis(host=os.getenv("REDIS_HOST", "redis"), port=os.getenv("REDIS_PORT", 6379), db=os.getenv("REDIS_DB", 0))
 
-    def add_message(self, message):
-        self.redis.rpush(self.input_queue_name, message)
+    def return_response(self, message):
+        self.redis.rpush(self.output_queue_name, message)
 
     def receive_messages(self, batch_size=1):
         messages = []
@@ -22,6 +22,3 @@ class RedisQueue(Queue):
             else:
                 break
         return messages
-
-    def delete_message(self, message):
-        self.redis.lrem(self.input_queue_name, 0, json.dumps(message))
