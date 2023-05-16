@@ -1,5 +1,4 @@
 import urllib.request
-import tempfile
 
 from lib.model.model import Model
 import acoustid

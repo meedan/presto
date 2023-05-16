@@ -1,6 +1,5 @@
 import unittest
 from unittest.mock import MagicMock, patch
-import tempfile
 import urllib.request
 from lib.model.audio import AudioModel
 import acoustid

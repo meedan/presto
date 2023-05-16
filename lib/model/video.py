@@ -1,6 +1,5 @@
 import uuid
 import shutil
-import tempfile
 import pathlib
 
 import tmkpy

@@ -7,8 +7,8 @@ from lib.queue.queue import Queue
 
 class RedisQueue(Queue):
     def __init__(self, input_queue_name, output_queue_name, batch_size):
-        super().__init__(input_queue_name, output_queue_name, batch_size)
         self.redis = redis.Redis(host=os.getenv("REDIS_HOST", "redis"), port=os.getenv("REDIS_PORT", 6379), db=os.getenv("REDIS_DB", 0))
+        super().__init__(input_queue_name, output_queue_name, batch_size)
 
     def return_response(self, message):
         self.redis.rpush(self.output_queue_name, message)
