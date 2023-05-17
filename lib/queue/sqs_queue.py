@@ -10,8 +10,16 @@ class SQSQueue(Queue):
         super().__init__(input_queue_name, output_queue_name, batch_size)
 
     def return_response(self, message):
-        self.output_queue.send_message(MessageBody=message)
-
+        return self.push_message(self.output_queue, message)
+        
     def receive_messages(self, batch_size=1):
-        messages = self.input_queue.receive_messages(MaxNumberOfMessages=batch_size)
+        messages = self.pop_message(self.input_queue, batch_size)
         return messages
+
+    def pop_message(self, queue, batch_size=1):
+        return queue.receive_messages(MaxNumberOfMessages=batch_size)
+        
+    def push_message(self, queue, message):
+        queue.send_message(MessageBody=message)
+        return message
+    

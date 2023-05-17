@@ -25,14 +25,26 @@ class Queue(ABC):
             output_queue_name = f'{input_queue_name}-output'
         return output_queue_name
 
-    def process_messages(self, model):
+    def safely_respond(self, model):
         messages = self.receive_messages(model.BATCH_SIZE)
-        responses = model.respond(copy.deepcopy(messages))
-        for message, response in zip(messages, responses):
-            self.return_response({"request": message, "response": response})
+        try:
+            responses = model.respond(copy.deepcopy(messages))
+        except:
+            responses = []
+        return messages, responses
 
-    def return_response(self, message):
-        pass
+    def fingerprint(self, model):
+        messages, responses = self.safely_respond(model)
+        if responses:
+            for message, response in zip(messages, responses):
+                try:
+                    self.return_response({"request": message, "response": response})
+                except:
+                    self.reset_messages([message])
+        else:
+            for message in messages:
+                self.reset_messages(messages)
 
-    def receive_messages(self):
-        pass
+    def reset_messages(self, messages):
+        for message in messages:
+            self.push_message(self.input_queue, message)

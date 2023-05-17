@@ -24,12 +24,12 @@ class TestQueue(unittest.TestCase):
         with self.assertRaises(ModuleNotFoundError):
             Queue.create('invalidqueue', 'input', 'output', 2)
     
-    def test_process_messages(self):
+    def test_fingerprint(self):
         self.queue.receive_messages = MagicMock(return_value=[{"text": 'msg1'}])
         self.model.model = self.mock_model
         self.model.model.encode = MagicMock(return_value=np.array([[4, 5, 6], [7, 8, 9]]))
         self.queue.return_response = MagicMock(return_value=None)
-        self.queue.process_messages(self.model)
+        self.queue.fingerprint(self.model)
         self.queue.receive_messages.assert_called_once_with(1)
         self.queue.return_response.assert_called_with({'request': {'text': 'msg1'}, 'response': {'text': 'msg1', 'response': [4, 5, 6]}})
 

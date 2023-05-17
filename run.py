@@ -9,4 +9,4 @@ queue = Queue.create()
 model = Model.create()
 
 while True:
-    queue.process_messages(model)
+    queue.fingerprint(model)
