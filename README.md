@@ -43,8 +43,83 @@ The `run.py` file is the main routine that runs the vectorization process. It se
 
 ### Queues
 
-Presto is able to `process_messages` via redis or SQS. In practice, we use redis for local development, and SQS for production environments. Each queue type defines a `return_response` and `receive_messages` function, and optionally can `__init__` with whatever may be useful or required for that queue type.
+Presto is able to `process_messages` via redis or SQS. In practice, we use redis for local development, and SQS for production environments. When interacting with a `queue`, we use the generic superclass `queue`. `queue.fingerprint` takes as an argument a `model` instance. The `fingerprint` routine collects a batch of `BATCH_SIZE` messages appropriate to the `BATCH_SIZE` for the `model` specified. Once pulled from the `input_queue`, those messages are processed via `model.respond`. The resulting fingerprint outputs from the model are then zipped with the original message pulled from the `input_queue`, and a message is placed onto the `output_queue` that consists of exactly: `{"request": message, "response": response}`.
 
 ### Models
 
-Models are defined by inheriting from the `lib.model.model.Model` superclass - all models require a `respond` function which accepts one or more `messages` which are individual items popped from whatever `queue` is currently in use. It is the responsibility of anyone writing a new model to pack in whatever metadata is useful to transmit across the queue response into the return value of the `respond` function - including returning the individual original messages (eventually we'll abstract that requirement out, but not today).
+Models are defined by inheriting from the `lib.model.model.Model` superclass - all models require a `respond` function which accepts one or more `messages` which are individual items popped from whatever `queue` is currently in use. The number of messages a `model` can consume concurrently is specified by the `BATCH_SIZE` variable - if not explicitly set within the model, it defaults to 1 (i.e. single-threaded). It is the responsibility of anyone writing a new model to pack in whatever metadata is useful to transmit across the queue response into the return value of the `respond` function - including returning the individual original messages (eventually we'll abstract that requirement out, but not today).
+
+### Messages
+
+Messages passed to presto input queues must have the following structure, per each model type:
+
+#### Text
+Input Message:
+```
+{
+  "callback_url": "A unique URL that will be requested upon completion",
+  "text": "The text to be processed by the vectorizer"
+}
+```
+Output Message:
+```
+{
+  "callback_url": "A unique URL that will be requested upon completion",
+  "text": "The text to be processed by the vectorizer",
+  "response": [List of floats representing vectorization results],
+}
+```
+
+#### Video
+Input Message:
+```
+{
+  "callback_url": "A unique URL that will be requested upon completion",
+  "url": "The URL at which the media is located",
+}
+```
+Output Message:
+```
+{
+  "callback_url": "A unique URL that will be requested upon completion",
+  "url": "The URL at which the media is located",
+  "bucket": "bucket within which the .tmk file is stored",
+  "outfile": "The filename of the .tmk file generated for the video",
+  "hash_value": "The shorter, getPureAverageFeature hash from tmk (used in first-pass approximation searches)",
+}
+```
+
+#### Audio
+Input Message:
+```
+{
+  "callback_url": "A unique URL that will be requested upon completion",
+  "url": "The URL at which the media is located"
+}
+```
+Output Message:
+```
+{
+  "callback_url": "A unique URL that will be requested upon completion",
+  "url": "The URL at which the media is located",
+  "hash_value": [pyacoustid output hash value for the audio clip],
+}
+```
+
+
+#### Image
+Input Message:
+```
+{
+  "callback_url": "A unique URL that will be requested upon completion",
+  "url": "The URL at which the media is located",
+}
+```
+Output Message:
+```
+{
+  "callback_url": "A unique URL that will be requested upon completion",
+  "url": "The URL at which the media is located",
+  "hash_value": [pdqhasher output hash value for the image],
+}
+```
