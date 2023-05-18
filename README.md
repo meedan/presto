@@ -8,10 +8,13 @@ Presto performs text vectorization using different Hugging Face models. The text
 
 This project requires the following dependencies, which are listed in the `requirements.txt` file:
 - boto3==1.18.64
-- redis==3.5.3
+- pyacoustid==1.2.2
+- redis==4.4.4
 - sentence-transformers==2.2.0
+- tmkpy==0.1.1
 - torch==1.9.0
-- transformers==4.10.2
+- transformers==4.6.0
+
 
 Depending on your environment, and if you are using Docker directly or not, these dependencies may force you install other development packages.
 
