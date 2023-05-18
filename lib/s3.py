@@ -1,6 +1,6 @@
 import boto3
 
-def upload_file_to_s3(bucket, filename):
+def upload_file_to_s3(bucket: str, filename: str):
     # Set up the S3 client
     s3_client = boto3.client('s3')
     # Extract the file name from the local file path

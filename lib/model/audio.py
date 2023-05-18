@@ -1,12 +1,12 @@
+from typing import Union, List, Dict
 import os
 import tempfile
-import urllib.request
 
 from lib.model.model import Model
 import acoustid
 
 class AudioModel(Model):
-    def audio_hasher(self, filename):
+    def audio_hasher(self, filename: str) -> List[int]:
         try:
             return acoustid.chromaprint.decode_fingerprint(
                 acoustid.fingerprint_file(filename)[1]
@@ -14,30 +14,17 @@ class AudioModel(Model):
         except acoustid.FingerprintGenerationError:
             return []
 
-    def respond(self, audios):
+    def respond(self, audios: Union[List[Dict[str, str]], Dict[str, str]]) -> List[Dict[str, str]]:
         if not isinstance(audios, list):
             audios = [audios]
         for audio in audios:
             audio["response"] = self.fingerprint_audio(audio)
         return audios
 
-    def get_audio_tempfile(self, audio):
-        temp_file = tempfile.NamedTemporaryFile(delete=False)
-        with open(temp_file.name, 'wb') as out_file:
-            out_file.write(
-                urllib.request.urlopen(
-                    urllib.request.Request(
-                        audio["url"],
-                        headers={'User-Agent': 'Mozilla/5.0'}
-                    )
-                ).read()
-            )
-        return temp_file        
-
-    def fingerprint_audio(self, audio):
-        temp_file = self.get_audio_tempfile(audio)
+    def fingerprint_audio(self, audio: Dict[str, str]) -> Dict[str, Union[str, List[int]]]:
+        temp_file_name = self.get_tempfile_for_url(audio["url"])
         try:
-            hash_value = self.audio_hasher(temp_file.name)
+            hash_value = self.audio_hasher(temp_file_name)
         finally:
-            os.remove(temp_file.name)
+            os.remove(temp_file_name)
         return {"hash_value": hash_value}

@@ -26,6 +26,7 @@ class TestAudio(unittest.TestCase):
         # Assert that the functions were called with the correct arguments
         mock_request.assert_called_once_with(audio["url"], headers={'User-Agent': 'Mozilla/5.0'})
         mock_urlopen.assert_called_once_with(mock_request)
+        print(result)
         self.assertEqual(list, type(result["hash_value"]))
 
     @patch('urllib.request.urlopen')
