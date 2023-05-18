@@ -18,6 +18,12 @@ This project requires the following dependencies, which are listed in the `requi
 
 Depending on your environment, and if you are using Docker directly or not, these dependencies may force you install other development packages.
 
+### Architectural Diagrams
+
+![Architecture Diagram](img/presto_architectural_diagram.png?raw=true "Architecture Diagram")
+
+![Architecture Flowchart](img/presto_flowchart.png?raw=true "Architecture Flowchart")
+
 
 ### Setup
 To run the project, you can use the provided `Dockerfile`, or start via `docker-compose build && docker-compose up`. This file sets up the environment by installing the required dependencies and running the `run.py` file when the container is started. To build and run the Docker image from the Dockerfile directly, run the following commands:
