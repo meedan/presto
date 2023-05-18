@@ -20,8 +20,10 @@ Depending on your environment, and if you are using Docker directly or not, thes
 
 ### Architectural Diagrams
 
+#### Architecture
 ![Architecture Diagram](img/presto_architectural_diagram.png?raw=true "Architecture Diagram")
 
+#### Execution Flowchart
 ![Architecture Flowchart](img/presto_flowchart.png?raw=true "Architecture Flowchart")
 
 
