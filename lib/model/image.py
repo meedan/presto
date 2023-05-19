@@ -21,14 +21,10 @@ class ImageModel(Model):
         #return  hash_array.hash.ravel().tolist()
         return hash_and_qual.getHash().dumpBitsFlat() #This is a string of 0's and 1's
 
-    def respond(self, images: Union[List[Dict[str, str]], Dict[str, str]]) -> List[Dict[str, str]]:
-        if not isinstance(images, list):
-            images = [images]
-        for image in images:
-            image["response"] = self.fingerprint_image(image)
-        return images
-
     def get_iobytes_for_image(self, image: Dict[str, str]) -> io.BytesIO:
+        """
+        Read file as bytes after requesting based on URL.
+        """
         return io.BytesIO(
             urllib.request.urlopen(
                 urllib.request.Request(
@@ -38,5 +34,8 @@ class ImageModel(Model):
             ).read()
         )
 
-    def fingerprint_image(self, image: Dict[str, str]) -> Dict[str, str]:
+    def fingerprint(self, image: Dict[str, str]) -> Dict[str, str]:
+        """
+        Generic function for returning the actual response.
+        """
         return {"hash_value": self.compute_pdq(self.get_iobytes_for_image(image))}
