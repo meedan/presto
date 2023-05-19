@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Union, List, Dict, Any
 from abc import ABC, abstractmethod
 import os
 import tempfile
