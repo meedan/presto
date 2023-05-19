@@ -33,7 +33,7 @@ class Model(ABC):
         """
         return tempfile.NamedTemporaryFile()
 
-    def fingerprint(self, List[Dict[str, str]]) -> List[Dict[str, str]]:
+    def fingerprint(self, messages: List[Dict[str, str]]) -> List[Dict[str, str]]:
         return []
         
     def respond(self, messages: Union[List[Dict[str, str]], Dict[str, str]]) -> List[Dict[str, str]]:
