@@ -33,6 +33,9 @@ class Model(ABC):
         """
         return tempfile.NamedTemporaryFile()
 
+    def fingerprint(self, List[Dict[str, str]]) -> List[Dict[str, str]]:
+        return []
+        
     def respond(self, messages: Union[List[Dict[str, str]], Dict[str, str]]) -> List[Dict[str, str]]:
         """
         Force messages as list of messages in case we get a singular item. Then, run fingerprint routine.

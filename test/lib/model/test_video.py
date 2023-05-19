@@ -55,7 +55,7 @@ class TestVideoModel(unittest.TestCase):
 
     def test_respond_with_multiple_videos(self):
         videos = [{"url": "http://example.com/video1.mp4"}, {"url": "http://example.com/video2.mp4"}]
-        mock_fingerprint MagicMock()
+        mock_fingerprint = MagicMock()
         self.video_model.fingerprint = mock_fingerprint_video
         result = self.video_model.respond(videos)
         mock_fingerprint.assert_called_with(videos[1])
