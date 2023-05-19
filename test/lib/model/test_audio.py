@@ -21,7 +21,7 @@ class TestAudio(unittest.TestCase):
 
         # Call the function
         audio = {"url": "https://example.com/audio.mp3"}
-        result = self.audio_model.fingerprint_audio(audio)
+        result = self.audio_model.fingerprint(audio)
 
         # Assert that the functions were called with the correct arguments
         mock_request.assert_called_once_with(audio["url"], headers={'User-Agent': 'Mozilla/5.0'})
@@ -42,7 +42,7 @@ class TestAudio(unittest.TestCase):
 
         # Call the function
         audio = {"url": "https://example.com/audio.mp3"}
-        result = self.audio_model.fingerprint_audio(audio)
+        result = self.audio_model.fingerprint(audio)
 
         # Assert that the functions were called with the correct arguments
         mock_request.assert_called_once_with(audio["url"], headers={'User-Agent': 'Mozilla/5.0'})

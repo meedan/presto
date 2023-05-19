@@ -29,7 +29,7 @@ class TestVideoModel(unittest.TestCase):
         mock_hash_video_output.getPureAverageFeature.return_value = "hash_value"
         mock_hash_video.return_value = mock_hash_video_output
         mock_urlopen.return_value = MagicMock(read=MagicMock(return_value=open("data/test-video.mp4", "rb").read()))
-        self.video_model.fingerprint_video({"url": "http://example.com/video.mp4"})
+        self.video_model.fingerprint({"url": "http://example.com/video.mp4"})
         mock_urlopen.assert_called_once()
         mock_hash_video.assert_called_once_with(ANY, "/usr/local/bin/ffmpeg")
 
@@ -47,16 +47,16 @@ class TestVideoModel(unittest.TestCase):
 
     def test_respond_with_single_video(self):
         video = {"url": "http://example.com/video.mp4"}
-        mock_fingerprint_video = MagicMock()
-        self.video_model.fingerprint_video = mock_fingerprint_video
+        mock_fingerprint = MagicMock()
+        self.video_model.fingerprint = mock_fingerprint_video
         result = self.video_model.respond(video)
-        mock_fingerprint_video.assert_called_once_with(video)
+        mock_fingerprint.assert_called_once_with(video)
         self.assertEqual(result, [video])
 
     def test_respond_with_multiple_videos(self):
         videos = [{"url": "http://example.com/video1.mp4"}, {"url": "http://example.com/video2.mp4"}]
-        mock_fingerprint_video = MagicMock()
-        self.video_model.fingerprint_video = mock_fingerprint_video
+        mock_fingerprint MagicMock()
+        self.video_model.fingerprint = mock_fingerprint_video
         result = self.video_model.respond(videos)
-        mock_fingerprint_video.assert_called_with(videos[1])
+        mock_fingerprint.assert_called_with(videos[1])
         self.assertEqual(result, videos)
