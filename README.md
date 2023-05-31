@@ -137,3 +137,17 @@ Output Message:
   "hash_value": [pdqhasher output hash value for the image],
 }
 ```
+
+### Enqueueing
+
+Ideally, we would like to see these messages enqueued via an API of some shape through the following interface:
+
+```
+POST https://service.tld/[input_queue_name]
+{
+  "callback_url": "A unique URL that will be requested upon completion",
+  "url": "The URL at which the media is located",
+}
+```
+
+This would place the body as a message on to a queue. Then, a worker listening to `input_queue_name` would consume it, and place the result on the default `output_queue_name` (which is just `input_queue_name-output`). Another service (potentially lambda if necessary?) then consumes the output queue and sends POST responses to the `callback_url` with the body of the response. It is the responsibility of the requesting service to define the callback URL with sufficient specificity to be able to correctly interpret the results of each fingerprinting task.
