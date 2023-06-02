@@ -2,7 +2,7 @@ import datetime
 from fastapi import FastAPI
 from typing import Any, Dict
 from pydantic import BaseModel
-from queue.queue import Queue
+from lib.queue.queue import Queue
 
 app = FastAPI()
 

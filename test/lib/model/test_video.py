@@ -29,7 +29,7 @@ class TestVideoModel(unittest.TestCase):
         mock_hash_video_output.getPureAverageFeature.return_value = "hash_value"
         mock_hash_video.return_value = mock_hash_video_output
         mock_urlopen.return_value = MagicMock(read=MagicMock(return_value=open("data/test-video.mp4", "rb").read()))
-        self.video_model.fingerprint({"url": "http://example.com/video.mp4"})
+        self.video_model.fingerprint({"body": {"url": "http://example.com/video.mp4"}})
         mock_urlopen.assert_called_once()
         mock_hash_video.assert_called_once_with(ANY, "/usr/local/bin/ffmpeg")
 
