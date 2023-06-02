@@ -75,3 +75,8 @@ class Queue(ABC):
         """
         return self.push_message(self.output_queue, message)
         
+    def push_message(self, queue: str, message: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Generic pass
+        """
+        return message
