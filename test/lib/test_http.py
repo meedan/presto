@@ -2,7 +2,7 @@ from fastapi.testclient import TestClient
 import unittest
 from unittest.mock import patch
 from lib.http import app
-from queue.queue import Queue
+from lib.queue.queue import Queue
 
 class TestFingerprintItem(unittest.TestCase):
     def setUp(self):
