@@ -19,10 +19,10 @@ class TestQueue(unittest.TestCase):
         self.assertEqual(self.queue.get_output_queue_name('test', 'new-output'), 'new-output')
     
     def test_create(self):
-        redis_queue = Queue.create('redis_queue.RedisQueue', 'zinput', 'output', 2)
+        redis_queue = Queue.create('zinput', 'output', 'redis_queue.RedisQueue', 2)
         self.assertIsInstance(redis_queue, RedisQueue)
         with self.assertRaises(ModuleNotFoundError):
-            Queue.create('invalidqueue', 'input', 'output', 2)
+            Queue.create('input', 'output', 'invalidqueue', 2)
     
     def test_fingerprint(self):
         self.queue.receive_messages = MagicMock(return_value=[{"text": 'msg1'}])

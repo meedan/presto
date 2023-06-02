@@ -10,7 +10,7 @@ import urllib.request
 from lib.model.model import Model
 from lib import s3
 
-class VideoModel(Model):
+class Model(Model):
     def __init__(self):
         """
         Set some basic constants during operation, create local folder for tmk workspace.
@@ -45,7 +45,7 @@ class VideoModel(Model):
         Main fingerprinting routine - download video to disk, get short hash,
         then calculate larger TMK hash and upload that to S3.
         """
-        temp_file_name = self.get_tempfile_for_url(video["url"])
+        temp_file_name = self.get_tempfile_for_url(video.get("body", {})["url"])
         try:
             tmk_file_output = tmkpy.hashVideo(temp_file_name,self.ffmpeg_dir)
             hash_value=tmk_file_output.getPureAverageFeature()

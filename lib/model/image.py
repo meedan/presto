@@ -6,7 +6,7 @@ from lib.model.model import Model
 
 from pdqhashing.hasher.pdq_hasher import PDQHasher
 
-class ImageModel(Model):
+class Model(Model):
     def compute_pdq(iobytes: io.BytesIO) -> str:
         """Compute perceptual hash using ImageHash library
         :param im: Numpy.ndarray
@@ -29,7 +29,7 @@ class ImageModel(Model):
         return io.BytesIO(
             urllib.request.urlopen(
                 urllib.request.Request(
-                    image["url"],
+                    image.get("body", {})["url"],
                     headers={'User-Agent': 'Mozilla/5.0'}
                 )
             ).read()

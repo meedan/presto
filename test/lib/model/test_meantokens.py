@@ -12,7 +12,7 @@ class TestXlmRBertBaseNliStsbMeanTokens(unittest.TestCase):
         self.mock_model = MagicMock()
 
     def test_vectorize(self):
-        texts = [{"text": "Hello, how are you?"}, {"text": "I'm doing great, thanks!"}]
+        texts = [{"body": {"text": "Hello, how are you?"}}, {"body": {"text": "I'm doing great, thanks!"}}]
         self.model.model = self.mock_model
         self.model.model.encode = MagicMock(return_value=np.array([[4, 5, 6], [7, 8, 9]]))
         vectors = self.model.vectorize(texts)
@@ -21,7 +21,7 @@ class TestXlmRBertBaseNliStsbMeanTokens(unittest.TestCase):
         self.assertEqual(vectors[1], [7, 8, 9])
 
     def test_respond(self):
-        query = {"text": "What is the capital of France?"}
+        query = {"body": {"text": "What is the capital of France?"}}
         self.model.vectorize = MagicMock(return_value=[[1, 2, 3]])
         response = self.model.respond(query)
         self.assertEqual(len(response), 1)

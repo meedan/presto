@@ -1,14 +1,14 @@
 import unittest
 from unittest.mock import MagicMock, patch
 import urllib.request
-from lib.model.audio import AudioModel
+from lib.model.audio import Model
 import acoustid
 from acoustid import FingerprintGenerationError
 
 
 class TestAudio(unittest.TestCase):
     def setUp(self):
-        self.audio_model = AudioModel()
+        self.audio_model = Model()
 
     @patch('urllib.request.urlopen')
     @patch('urllib.request.Request')
@@ -20,11 +20,11 @@ class TestAudio(unittest.TestCase):
         mock_urlopen.return_value = MagicMock(read=MagicMock(return_value=open("data/test-audio.mp3", 'rb').read()))
 
         # Call the function
-        audio = {"url": "https://example.com/audio.mp3"}
+        audio = {"body": {"url": "https://example.com/audio.mp3"}}
         result = self.audio_model.fingerprint(audio)
 
         # Assert that the functions were called with the correct arguments
-        mock_request.assert_called_once_with(audio["url"], headers={'User-Agent': 'Mozilla/5.0'})
+        mock_request.assert_called_once_with(audio["body"]["url"], headers={'User-Agent': 'Mozilla/5.0'})
         mock_urlopen.assert_called_once_with(mock_request)
         print(result)
         self.assertEqual(list, type(result["hash_value"]))
@@ -41,11 +41,11 @@ class TestAudio(unittest.TestCase):
         mock_urlopen.return_value = MagicMock(read=MagicMock(return_value=open("data/test-audio.mp3", 'rb').read()))
 
         # Call the function
-        audio = {"url": "https://example.com/audio.mp3"}
+        audio = {"body": {"url": "https://example.com/audio.mp3"}}
         result = self.audio_model.fingerprint(audio)
 
         # Assert that the functions were called with the correct arguments
-        mock_request.assert_called_once_with(audio["url"], headers={'User-Agent': 'Mozilla/5.0'})
+        mock_request.assert_called_once_with(audio["body"]["url"], headers={'User-Agent': 'Mozilla/5.0'})
         mock_urlopen.assert_called_once_with(mock_request)
         self.assertEqual([], result["hash_value"])
 

@@ -8,7 +8,7 @@ from lib.model.model import Model
 
 class Queue(ABC):
     @classmethod
-    def create(cls, queue_driver_name: str = None, input_queue_name: str = None, output_queue_name: str = None, batch_size: int = None):
+    def create(cls, input_queue_name: str = None, output_queue_name: str = None, queue_driver_name: str = None, batch_size: int = None):
         """
         Instantiate a queue. Must pass queue_driver_name (i.e. sqs_queue.SQSQueue vs redis_queue.RedisQueue), 
         input_queue_name, output_queue_name, and batch_size. Pulls settings and then inits instance.

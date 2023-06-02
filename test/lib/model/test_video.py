@@ -6,13 +6,13 @@ import shutil
 import uuid
 import pathlib
 import urllib.request
-from lib.model.video import VideoModel
+from lib.model.video import Model
 from lib import s3
 import tmkpy
 
 class TestVideoModel(unittest.TestCase):
     def setUp(self):
-        self.video_model = VideoModel()
+        self.video_model = Model()
 
     @patch('tempfile.NamedTemporaryFile')
     def test_get_tempfile(self, mock_named_tempfile):
@@ -46,7 +46,7 @@ class TestVideoModel(unittest.TestCase):
         self.assertEqual(result, "PrestoVideoEncoder")
 
     def test_respond_with_single_video(self):
-        video = {"url": "http://example.com/video.mp4"}
+        video = {"body": {"url": "http://example.com/video.mp4"}}
         mock_fingerprint = MagicMock()
         self.video_model.fingerprint = mock_fingerprint
         result = self.video_model.respond(video)
@@ -54,7 +54,7 @@ class TestVideoModel(unittest.TestCase):
         self.assertEqual(result, [video])
 
     def test_respond_with_multiple_videos(self):
-        videos = [{"url": "http://example.com/video1.mp4"}, {"url": "http://example.com/video2.mp4"}]
+        videos = [{"body": {"url": "http://example.com/video1.mp4"}}, {"body": {"url": "http://example.com/video2.mp4"}}]
         mock_fingerprint = MagicMock()
         self.video_model.fingerprint = mock_fingerprint
         result = self.video_model.respond(videos)

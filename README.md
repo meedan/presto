@@ -42,12 +42,12 @@ Here, we require at least three environment variables - `queue_type`, `input_que
 
 Currently supported `model_name` values are just module names keyed from the `model` directory, and currently are as follows:
 
-* `fptg.MdebertaFilipino` - text model, uses `meedan/paraphrase-filipino-mpnet-base-v2`
-* `indian_sbert.IndianSbert` - text model, uses `meedan/indian-sbert`
-* `mean_tokens.XlmRBertBaseNliStsbMeanTokens` - text model, uses `xlm-r-bert-base-nli-stsb-mean-tokens`
-* `video.VideoModel` - video model
-* `image.ImageModel` - image model
-* `audio.AudioModel` - audio model
+* `fptg.Model` - text model, uses `meedan/paraphrase-filipino-mpnet-base-v2`
+* `indian_sbert.Model` - text model, uses `meedan/indian-sbert`
+* `mean_tokens.Model` - text model, uses `xlm-r-bert-base-nli-stsb-mean-tokens`
+* `video.Model` - video model
+* `image.Model` - image model
+* `audio.Model` - audio model
 
 ### Makefile
 The Makefile contains two targets, `run` and `run_test`. `run` runs the `run.py` file when executed. Remember to have the environment variables described above defined. `run_test` runs the test suite which is expected to be passing currently - reach out if it fails on your hardware!

@@ -18,7 +18,7 @@ class GenericTransformerModel(Model):
         """
         if not isinstance(docs, list):
             docs = [docs]
-        vectorizable_texts = [e.get("text") for e in docs]
+        vectorizable_texts = [e.get("body", {}).get("text") for e in docs]
         vectorized = self.vectorize(vectorizable_texts)
         for doc, vector in zip(docs, vectorized):
             doc["response"] = vector
