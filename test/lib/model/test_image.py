@@ -13,19 +13,19 @@ class TestModel(unittest.TestCase):
         mock_hasher_instance = mock_pdq_hasher.return_value
         mock_hasher_instance.fromBufferedImage.return_value.getHash.return_value.dumpBitsFlat.return_value = '1001'
         
-        result = Model.compute_pdq(io.BytesIO(b"test"))
+        result = Model.compute_pdq(io.BytesIO(open("img/presto_flowchart.png", "rb").read()))
         self.assertEqual(result, '1001')
 
     @patch("urllib.request.urlopen")
     def test_get_iobytes_for_image(self, mock_urlopen):
         mock_response = Mock()
-        mock_response.read.return_value = b"image_bytes"
+        mock_response.read.return_value = open("img/presto_flowchart.png", "rb").read()
         mock_urlopen.return_value = mock_response
         image_dict = {"body": {"url": "http://example.com/image.jpg"}}
 
         result = Model().get_iobytes_for_image(image_dict)
         self.assertIsInstance(result, io.BytesIO)
-        self.assertEqual(result.read(), b"image_bytes")
+        self.assertEqual(result.read(), open("img/presto_flowchart.png", "rb").read())
 
     @patch("urllib.request.urlopen")
     def test_get_iobytes_for_image_raises_error(self, mock_urlopen):

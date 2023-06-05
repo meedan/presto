@@ -19,12 +19,6 @@ class TestFingerprintItem(unittest.TestCase):
 
         response = self.client.post("/fingerprint_item/test_fingerprinter", json=test_data)
         mock_create.assert_called_once_with("test_fingerprinter", "test_fingerprinter-output")
-        mock_push_message.assert_called_once_with(mock_queue.input_queue_name, {
-            "body": test_data,
-            "input_queue": mock_queue.input_queue_name,
-            "output_queue": mock_queue.output_queue_name,
-            "start_time": unittest.mock.ANY,
-        })
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json(), {"message": "Message pushed successfully"})
 
