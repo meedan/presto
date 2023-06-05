@@ -27,7 +27,7 @@ class TestFingerprintItem(unittest.TestCase):
     def test_trigger_callback(self, mock_post_url):
         mock_post_url.return_value = None
         message_with_callback = {"some_key": "some_value", "callback_url": "http://example.com"}
-        response = client.post("/trigger_callback", json=message_with_callback)
+        response = self.client.post("/trigger_callback", json=message_with_callback)
         mock_post_url.assert_called_with("http://example.com", message_with_callback)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json(), {"message": "Message Called Back Successfully"})
@@ -37,7 +37,7 @@ class TestFingerprintItem(unittest.TestCase):
     def test_trigger_callback_fail(self, mock_post_url):
         mock_post_url.return_value = None
         message_with_callback = {"some_key": "some_value"}
-        response = client.post("/trigger_callback", json=message_with_callback)
+        response = self.client.post("/trigger_callback", json=message_with_callback)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json(), {"message": "No Message Callback, Passing"})
 
