@@ -12,15 +12,9 @@ class Model(Model):
         :param im: Numpy.ndarray
         :returns: Imagehash.ImageHash
         """
-        #hash_vector, quality = pdqhash.compute(ensure_pil(im))
-        #print(type(hash_vector))
-        #print(hash_vector)
-        #return hash_vector.ravel().tolist()
         pdq_hasher = PDQHasher()
         hash_and_qual = pdq_hasher.fromBufferedImage(iobytes)
-        #hash_array =  imagehash.hex_to_hash(hash_and_qual.getHash().toHexString())
-        #return  hash_array.hash.ravel().tolist()
-        return hash_and_qual.getHash().dumpBitsFlat() #This is a string of 0's and 1's
+        return hash_and_qual.getHash().dumpBitsFlat()
 
     def get_iobytes_for_image(self, image: Dict[str, str]) -> io.BytesIO:
         """
