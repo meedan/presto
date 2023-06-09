@@ -50,10 +50,13 @@ Currently supported `model_name` values are just module names keyed from the `mo
 * `audio.Model` - audio model
 
 ### Makefile
-The Makefile contains two targets, `run` and `run_test`. `run` runs the `run.py` file when executed. Remember to have the environment variables described above defined. `run_test` runs the test suite which is expected to be passing currently - reach out if it fails on your hardware!
+The Makefile contains four targets, `run`, `run_http`, `run_worker`, and `run_test`. `run` runs the `run.py` file when executed - if `RUN_MODE` is set to `http`, it will run the `run_http` command, else it will `run_worker`. Alternatively, you can call `run_http` or `run_worker` directly. Remember to have the environment variables described above defined. `run_test` runs the test suite which is expected to be passing currently - reach out if it fails on your hardware!
 
 ### run.py
 The `run.py` file is the main routine that runs the vectorization process. It sets up the queue and model instances, receives messages from the queue, applies the model to the messages, responds to the queue with the vectorized text, and deletes the original messages in a loop within the `queue.process_messages` function. The `os.environ` statements retrieve environment variables to create the queue and model instances.
+
+### main.py
+The `main.py` file is the HTTP server. We use FastAPI and provide two endpoints, which are described lower in this document. The goal of this HTTP server is to add items into a queue, and take messages from a queue and use them to fire HTTP call backs with the queue body to external services.
 
 ### Queues
 
@@ -138,16 +141,43 @@ Output Message:
 }
 ```
 
-### Enqueueing
+### Endpoints
+#### /fingerprint_item/{fingerprinter}
+This endpoint pushes a message into a queue. It's an async operation, meaning the server will respond before the operation is complete. This is useful when working with slow or unreliable external resources.
 
-Ideally, we would like to see these messages enqueued via an API of some shape through the following interface:
-
+Request
 ```
-POST https://service.tld/[input_queue_name]
+curl -X POST "http://127.0.0.1:8000/fingerprint_item/sample_fingerprinter" -H "accept: application/json" -H "Content-Type: application/json" -d "{\"message_key\":\"message_value\"}"
+```
+
+Replace sample_fingerprinter with the name of your fingerprinter, and message_key and message_value with your actual message data.
+
+Response
+```
 {
-  "callback_url": "A unique URL that will be requested upon completion",
-  "url": "The URL at which the media is located",
+  "message": "Message pushed successfully"
+}
+```
+#### /trigger_callback
+This endpoint receives a message from the Queue and sends a POST request to the URL specified in the callback_url field of the message. If the callback_url field is missing, the server will respond with a message indicating that there's no callback.
+
+Request
+```
+curl -X POST "http://127.0.0.1:8000/trigger_callback" -H "accept: application/json" -H "Content-Type: application/json" -d "{\"callback_url\":\"http://example.com/callback\", \"message\":\"Hello, world\"}"
+```
+
+Replace http://example.com/callback with the URL you want the server to call back to, and "Hello, world!" with the message you want to send.
+
+Response
+```
+{
+  "message": "Message Called Back Successfully"
 }
 ```
 
-This would place the body as a message on to a queue. Then, a worker listening to `input_queue_name` would consume it, and place the result on the default `output_queue_name` (which is just `input_queue_name-output`). Another service (potentially lambda if necessary?) then consumes the output queue and sends POST responses to the `callback_url` with the body of the response. It is the responsibility of the requesting service to define the callback URL with sufficient specificity to be able to correctly interpret the results of each fingerprinting task.
+If no callback_url is provided:
+```
+{
+  "message": "No Message Callback, Passing"
+}
+```

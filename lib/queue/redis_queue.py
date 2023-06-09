@@ -34,12 +34,14 @@ class RedisQueue(Queue):
         """
         Actual redis-specific logic for pulling batch_size messages from a queue
         """
-        return self.redis.lpop(queue)
+        message = self.redis.lpop(queue)
+        if message:
+            return json.loads(message)
         
     def push_message(self, queue: str, message: Dict[str, Any]) -> Dict[str, Any]:
         """
         Actual redis-specific logic for pushing a message to a queue
         """
-        self.redis.rpush(queue, message)
+        self.redis.rpush(queue, json.dumps(message))
         return message
     
