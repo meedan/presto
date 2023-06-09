@@ -1,6 +1,6 @@
 from fastapi.testclient import TestClient
 import unittest
-from unittest.mock import AsyncMock, patch
+from unittest.mock import patch
 from lib.http import app
 from lib.queue.queue import Queue
 
@@ -8,7 +8,7 @@ class TestFingerprintItem(unittest.TestCase):
     def setUp(self):
         self.client = TestClient(app)
 
-    @patch.object(Queue, 'create', new_callable=AsyncMock)
+    @patch.object(Queue, 'create')
     @patch.object(Queue, 'push_message')
     def test_fingerprint_item(self, mock_push_message, mock_create):
         mock_queue = mock_create.return_value

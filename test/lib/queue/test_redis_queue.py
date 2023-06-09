@@ -18,7 +18,7 @@ class TestRedisQueue(unittest.TestCase):
     def test_respond(self):
         self.mock_redis.rpush.return_value = None
         self.queue.return_response('response')
-        self.mock_redis.rpush.assert_called_with('output', 'response')
+        self.mock_redis.rpush.assert_called_with('output', '"response"')
 
 if __name__ == '__main__':
     unittest.main()

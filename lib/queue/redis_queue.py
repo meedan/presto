@@ -25,7 +25,7 @@ class RedisQueue(Queue):
         for i in range(batch_size):
             raw_message = self.pop_message(self.input_queue_name)
             if raw_message:
-                messages.append(json.loads(raw_message))
+                messages.append(raw_message)
             else:
                 break
         return messages
