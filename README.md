@@ -40,6 +40,11 @@ docker run -e QUEUE_TYPE=<queue_type> -e INPUT_QUEUE_NAME=<input_queue_name> -e 
 
 Here, we require at least three environment variables - `queue_type`, `input_queue_name`, and `model_name`. If left unspecified, `output_queue_name` will be automatically set to `input_queue_name[-output]`. Depending on your usage, you may need to replace `<queue_type>`, `<input_queue_name>`, `<output_queue_name>`, and `<model_name>` with the appropriate values.
 
+Currently supported `queue_name` values are just module names keyed from the `queue` directory, and currently are as follows:
+
+* `sqs_queue.SQSQueue` - SQS-Based
+* `redis_queue.RedisQueue` - Redis-Based
+
 Currently supported `model_name` values are just module names keyed from the `model` directory, and currently are as follows:
 
 * `fptg.Model` - text model, uses `meedan/paraphrase-filipino-mpnet-base-v2`
