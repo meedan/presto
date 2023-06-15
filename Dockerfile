@@ -4,7 +4,7 @@ WORKDIR /app
 ENV DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update && apt-get install -y cmake swig libavcodec-dev libavformat-dev \
-    yasm libx264-dev libx265-dev libnuma-dev libvpx-dev libfdk-aac-dev libmp3lame-dev libopus-dev
+    yasm libx264-dev libx265-dev libnuma-dev libvpx-dev libmp3lame-dev libopus-dev
 
 RUN apt-get install -y wget
 
