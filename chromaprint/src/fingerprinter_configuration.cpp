@@ -6,7 +6,7 @@
 
 using namespace chromaprint;
 
-static const int kDefaultFrameSize = 4096;
+static const int kDefaultFrameSize = 4096*4;
 static const int kDefaultFrameOverlap = kDefaultFrameSize - kDefaultFrameSize / 3;
 
 static const int kChromaFilterSize = 5;
