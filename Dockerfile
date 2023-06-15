@@ -5,7 +5,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update && apt-get install -y ffmpeg cmake swig libavcodec-dev libavformat-dev
 RUN ln -s /usr/bin/ffmpeg /usr/local/bin/ffmpeg
-
+RUN ffmpeg
 COPY . .
 RUN make -C /app/threatexchange/tmk/cpp
 RUN cd chromaprint && cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_TOOLS=ON .
