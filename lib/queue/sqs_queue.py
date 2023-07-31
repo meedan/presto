@@ -28,11 +28,11 @@ class SQSQueue(Queue):
         Actual SQS logic for pulling batch_size messages from a queue
         """
         messages = []
-        while total_messages > 0:
-            batch_size = min(total_messages, MAX_MESSAGE_DEPTH)
-            batch_messages = queue.receive_messages(MaxNumberOfMessages=batch_size)
+        while batch_size > 0:
+            this_batch_size = min(batch_size, MAX_MESSAGE_DEPTH)
+            batch_messages = queue.receive_messages(MaxNumberOfMessages=this_batch_size)
             messages.extend(batch_messages)
-            total_messages -= batch_size
+            batch_size -= this_batch_size
         return messages
         
     def push_message(self, queue: boto3.resources.base.ServiceResource, message: Dict[str, Any]) -> Dict[str, Any]:
