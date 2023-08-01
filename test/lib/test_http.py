@@ -41,5 +41,10 @@ class TestFingerprintItem(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json(), {"message": "No Message Callback, Passing"})
 
+    def test_trigger_callback_fail(self):
+        response = self.client.get("/ping")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json(), {"pong": 1})
+
 if __name__ == "__main__":
     unittest.main()
