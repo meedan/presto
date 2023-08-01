@@ -9,4 +9,6 @@ queue = Queue.create()
 model = Model.create()
 
 while True:
+    print("Starting fingerprinting process...")
     queue.fingerprint(model)
+    print("Finishing fingerprinting process...")
