@@ -35,4 +35,6 @@ async def fingerprint_item(message: Dict[str, Any]):
     else:
       return {"message": "No Message Callback, Passing"}
 
-
+@app.get("/ping")
+def fingerprint_item():
+    return {"pong": 1}
