@@ -38,12 +38,10 @@ class Queue(ABC):
         Return responses if no failure.
         """
         messages = self.receive_messages(model.BATCH_SIZE)
-        print("Current message batch: "+str(messages))
         try:
             responses = model.respond(copy.deepcopy(messages))
         except:
             responses = []
-        print("Current response batch: "+str(responses))
         return messages, responses
 
     def fingerprint(self, model: Model):
