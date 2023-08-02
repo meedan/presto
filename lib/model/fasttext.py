@@ -8,7 +8,7 @@ from huggingface_hub import hf_hub_download
 class FasttextModel(Model):
     def __init__(self):
         """
-        Load fasttext model
+        Load fasttext model (https://huggingface.co/facebook/fasttext-language-identification)
         """
         model_path = hf_hub_download(repo_id="facebook/fasttext-language-identification", filename="model.bin")
         self.model = fasttext.load_model(model_path)
@@ -26,6 +26,6 @@ class FasttextModel(Model):
         for text in detectable_texts:
             detected_langs.append(self.model.predict(text)[0][0])
 
-        for doc, vector in zip(docs, detected_langs):
+        for doc, detected_lang in zip(docs, detected_langs):
             doc["response"] = detected_lang
         return docs
