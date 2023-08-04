@@ -26,6 +26,7 @@ class TestQueue(unittest.TestCase):
     
     def test_fingerprint(self):
         self.queue.receive_messages = MagicMock(return_value=[{"text": 'msg1'}])
+        self.queue.input_queue = MagicMock(return_value=None)
         self.model.model = self.mock_model
         self.model.model.encode = MagicMock(return_value=np.array([[4, 5, 6], [7, 8, 9]]))
         self.queue.return_response = MagicMock(return_value=None)

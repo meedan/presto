@@ -12,7 +12,6 @@ class TextOutput(BaseModel):
     id: str
     callback_url: HttpUrl
     text: str
-    response: Union[List[float], str]
 
 class VideoInput(BaseModel):
     id: str
