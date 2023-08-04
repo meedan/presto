@@ -2,8 +2,10 @@ from typing import Union, List, Dict
 import os
 import tempfile
 
-from lib.model.model import Model
 import acoustid
+
+from lib.model.model import Model
+from lib import schemas
 
 class Model(Model):
     def audio_hasher(self, filename: str) -> List[int]:
@@ -18,8 +20,8 @@ class Model(Model):
         except acoustid.FingerprintGenerationError:
             return []
 
-    def fingerprint(self, audio: Dict[str, str]) -> Dict[str, Union[str, List[int]]]:
-        temp_file_name = self.get_tempfile_for_url(audio.get("body", {})["url"])
+    def fingerprint(self, audio: schemas.InputMessage) -> Dict[str, Union[str, List[int]]]:
+        temp_file_name = self.get_tempfile_for_url(audio.body.url)
         try:
             hash_value = self.audio_hasher(temp_file_name)
         finally:

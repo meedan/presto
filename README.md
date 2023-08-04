@@ -79,6 +79,7 @@ Messages passed to presto input queues must have the following structure, per ea
 Input Message:
 ```
 {
+  "id": "A unique string ID that identifies the item being processed",
   "callback_url": "A unique URL that will be requested upon completion",
   "text": "The text to be processed by the vectorizer"
 }
@@ -86,6 +87,26 @@ Input Message:
 Output Message:
 ```
 {
+  "id": "A unique string ID that identifies the item being processed",
+  "callback_url": "A unique URL that will be requested upon completion",
+  "text": "The text to be processed by the vectorizer",
+  "response": [List of floats representing vectorization results],
+}
+```
+
+#### Language ID
+Input Message:
+```
+{
+  "id": "A unique string ID that identifies the item being processed",
+  "callback_url": "A unique URL that will be requested upon completion",
+  "text": "The text to be processed by the vectorizer"
+}
+```
+Output Message:
+```
+{
+  "id": "A unique string ID that identifies the item being processed",
   "callback_url": "A unique URL that will be requested upon completion",
   "text": "The text to be processed by the vectorizer",
   "response": [List of floats representing vectorization results],
@@ -96,6 +117,7 @@ Output Message:
 Input Message:
 ```
 {
+  "id": "A unique string ID that identifies the item being processed",
   "callback_url": "A unique URL that will be requested upon completion",
   "url": "The URL at which the media is located",
 }
@@ -103,6 +125,7 @@ Input Message:
 Output Message:
 ```
 {
+  "id": "A unique string ID that identifies the item being processed",
   "callback_url": "A unique URL that will be requested upon completion",
   "url": "The URL at which the media is located",
   "bucket": "bucket within which the .tmk file is stored",
@@ -115,6 +138,7 @@ Output Message:
 Input Message:
 ```
 {
+  "id": "A unique string ID that identifies the item being processed",
   "callback_url": "A unique URL that will be requested upon completion",
   "url": "The URL at which the media is located"
 }
@@ -122,6 +146,7 @@ Input Message:
 Output Message:
 ```
 {
+  "id": "A unique string ID that identifies the item being processed",
   "callback_url": "A unique URL that will be requested upon completion",
   "url": "The URL at which the media is located",
   "hash_value": [pyacoustid output hash value for the audio clip],
@@ -133,6 +158,7 @@ Output Message:
 Input Message:
 ```
 {
+  "id": "A unique string ID that identifies the item being processed",
   "callback_url": "A unique URL that will be requested upon completion",
   "url": "The URL at which the media is located",
 }
@@ -140,6 +166,7 @@ Input Message:
 Output Message:
 ```
 {
+  "id": "A unique string ID that identifies the item being processed",
   "callback_url": "A unique URL that will be requested upon completion",
   "url": "The URL at which the media is located",
   "hash_value": [pdqhasher output hash value for the image],

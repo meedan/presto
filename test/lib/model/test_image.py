@@ -5,6 +5,7 @@ from urllib.error import URLError
 from typing import Dict
 
 from lib.model.image import Model
+from lib import schemas
 
 class TestModel(unittest.TestCase):
 
@@ -20,25 +21,25 @@ class TestModel(unittest.TestCase):
         mock_response = Mock()
         mock_response.read.return_value = open("img/presto_flowchart.png", "rb").read()
         mock_urlopen.return_value = mock_response
-        image_dict = {"body": {"url": "http://example.com/image.jpg"}}
-        result = Model().get_iobytes_for_image(image_dict)
+        image = schemas.Message(body=schemas.ImageInput(url="http://example.com/image.jpg"))
+        result = Model().get_iobytes_for_image(image)
         self.assertIsInstance(result, io.BytesIO)
         self.assertEqual(result.read(), open("img/presto_flowchart.png", "rb").read())
 
     @patch("urllib.request.urlopen")
     def test_get_iobytes_for_image_raises_error(self, mock_urlopen):
         mock_urlopen.side_effect = URLError('test error')
-        image_dict = {"body": {"url": "http://example.com/image.jpg"}}
+        image = schemas.Message(body=schemas.ImageInput(url="http://example.com/image.jpg"))
         with self.assertRaises(URLError):
-            Model().get_iobytes_for_image(image_dict)
+            Model().get_iobytes_for_image(image)
 
     @patch.object(Model, "get_iobytes_for_image")
     @patch.object(Model, "compute_pdq")
     def test_fingerprint(self, mock_compute_pdq, mock_get_iobytes_for_image):
         mock_compute_pdq.return_value = "1001"
         mock_get_iobytes_for_image.return_value = io.BytesIO(b"image_bytes")
-        image_dict = {"body": {"url": "http://example.com/image.jpg"}}
-        result = Model().fingerprint(image_dict)
+        image = schemas.Message(body=schemas.ImageInput(url="http://example.com/image.jpg"))
+        result = Model().fingerprint(image)
         self.assertEqual(result, {"hash_value": "1001"})
 
 
