@@ -7,6 +7,7 @@ from lib.model.generic_transformer import GenericTransformerModel
 from lib.queue.queue import Queue
 from lib.queue.sqs_queue import SQSQueue
 from lib.queue.redis_queue import RedisQueue
+from lib import schemas
 
 class TestQueue(unittest.TestCase):
     def setUp(self):
