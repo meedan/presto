@@ -3,10 +3,6 @@ from pydantic import BaseModel, HttpUrl
 
 # Output hash values can be of different types.
 HashValue = Union[List[float], str, int]
-class Message(BaseModel):
-    body: Union[TextIinput, VideoInput, AudioInput, ImageInput]
-    response: Any
-
 class TextInput(BaseModel):
     id: str
     callback_url: HttpUrl
@@ -52,3 +48,8 @@ class ImageOutput(BaseModel):
     callback_url: HttpUrl
     url: HttpUrl
     hash_value: HashValue
+
+class Message(BaseModel):
+    body: Union[TextIinput, VideoInput, AudioInput, ImageInput]
+    response: Any
+
