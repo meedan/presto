@@ -9,6 +9,7 @@ import urllib.error
 import urllib.request
 from lib.model.model import Model
 from lib import s3
+from lib import schemas
 
 class Model(Model):
     def __init__(self):
@@ -40,12 +41,12 @@ class Model(Model):
         """
         return "presto_tmk_videos"
 
-    def fingerprint(self, video: Dict[str, str]) -> Dict[str, str]:
+    def fingerprint(self, video: schemas.Message) -> schemas.VideoOutput:
         """
         Main fingerprinting routine - download video to disk, get short hash,
         then calculate larger TMK hash and upload that to S3.
         """
-        temp_file_name = self.get_tempfile_for_url(video.get("body", {})["url"])
+        temp_file_name = self.get_tempfile_for_url(video.body.url)
         try:
             tmk_file_output = tmkpy.hashVideo(temp_file_name,self.ffmpeg_dir)
             hash_value=tmk_file_output.getPureAverageFeature()
@@ -57,4 +58,4 @@ class Model(Model):
             s3.upload_file_to_s3(self.tmk_bucket(), self.tmk_file_path(video_filename))
         finally:
             os.remove(temp_file_name)
-        return dict(**video, **{"bucket": self.tmk_bucket(), "outfile": self.tmk_file_path(video_filename), "hash_value": hash_value})
+        return dict(**video.dict(), **{"bucket": self.tmk_bucket(), "outfile": self.tmk_file_path(video_filename), "hash_value": hash_value})

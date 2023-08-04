@@ -6,9 +6,10 @@ import shutil
 import uuid
 import pathlib
 import urllib.request
+import tmkpy
 from lib.model.video import Model
 from lib import s3
-import tmkpy
+from lib import schemas
 
 class TestVideoModel(unittest.TestCase):
     def setUp(self):
@@ -29,7 +30,7 @@ class TestVideoModel(unittest.TestCase):
         mock_hash_video_output.getPureAverageFeature.return_value = "hash_value"
         mock_hash_video.return_value = mock_hash_video_output
         mock_urlopen.return_value = MagicMock(read=MagicMock(return_value=open("data/test-video.mp4", "rb").read()))
-        self.video_model.fingerprint({"body": {"url": "http://example.com/video.mp4"}})
+        self.video_model.fingerprint(schemas.Message(body=schemas.VideoInput(id="123", callback_url="http://blah.com?callback_id=123", url="http://example.com/video.mp4")))
         mock_urlopen.assert_called_once()
         mock_hash_video.assert_called_once_with(ANY, "/usr/local/bin/ffmpeg")
 
@@ -46,7 +47,7 @@ class TestVideoModel(unittest.TestCase):
         self.assertEqual(result, "PrestoVideoEncoder")
 
     def test_respond_with_single_video(self):
-        video = {"body": {"url": "http://example.com/video.mp4"}}
+        video = schemas.Message(body=schemas.VideoInput(id="123", callback_url="http://blah.com?callback_id=123", url="http://example.com/video.mp4"))
         mock_fingerprint = MagicMock()
         self.video_model.fingerprint = mock_fingerprint
         result = self.video_model.respond(video)
@@ -54,7 +55,7 @@ class TestVideoModel(unittest.TestCase):
         self.assertEqual(result, [video])
 
     def test_respond_with_multiple_videos(self):
-        videos = [{"body": {"url": "http://example.com/video1.mp4"}}, {"body": {"url": "http://example.com/video2.mp4"}}]
+        videos = [schemas.Message(body=schemas.VideoInput(id="123", callback_url="http://blah.com?callback_id=123", url="http://example.com/video1.mp4")), schemas.Message(body=schemas.VideoInput(id="123", callback_url="http://blah.com?callback_id=123", url="http://example.com/video2.mp4"))]
         mock_fingerprint = MagicMock()
         self.video_model.fingerprint = mock_fingerprint
         result = self.video_model.respond(videos)

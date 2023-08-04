@@ -6,7 +6,7 @@ import tempfile
 import urllib.request
 
 from lib.helpers import get_class
-
+from lib import schemas
 class Model(ABC):
     BATCH_SIZE = 1
     def get_tempfile_for_url(self, url: str) -> str:
@@ -33,17 +33,17 @@ class Model(ABC):
         """
         return tempfile.NamedTemporaryFile()
 
-    def fingerprint(self, messages: List[Dict[str, str]]) -> List[Dict[str, str]]:
+    def fingerprint(self, messages: Union[List[schemas.Message], schemas.Message]) -> List[schemas.Message]:
         return []
         
-    def respond(self, messages: Union[List[Dict[str, str]], Dict[str, str]]) -> List[Dict[str, str]]:
+    def respond(self, messages: Union[List[schemas.Message], schemas.Message]) -> List[schemas.Message]:
         """
         Force messages as list of messages in case we get a singular item. Then, run fingerprint routine.
         """
         if not isinstance(messages, list):
             messages = [messages]
         for message in messages:
-            message["response"] = self.fingerprint(message)
+            message.response = self.fingerprint(message)
         return messages
     
     @classmethod

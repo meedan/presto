@@ -1,9 +1,10 @@
 from typing import Union, Dict, List
-from lib.model.model import Model
 
 import fasttext
 from huggingface_hub import hf_hub_download
 
+from lib.model.model import Model
+from lib import schemas
 
 class FasttextModel(Model):
     def __init__(self):
@@ -14,18 +15,18 @@ class FasttextModel(Model):
         self.model = fasttext.load_model(model_path)
 
     
-    def respond(self, docs: Union[List[Dict[str, str]], Dict[str, str]]) -> List[Dict[str, str]]:
+    def respond(self, docs: Union[List[schemas.Message], schemas.Message]) -> List[schemas.TextOutput]:
         """
         Force messages as list of messages in case we get a singular item. Then, run fingerprint routine.
         Respond can probably be genericized across all models.
         """
         if not isinstance(docs, list):
             docs = [docs]
-        detectable_texts = [e.get("body", {}).get("text") for e in docs]
+        detectable_texts = [e.body.text for e in docs]
         detected_langs = []
         for text in detectable_texts:
             detected_langs.append(self.model.predict(text)[0][0])
 
         for doc, detected_lang in zip(docs, detected_langs):
-            doc["response"] = detected_lang
+            doc.response = detected_lang
         return docs

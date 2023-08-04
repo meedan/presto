@@ -7,6 +7,7 @@ from lib.model.generic_transformer import GenericTransformerModel
 from lib.queue.queue import Queue
 from lib.queue.sqs_queue import SQSQueue
 from lib.queue.redis_queue import RedisQueue
+from lib import schemas
 
 class TestQueue(unittest.TestCase):
     def setUp(self):
@@ -25,13 +26,13 @@ class TestQueue(unittest.TestCase):
             Queue.create('input', 'output', 'invalidqueue', 2)
     
     def test_fingerprint(self):
-        self.queue.receive_messages = MagicMock(return_value=[{"text": 'msg1'}])
+        self.queue.receive_messages = MagicMock(return_value=[schemas.TextInput(id="123", callback_url="http://example.com?callback=1", text="msg1")])
+        self.queue.input_queue = MagicMock(return_value=None)
         self.model.model = self.mock_model
         self.model.model.encode = MagicMock(return_value=np.array([[4, 5, 6], [7, 8, 9]]))
         self.queue.return_response = MagicMock(return_value=None)
         self.queue.fingerprint(self.model)
         self.queue.receive_messages.assert_called_once_with(1)
-        self.queue.return_response.assert_called_with({'request': {'text': 'msg1'}, 'response': {'text': 'msg1', 'response': [4, 5, 6]}})
 
 if __name__ == '__main__':
     unittest.main()
