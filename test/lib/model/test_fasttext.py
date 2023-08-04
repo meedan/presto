@@ -13,7 +13,7 @@ class TestFasttextModel(unittest.TestCase):
         self.mock_model = MagicMock()
 
     def test_respond(self):
-        query = [schemas.Message(body=schemas.TextInput(text="Hello, how are you?")), schemas.Message(body=schemas.TextInput(text="今天是星期二"))]
+        query = [schemas.Message(body=schemas.TextInput(id="123", callback_url="http://example.com/callback", text="Hello, how are you?")), schemas.Message(body=schemas.TextInput(id="123", callback_url="http://example.com/callback", text="今天是星期二"))]
 
         response = self.model.respond(query)
       
