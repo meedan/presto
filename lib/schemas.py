@@ -50,6 +50,6 @@ class ImageOutput(BaseModel):
     hash_value: HashValue
 
 class Message(BaseModel):
-    body: Union[TextIinput, VideoInput, AudioInput, ImageInput]
+    body: Union[TextInput, VideoInput, AudioInput, ImageInput]
     response: Any
 
