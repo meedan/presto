@@ -17,7 +17,7 @@ class Model(Model):
         hash_and_qual = pdq_hasher.fromBufferedImage(iobytes)
         return hash_and_qual.getHash().dumpBitsFlat()
 
-    def get_iobytes_for_image(self, image: schemas.InputMessage) -> io.BytesIO:
+    def get_iobytes_for_image(self, image: schemas.Message) -> io.BytesIO:
         """
         Read file as bytes after requesting based on URL.
         """
@@ -30,7 +30,7 @@ class Model(Model):
             ).read()
         )
 
-    def fingerprint(self, image: schemas.InputMessage) -> schemas.ImageOutput:
+    def fingerprint(self, image: schemas.Message) -> schemas.ImageOutput:
         """
         Generic function for returning the actual response.
         """
