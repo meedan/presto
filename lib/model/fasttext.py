@@ -12,8 +12,7 @@ class FasttextModel(Model):
         """
         Load fasttext model (https://huggingface.co/facebook/fasttext-language-identification)
         """
-        model_directory = os.getenv("MODEL_DIR", "./models")
-        model_path = hf_hub_download(repo_id="facebook/fasttext-language-identification", filename=f"{model_directory}/model.bin")
+        model_path = hf_hub_download(repo_id="facebook/fasttext-language-identification")
         self.model = fasttext.load_model(model_path)
 
     
