@@ -1,3 +1,4 @@
+import os
 from typing import Union, Dict, List
 
 import fasttext
@@ -11,7 +12,8 @@ class FasttextModel(Model):
         """
         Load fasttext model (https://huggingface.co/facebook/fasttext-language-identification)
         """
-        model_path = hf_hub_download(repo_id="facebook/fasttext-language-identification", filename="model.bin")
+        model_directory = os.getenv("MODEL_DIR", "./models")
+        model_path = hf_hub_download(repo_id="facebook/fasttext-language-identification", filename=f"{model_directory}/model.bin")
         self.model = fasttext.load_model(model_path)
 
     

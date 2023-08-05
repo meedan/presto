@@ -1,3 +1,4 @@
+import os
 from typing import Union, Dict, List
 from sentence_transformers import SentenceTransformer
 
@@ -11,7 +12,7 @@ class GenericTransformerModel(Model):
         """
         self.model = None
         if model_name:
-            self.model = SentenceTransformer(model_name)
+            self.model = SentenceTransformer(model_name, cache_folder=os.getenv("MODEL_DIR", "./models"))
 
     def respond(self, docs: Union[List[schemas.Message], schemas.Message]) -> List[schemas.TextOutput]:
         """
