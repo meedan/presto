@@ -3,7 +3,7 @@ import datetime
 from typing import Any, Dict
 import httpx
 from httpx import HTTPStatusError
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from pydantic import BaseModel
 from lib.queue.queue import Queue
 from lib.logger import logger
