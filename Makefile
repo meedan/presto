@@ -1,6 +1,9 @@
 .PHONY: run run_http run_worker run_test
 
-run: $(if $(filter http,$(RUN_MODE)),run_http,run_worker)
+run: 
+	uvicorn main:app --reload &
+	python run.py &
+	wait
 
 run_http:
 	uvicorn main:app --reload
