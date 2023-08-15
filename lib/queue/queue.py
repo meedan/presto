@@ -5,6 +5,7 @@ from abc import ABC
 
 from lib.helpers import get_class, get_setting
 from lib.model.model import Model
+from lib.logger import logger
 
 class Queue(ABC):
     @classmethod
@@ -13,6 +14,7 @@ class Queue(ABC):
         Instantiate a queue. Must pass queue_driver_name (i.e. sqs_queue.SQSQueue vs redis_queue.RedisQueue), 
         input_queue_name, output_queue_name, and batch_size. Pulls settings and then inits instance.
         """
+        logger.info(f"Starting queue with: ({input_queue_name}, {output_queue_name}, {queue_driver_name}, {batch_size})")
         input_queue_name = get_setting(input_queue_name, "INPUT_QUEUE_NAME")
         output_queue_name = get_setting(output_queue_name, "OUTPUT_QUEUE_NAME")
         return get_class('lib.queue.', get_setting(queue_driver_name, "QUEUE_TYPE"))(input_queue_name, output_queue_name, batch_size)
@@ -38,10 +40,10 @@ class Queue(ABC):
         Return responses if no failure.
         """
         messages = self.receive_messages(model.BATCH_SIZE)
-        try:
+        responses = []
+        if messages:
+            logger.info(f"About to respond to: ({messages})")
             responses = model.respond(copy.deepcopy(messages))
-        except:
-            responses = []
         return messages, responses
 
     def fingerprint(self, model: Model):
@@ -53,6 +55,7 @@ class Queue(ABC):
         messages, responses = self.safely_respond(model)
         if responses:
             for message, response in zip(messages, responses):
+                logger.info(f"Processing message of: ({message}, {response})")
                 try:
                     self.return_response({"request": message, "response": response})
                 except:

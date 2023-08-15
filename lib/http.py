@@ -3,11 +3,20 @@ import datetime
 from typing import Any, Dict
 import httpx
 from httpx import HTTPStatusError
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from pydantic import BaseModel
 from lib.queue.queue import Queue
+from lib.logger import logger
 
 app = FastAPI()
+
+@app.middleware("http")
+async def log_requests(request: Request, call_next):
+    logger.info(f"Calling endpoint: {request.url.path}")
+    response = await call_next(request)
+    logger.info(f"Endpoint {request.url.path} returned: {response.status_code}")
+    return response
+
 async def post_url(url: str, params: dict) -> Dict[str, Any]:
     async with httpx.AsyncClient() as client:
         try:
