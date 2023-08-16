@@ -1,6 +1,7 @@
 version: '3.9'
 services:
   app:
+    platform: linux/amd64
     build: .
     env_file:
       - ./local.env
