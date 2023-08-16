@@ -1,9 +1,7 @@
 .PHONY: run run_http run_worker run_test
 
-run: 
-	uvicorn main:app --reload &
-	python run.py &
-	wait
+run:
+	./run_both.sh
 
 run_http:
 	uvicorn main:app --reload
