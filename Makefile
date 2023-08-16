@@ -1,7 +1,7 @@
 .PHONY: run run_http run_worker run_test
 
 run:
-	./run_both.sh
+	./start_healthcheck_and_model_engine.sh
 
 run_http:
 	uvicorn main:app --reload
