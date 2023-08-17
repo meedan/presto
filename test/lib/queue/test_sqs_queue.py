@@ -4,8 +4,8 @@ from lib.queue.sqs_queue import SQSQueue
 
 class TestSQSQueue(unittest.TestCase):
 
-    @patch('your_module.boto3.resource')
-    @patch('your_module.get_environment_setting', return_value='us-west-1')
+    @patch('lib.queue.sqs_queue.boto3.resource')
+    @patch('lib.helpers.get_environment_setting', return_value='us-west-1')
     def setUp(self, mock_get_env_setting, mock_boto_resource):
         self.queue_name_input = 'test-input-queue'
         self.queue_name_output = 'test-output-queue'
