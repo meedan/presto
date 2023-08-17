@@ -1,3 +1,4 @@
+import json
 from typing import Any, Dict, List
 import boto3
 
@@ -31,7 +32,9 @@ class SQSQueue(Queue):
         while batch_size > 0:
             this_batch_size = min(batch_size, MAX_MESSAGE_DEPTH)
             batch_messages = queue.receive_messages(MaxNumberOfMessages=this_batch_size)
-            messages.extend(batch_messages)
+            if 'Messages' in batch_messages:
+                for message in batch_messages['Messages']:
+                    messages.append(message["Body"])
             batch_size -= this_batch_size
         return messages
         
@@ -39,6 +42,6 @@ class SQSQueue(Queue):
         """
         Actual SQS logic for pushing a message to a queue
         """
-        queue.send_message(MessageBody=message)
+        queue.send_message(MessageBody=json.dumps(message))
         return message
     
