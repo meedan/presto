@@ -1,8 +1,3 @@
-# import datetime
-# from lib.queue.queue import Queue
-# queue = Queue.create("input", "output")
-# queue.push_message(queue.input_queue, {"body": {"id": 1, "callback_url": "http://example.com", "text": "This is a test"}, "input_queue": queue.input_queue_name, "output_queue": queue.output_queue_name, "start_time": str(datetime.datetime.now())})
-#
 import json
 import datetime
 from typing import Any, Dict
