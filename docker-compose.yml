@@ -1,4 +1,5 @@
 version: '3.9'
+
 services:
   app:
     platform: linux/amd64
@@ -6,8 +7,13 @@ services:
     env_file:
       - ./local.env
     depends_on:
-      - redis
+      - elasticmq
     links:
-      - redis
-  redis:
-    image: redis
+      - elasticmq
+    volumes:
+      - ./:/app
+  elasticmq:
+    image: softwaremill/elasticmq
+    hostname: presto-elasticmq
+    ports:
+      - "9324:9324"

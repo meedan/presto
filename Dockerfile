@@ -6,7 +6,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && apt-get install -y ffmpeg cmake swig libavcodec-dev libavformat-dev git
 RUN ln -s /usr/bin/ffmpeg /usr/local/bin/ffmpeg
 
-COPY . .
+COPY ./threatexchange /app/threatexchange
 RUN make -C /app/threatexchange/tmk/cpp
 RUN git clone https://github.com/meedan/chromaprint.git
 RUN cd chromaprint && cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_TOOLS=ON .
@@ -25,4 +25,5 @@ RUN pip install transformers
 RUN pip install pact-python
 RUN pip install --no-cache-dir -r requirements.txt
 RUN cd threatexchange/pdq/python && pip install .
+COPY . .
 CMD ["make", "run"]
