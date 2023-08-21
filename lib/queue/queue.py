@@ -13,8 +13,8 @@ class Queue:
     @classmethod
     def create(cls, input_queue_name: str = None, output_queue_name: str = None, batch_size: int = 10):
         """
-        Instantiate a queue. Must pass queue_driver_name (i.e. sqs_queue.SQSQueue vs redis_queue.RedisQueue), 
-        input_queue_name, output_queue_name, and batch_size. Pulls settings and then inits instance.
+        Instantiate a queue. Must pass input_queue_name, output_queue_name, and batch_size.
+        Pulls settings and then inits instance.
         """
         input_queue_name = get_setting(input_queue_name, "INPUT_QUEUE_NAME")
         output_queue_name = get_setting(output_queue_name, "OUTPUT_QUEUE_NAME")
@@ -32,8 +32,8 @@ class Queue:
                 raise
 
     def get_sqs(self):
-        presto_env = get_environment_setting("PRESTO_ENV")
-        if presto_env == "local":
+        deploy_env = get_environment_setting("DEPLOY_ENV")
+        if deploy_env == "local":
             logger.info(f"Using ElasticMQ Interface")
             return boto3.resource('sqs',
                                   region_name=(get_environment_setting("AWS_DEFAULT_REGION") or 'eu-central-1'),
@@ -65,7 +65,7 @@ class Queue:
 
     def delete_messages(self, queue, messages):
         for message in messages:
-            logger.info(f"Deleting message of {message}")
+            logger.debug(f"Deleting message of {message}")
             queue.delete_messages(Entries=[
                 {
                     'Id': message.receipt_handle,
@@ -81,7 +81,7 @@ class Queue:
         messages = self.receive_messages(model.BATCH_SIZE)
         responses = []
         if messages:
-            logger.info(f"About to respond to: ({messages})")
+            logger.debug(f"About to respond to: ({messages})")
             responses = model.respond([schemas.Message(**json.loads(message.body)) for message in messages])
             self.delete_messages(self.input_queue, messages)
         return responses

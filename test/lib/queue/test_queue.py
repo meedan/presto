@@ -7,7 +7,6 @@ import numpy as np
 
 from lib.model.generic_transformer import GenericTransformerModel
 from lib.queue.queue import Queue
-from lib.queue.sqs_queue import SQSQueue
 from lib import schemas
 class FakeSQSMessage(BaseModel):
     body: str
