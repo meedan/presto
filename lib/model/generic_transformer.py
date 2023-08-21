@@ -21,6 +21,7 @@ class GenericTransformerModel(Model):
         """
         if not isinstance(docs, list):
             docs = [docs]
+        print(docs)
         vectorizable_texts = [e.body.text for e in docs]
         vectorized = self.vectorize(vectorizable_texts)
         for doc, vector in zip(docs, vectorized):

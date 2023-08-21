@@ -7,7 +7,7 @@ from fastapi import FastAPI, Request
 from pydantic import BaseModel
 from lib.queue.queue import Queue
 from lib.logger import logger
-
+from lib import schemas
 app = FastAPI()
 
 @app.middleware("http")
@@ -29,7 +29,7 @@ async def post_url(url: str, params: dict) -> Dict[str, Any]:
 @app.post("/fingerprint_item/{fingerprinter}")
 def fingerprint_item(fingerprinter: str, message: Dict[str, Any]):
     queue = Queue.create(fingerprinter, f"{fingerprinter}-output")
-    queue.push_message(queue.input_queue_name, {"body": message, "input_queue": queue.input_queue_name, "output_queue": queue.output_queue_name, "start_time": str(datetime.datetime.now())})
+    queue.push_message(queue.input_queue_name, schemas.Message(body=message, input_queue=queue.input_queue_name, output_queue=queue.output_queue_name, start_time=str(datetime.datetime.now())))
     return {"message": "Message pushed successfully"}
 
 @app.post("/trigger_callback")
