@@ -1,5 +1,3 @@
-from sentence_transformers import SentenceTransformer
-
 from lib.model.generic_transformer import GenericTransformerModel
 MODEL_NAME = 'meedan/paraphrase-filipino-mpnet-base-v2'
 class Model(GenericTransformerModel):
