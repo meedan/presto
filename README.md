@@ -34,10 +34,10 @@ To run the project, you can use the provided `Dockerfile`, or start via `docker-
 
 ```
 docker build -t text-vectorization .
-docker run -e -e INPUT_QUEUE_NAME=<input_queue_name> -e OUTPUT_QUEUE_NAME=<output_queue_name> -e MODEL_NAME=<model_name> 
+docker run -e MODEL_NAME=<model_name> -e INPUT_QUEUE_NAME=<input_queue_name> -e OUTPUT_QUEUE_NAME=<output_queue_name> 
 ```
 
-Here, we require at least two environment variables - `input_queue_name`, and `model_name`. If left unspecified, `output_queue_name` will be automatically set to `input_queue_name[-output]`. Depending on your usage, you may need to replace `<input_queue_name>`, `<output_queue_name>`, and `<model_name>` with the appropriate values.
+Here, we require at least one environment variable - `model_name`. If left unspecified, `input_queue_name`, and `output_queue_name` will be automatically set to `{model_name}` and `{model_name}-output`. Depending on your usage, you may need to replace `<input_queue_name>`, `<output_queue_name>`, and `<model_name>` with the appropriate values.
 
 Currently supported `model_name` values are just module names keyed from the `model` directory, and currently are as follows:
 
