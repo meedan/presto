@@ -30,21 +30,50 @@ class Queue:
         self.output_queue_name = self.get_output_queue_name(input_queue_name, output_queue_name)
         self.input_queues = self.restrict_queues_by_suffix(self.get_or_create_queues(input_queue_name), "_output")
         self.output_queues = self.get_or_create_queues(output_queue_name)
+        self.default_input_queue = self.input_queues[0]
+        self.default_output_queue = self.output_queues[0]
         self.batch_size = batch_size
 
-    def restrict_queues_by_suffix(self, queues, suffix):
+    def get_queue_by_name(self, queue_list, queue_name):
+        """
+        Provide access point for directly selecting the right queue by a name
+        """
+        candidates = [e for e in queue_list if queue_name == e.name]
+        if candidates:
+            return candidates[0]
+
+    def queue_name(self, queue: boto3.resources.base.ServiceResource) -> str:
+        """
+        Pull queue name from a given queue
+        """
+        return queue.url.split('/')[-1]
+        
+    def restrict_queues_by_suffix(self, queues: List[boto3.resources.base.ServiceResource], suffix: str) -> List[boto3.resources.base.ServiceResource]:
         """
         When plucking input queues, we want to omit any queues that are our paired suffix queues..
         """
-        return [queue for queue in queues if not queue.url.split('/')[-1].endswith(suffix)]
+        return [queue for queue in queues if not self.queue_name(queue).endswith(suffix)]
 
-    def get_or_create_queues(self, queue_name):
+    def create_queue(self, queue_name: str) -> boto3.resources.base.ServiceResource:
+        """
+        Create queue by name - may not work in production owing to permissions - mostly a local convenience function
+        """
+        logger.info(f"Queue {queue_name} doesn't exist - creating")
+        return self.sqs.create_queue(QueueName=queue_name)
+
+    def get_or_create_queues(self, queue_name: str) -> List[boto3.resources.base.ServiceResource]:
+        """
+        Initialize all queues for the given worker - try to create them if they are not found by name for whatever reason
+        """
         try:
-            return self.sqs.queues.filter(QueueNamePrefix=queue_name)
+            found_queues = [q for q in self.sqs.queues.filter(QueueNamePrefix=queue_name)]
+            if found_queues:
+                return found_queues
+            else:
+                return [self.create_queue(queue_name)]
         except botocore.exceptions.ClientError as e:
-            logger.info(f"Queue {queue_name} doesn't exist - creating")
             if e.response['Error']['Code'] == "AWS.SimpleQueueService.NonExistentQueue":
-                return [self.sqs.create_queue(QueueName=queue_name)]
+                return [self.create_queue(queue_name)]
             else:
                 raise
 
@@ -140,8 +169,7 @@ class Queue:
         for queue in self.input_queues:
             if batch_size <= 0:
                 break
-            this_batch_size = min(batch_size, self.batch_size)
-            batch_messages = queue.receive_messages(MaxNumberOfMessages=this_batch_size)
+            batch_messages = queue.receive_messages(MaxNumberOfMessages=min(batch_size, self.batch_size))
             for message in batch_messages:
                 if batch_size > 0:
                     messages_with_queues.append((message, queue))
@@ -152,11 +180,25 @@ class Queue:
         """
         Send message to output queue
         """
-        return self.push_message(self.output_queue, message)
+        return self.push_message(self.output_queue_name, message)
         
-    def push_message(self, queue: boto3.resources.base.ServiceResource, message: Dict[str, Any]) -> Dict[str, Any]:
+    def find_queue_by_name(self, queue_name: str) -> boto3.resources.base.ServiceResource:
+        """
+        Search through queues to find the right one
+        """
+        print(f"Searching for {queue_name}")
+        all_queues = [self.input_queues, self.output_queues]
+        print(f"All queues are {all_queues}")
+        for group in [self.input_queues, self.output_queues]:
+            for q in group:
+                qq = self.queue_name(q)
+                print(f"Comparing {queue_name} against {qq}")
+                if queue_name == self.queue_name(q):
+                    return q
+    
+    def push_message(self, queue_name: str, message: Dict[str, Any]) -> Dict[str, Any]:
         """
         Actual SQS logic for pushing a message to a queue
         """
-        queue.send_message(MessageBody=json.dumps(message.dict()))
+        self.find_queue_by_name(queue_name).send_message(MessageBody=json.dumps(message.dict()))
         return message
