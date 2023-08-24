@@ -27,21 +27,24 @@ class Queue:
         """
         self.sqs = self.get_sqs()
         self.input_queue_name = input_queue_name
-        self.output_queue_name = self.get_output_queue_name(input_queue_name, output_queue_name)
         self.input_queues = self.restrict_queues_by_suffix(self.get_or_create_queues(input_queue_name), "_output")
-        self.output_queues = self.get_or_create_queues(output_queue_name)
-        self.default_input_queue = self.input_queues[0]
-        self.default_output_queue = self.output_queues[0]
+        if output_queue_name:
+            self.output_queue_name = self.get_output_queue_name(input_queue_name, output_queue_name)
+            self.output_queues = self.get_or_create_queues(output_queue_name)
+        self.all_queues = self.store_queue_map()
         self.batch_size = batch_size
 
-    def get_queue_by_name(self, queue_list, queue_name):
-        """
-        Provide access point for directly selecting the right queue by a name
-        """
-        candidates = [e for e in queue_list if queue_name == e.name]
-        if candidates:
-            return candidates[0]
 
+    def store_queue_map(self) -> Dict[str, boto3.resources.base.ServiceResource]:
+        """
+        Store a quick lookup so that we dont loop through this over and over in other places.
+        """
+        queue_map = {}
+        for group in [self.input_queues, self.output_queues]:
+            for q in group:
+                queue_map[self.queue_name(q)] = q
+        return queue_map
+    
     def queue_name(self, queue: boto3.resources.base.ServiceResource) -> str:
         """
         Pull queue name from a given queue
@@ -77,7 +80,10 @@ class Queue:
             else:
                 raise
 
-    def get_sqs(self):
+    def get_sqs(self) -> boto3.resources.base.ServiceResource:
+        """
+        Get an instantiated SQS - if local, use local alternative via elasticmq
+        """
         deploy_env = get_environment_setting("DEPLOY_ENV")
         if deploy_env == "local":
             logger.info(f"Using ElasticMQ Interface")
@@ -98,7 +104,7 @@ class Queue:
             output_queue_name = f'{input_queue_name}-output'
         return output_queue_name
 
-    def group_deletions(self, messages_with_queues: List[Tuple[Dict[str, Any], boto3.resources.base.ServiceResource]]) -> Dict[boto3.resources.base.ServiceResource, List[Dict[str, Any]]]:
+    def group_deletions(self, messages_with_queues: List[Tuple[schemas.Message, boto3.resources.base.ServiceResource]]) -> Dict[boto3.resources.base.ServiceResource, List[schemas.Message]]:
         """
         Group deletions so that we can run through a simplified set of batches rather than delete each item independently
         """
@@ -119,7 +125,7 @@ class Queue:
             self.delete_messages_from_queue(queue, messages)
 
 
-    def delete_messages_from_queue(self, queue: boto3.resources.base.ServiceResource, messages: List[Dict[str, Any]]) -> None:
+    def delete_messages_from_queue(self, queue: boto3.resources.base.ServiceResource, messages: List[schemas.Message]) -> None:
         """
         Helper function to delete a group of messages from a specific queue.
         """
@@ -135,7 +141,7 @@ class Queue:
                 entries.append(entry)
             queue.delete_messages(Entries=entries)
 
-    def safely_respond(self, model: Model) -> Tuple[List[Dict[str, str]], List[Dict[str, Any]]]:
+    def safely_respond(self, model: Model) -> List[schemas.Message]:
         """
         Rescue against failures when attempting to respond (i.e. fingerprint) from models.
         Return responses if no failure.
@@ -160,7 +166,7 @@ class Queue:
                 logger.info(f"Processing message of: ({response})")
                 self.return_response(response)
 
-    def receive_messages(self, batch_size: int = 1) -> List[Tuple[Dict[str, Any], boto3.resources.base.ServiceResource]]:
+    def receive_messages(self, batch_size: int = 1) -> List[Tuple[schemas.Message, boto3.resources.base.ServiceResource]]:
         """
         Pull batch_size messages from input queue.
         Actual SQS logic for pulling batch_size messages from matched queues
@@ -176,7 +182,7 @@ class Queue:
                     batch_size -= 1
         return messages_with_queues
 
-    def return_response(self, message: Dict[str, Any]):
+    def return_response(self, message: schemas.Message):
         """
         Send message to output queue
         """
@@ -186,17 +192,9 @@ class Queue:
         """
         Search through queues to find the right one
         """
-        print(f"Searching for {queue_name}")
-        all_queues = [self.input_queues, self.output_queues]
-        print(f"All queues are {all_queues}")
-        for group in [self.input_queues, self.output_queues]:
-            for q in group:
-                qq = self.queue_name(q)
-                print(f"Comparing {queue_name} against {qq}")
-                if queue_name == self.queue_name(q):
-                    return q
+        return self.all_queues.get(queue_name)
     
-    def push_message(self, queue_name: str, message: Dict[str, Any]) -> Dict[str, Any]:
+    def push_message(self, queue_name: str, message: schemas.Message) -> schemas.Message:
         """
         Actual SQS logic for pushing a message to a queue
         """

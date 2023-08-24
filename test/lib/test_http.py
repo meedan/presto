@@ -18,7 +18,7 @@ class TestFingerprintItem(unittest.TestCase):
         test_data = {"id": 1, "callback_url": "http://example.com", "text": "This is a test"}
 
         response = self.client.post("/fingerprint_item/test_fingerprinter", json=test_data)
-        mock_create.assert_called_once_with("test_fingerprinter", "test_fingerprinter_output")
+        mock_create.assert_called_once_with("test_fingerprinter")
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json(), {"message": "Message pushed successfully"})
 
