@@ -3,6 +3,8 @@ from typing import Union, Dict, List
 import fasttext
 from huggingface_hub import hf_hub_download
 
+from langcodes import *
+
 from lib.model.model import Model
 from lib import schemas
 
@@ -25,7 +27,7 @@ class FasttextModel(Model):
         detectable_texts = [e.body.text for e in docs]
         detected_langs = []
         for text in detectable_texts:
-            detected_langs.append(self.model.predict(text)[0][0])
+            detected_langs.append(standardize_tag(self.model.predict(text)[0][0][9:], macro = True))
 
         for doc, detected_lang in zip(docs, detected_langs):
             doc.response = detected_lang
