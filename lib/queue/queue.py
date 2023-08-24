@@ -27,28 +27,63 @@ class Queue:
         """
         self.sqs = self.get_sqs()
         self.input_queue_name = input_queue_name
-        self.output_queue_name = self.get_output_queue_name(input_queue_name, output_queue_name)
         self.input_queues = self.restrict_queues_by_suffix(self.get_or_create_queues(input_queue_name), "_output")
-        self.output_queues = self.get_or_create_queues(output_queue_name)
+        if output_queue_name:
+            self.output_queue_name = self.get_output_queue_name(input_queue_name, output_queue_name)
+            self.output_queues = self.get_or_create_queues(output_queue_name)
+        self.all_queues = self.store_queue_map()
         self.batch_size = batch_size
 
-    def restrict_queues_by_suffix(self, queues, suffix):
+
+    def store_queue_map(self) -> Dict[str, boto3.resources.base.ServiceResource]:
+        """
+        Store a quick lookup so that we dont loop through this over and over in other places.
+        """
+        queue_map = {}
+        for group in [self.input_queues, self.output_queues]:
+            for q in group:
+                queue_map[self.queue_name(q)] = q
+        return queue_map
+    
+    def queue_name(self, queue: boto3.resources.base.ServiceResource) -> str:
+        """
+        Pull queue name from a given queue
+        """
+        return queue.url.split('/')[-1]
+        
+    def restrict_queues_by_suffix(self, queues: List[boto3.resources.base.ServiceResource], suffix: str) -> List[boto3.resources.base.ServiceResource]:
         """
         When plucking input queues, we want to omit any queues that are our paired suffix queues..
         """
-        return [queue for queue in queues if not queue.url.split('/')[-1].endswith(suffix)]
+        return [queue for queue in queues if not self.queue_name(queue).endswith(suffix)]
 
-    def get_or_create_queues(self, queue_name):
+    def create_queue(self, queue_name: str) -> boto3.resources.base.ServiceResource:
+        """
+        Create queue by name - may not work in production owing to permissions - mostly a local convenience function
+        """
+        logger.info(f"Queue {queue_name} doesn't exist - creating")
+        return self.sqs.create_queue(QueueName=queue_name)
+
+    def get_or_create_queues(self, queue_name: str) -> List[boto3.resources.base.ServiceResource]:
+        """
+        Initialize all queues for the given worker - try to create them if they are not found by name for whatever reason
+        """
         try:
-            return self.sqs.queues.filter(QueueNamePrefix=queue_name)
+            found_queues = [q for q in self.sqs.queues.filter(QueueNamePrefix=queue_name)]
+            if found_queues:
+                return found_queues
+            else:
+                return [self.create_queue(queue_name)]
         except botocore.exceptions.ClientError as e:
-            logger.info(f"Queue {queue_name} doesn't exist - creating")
             if e.response['Error']['Code'] == "AWS.SimpleQueueService.NonExistentQueue":
-                return [self.sqs.create_queue(QueueName=queue_name)]
+                return [self.create_queue(queue_name)]
             else:
                 raise
 
-    def get_sqs(self):
+    def get_sqs(self) -> boto3.resources.base.ServiceResource:
+        """
+        Get an instantiated SQS - if local, use local alternative via elasticmq
+        """
         deploy_env = get_environment_setting("DEPLOY_ENV")
         if deploy_env == "local":
             logger.info(f"Using ElasticMQ Interface")
@@ -69,7 +104,7 @@ class Queue:
             output_queue_name = f'{input_queue_name}-output'
         return output_queue_name
 
-    def group_deletions(self, messages_with_queues: List[Tuple[Dict[str, Any], boto3.resources.base.ServiceResource]]) -> Dict[boto3.resources.base.ServiceResource, List[Dict[str, Any]]]:
+    def group_deletions(self, messages_with_queues: List[Tuple[schemas.Message, boto3.resources.base.ServiceResource]]) -> Dict[boto3.resources.base.ServiceResource, List[schemas.Message]]:
         """
         Group deletions so that we can run through a simplified set of batches rather than delete each item independently
         """
@@ -90,7 +125,7 @@ class Queue:
             self.delete_messages_from_queue(queue, messages)
 
 
-    def delete_messages_from_queue(self, queue: boto3.resources.base.ServiceResource, messages: List[Dict[str, Any]]) -> None:
+    def delete_messages_from_queue(self, queue: boto3.resources.base.ServiceResource, messages: List[schemas.Message]) -> None:
         """
         Helper function to delete a group of messages from a specific queue.
         """
@@ -106,7 +141,7 @@ class Queue:
                 entries.append(entry)
             queue.delete_messages(Entries=entries)
 
-    def safely_respond(self, model: Model) -> Tuple[List[Dict[str, str]], List[Dict[str, Any]]]:
+    def safely_respond(self, model: Model) -> List[schemas.Message]:
         """
         Rescue against failures when attempting to respond (i.e. fingerprint) from models.
         Return responses if no failure.
@@ -131,7 +166,7 @@ class Queue:
                 logger.info(f"Processing message of: ({response})")
                 self.return_response(response)
 
-    def receive_messages(self, batch_size: int = 1) -> List[Tuple[Dict[str, Any], boto3.resources.base.ServiceResource]]:
+    def receive_messages(self, batch_size: int = 1) -> List[Tuple[schemas.Message, boto3.resources.base.ServiceResource]]:
         """
         Pull batch_size messages from input queue.
         Actual SQS logic for pulling batch_size messages from matched queues
@@ -140,23 +175,28 @@ class Queue:
         for queue in self.input_queues:
             if batch_size <= 0:
                 break
-            this_batch_size = min(batch_size, self.batch_size)
-            batch_messages = queue.receive_messages(MaxNumberOfMessages=this_batch_size)
+            batch_messages = queue.receive_messages(MaxNumberOfMessages=min(batch_size, self.batch_size))
             for message in batch_messages:
                 if batch_size > 0:
                     messages_with_queues.append((message, queue))
                     batch_size -= 1
         return messages_with_queues
 
-    def return_response(self, message: Dict[str, Any]):
+    def return_response(self, message: schemas.Message):
         """
         Send message to output queue
         """
-        return self.push_message(self.output_queue, message)
+        return self.push_message(self.output_queue_name, message)
         
-    def push_message(self, queue: boto3.resources.base.ServiceResource, message: Dict[str, Any]) -> Dict[str, Any]:
+    def find_queue_by_name(self, queue_name: str) -> boto3.resources.base.ServiceResource:
+        """
+        Search through queues to find the right one
+        """
+        return self.all_queues.get(queue_name)
+    
+    def push_message(self, queue_name: str, message: schemas.Message) -> schemas.Message:
         """
         Actual SQS logic for pushing a message to a queue
         """
-        queue.send_message(MessageBody=json.dumps(message.dict()))
+        self.find_queue_by_name(queue_name).send_message(MessageBody=json.dumps(message.dict()))
         return message

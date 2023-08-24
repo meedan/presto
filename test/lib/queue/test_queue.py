@@ -13,21 +13,26 @@ class FakeSQSMessage(BaseModel):
     receipt_handle: str
 
 class TestQueue(unittest.TestCase):
+    # def overwrite_restrict_queues_by_suffix(queues, suffix):
+    #     return [MagicMock()]
+    #
+    # @patch('lib.queue.queue.Queue.restrict_queues_by_suffix', side_effect=overwrite_restrict_queues_by_suffix)
     @patch('lib.queue.queue.boto3.resource')
     @patch('lib.helpers.get_environment_setting', return_value='us-west-1')
-    def setUp(self, mock_get_env_setting, mock_boto_resource):
+    def setUp(self, mock_get_env_setting, mock_boto_resource):#, mock_restrict_queues_by_suffix):
         self.model = GenericTransformerModel(None)
         self.mock_model = MagicMock()
-        self.queue_name_input = 'test-input-queue'
-        self.queue_name_output = 'test-output-queue'
+        self.queue_name_input = 'mean_tokens__Model'
+        self.queue_name_output = 'mean_tokens__Model_output'
         self.batch_size = 5
 
         # Mock the SQS resource and the queues
         self.mock_sqs_resource = MagicMock()
         self.mock_input_queue = MagicMock()
+        self.mock_input_queue.url = "http://queue/mean_tokens__Model"
         self.mock_output_queue = MagicMock()
-
-        self.mock_sqs_resource.get_queue_by_name.side_effect = [self.mock_input_queue, self.mock_output_queue]
+        self.mock_output_queue.url = "http://queue/mean_tokens__Model_output"
+        self.mock_sqs_resource.queues.filter.return_value = [self.mock_input_queue, self.mock_output_queue]
         mock_boto_resource.return_value = self.mock_sqs_resource
 
         # Initialize the SQSQueue instance
@@ -94,7 +99,7 @@ class TestQueue(unittest.TestCase):
     def test_push_message(self):
         message_to_push = schemas.Message(body={"id": 1, "callback_url": "http://example.com", "text": "This is a test"})
         # Call push_message
-        returned_message = self.queue.push_message(self.mock_output_queue, message_to_push)
+        returned_message = self.queue.push_message(self.queue_name_output, message_to_push)
         # Check if the message was correctly serialized and sent
         self.mock_output_queue.send_message.assert_called_once_with(MessageBody='{"body": {"id": "1", "callback_url": "http://example.com", "text": "This is a test"}, "response": null}')
         self.assertEqual(returned_message, message_to_push)
