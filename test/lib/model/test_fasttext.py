@@ -22,7 +22,7 @@ class TestFasttextModel(unittest.TestCase):
 
         response = self.model.respond(query)
       
-        self.assertEqual(len(response), 2)
+        self.assertEqual(len(response), 5)
         self.assertEqual(response[0].response, {'language': 'en', 'script': None, 'score': 1.0})
         self.assertEqual(response[1].response, {'language': 'zh', 'script': 'Hans', 'score': 0.8305})
         self.assertEqual(response[2].response, {'language': 'ks', 'script': 'Arab', 'score': 0.9999})
