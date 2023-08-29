@@ -66,6 +66,15 @@ class TestQueueWorker(unittest.TestCase):
         restricted_queues = self.queue.restrict_queues_by_suffix(queues, "_output")
         self.assertEqual(len(restricted_queues), 2)  # expecting two queues that don't end with _output
 
+    def test_restrict_queues_to_suffix(self):
+        queues = [
+            MagicMock(url='http://test.com/test_input'),
+            MagicMock(url='http://test.com/test_input_output'),
+            MagicMock(url='http://test.com/test_another_input')
+        ]
+        restricted_queues = self.queue.restrict_queues_to_suffix(queues, "_output")
+        self.assertEqual(len(restricted_queues), 1)  # expecting one queue that ends with _output
+
     def test_group_deletions(self):
         messages_with_queues = [
             (FakeSQSMessage(receipt_handle="blah", body=json.dumps({"body": "msg1"})), self.mock_input_queue),

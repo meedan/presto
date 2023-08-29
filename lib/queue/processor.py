@@ -24,8 +24,9 @@ class QueueProcessor(Queue):
         """
         super().__init__()
         self.input_queue_name = input_queue_name
-        self.input_queues = self.restrict_queues_by_suffix(self.get_or_create_queues(input_queue_name), "_output")
+        self.input_queues = self.restrict_queues_to_suffix(self.get_or_create_queues(input_queue_name+"_output"), "_output")
         self.all_queues = self.store_queue_map(self.input_queues)
+        logger.info(f"Processor listening to queues of {self.all_queues}")
         self.batch_size = batch_size
 
     def send_callbacks(self) -> List[schemas.Message]:
@@ -43,13 +44,14 @@ class QueueProcessor(Queue):
             self.delete_messages(messages_with_queues)
 
 
-    def send_callback(self, body):
+    def send_callback(self, message):
         """
         Rescue against failures when attempting to respond (i.e. fingerprint) from models.
         Return responses if no failure.
         """
+        logger.info(f"Message for callback is: {message}")
         try:
-            callback_url = body.get("callback_url")
-            requests.post(callback_url, json=body)
+            callback_url = message.body.callback_url
+            requests.post(callback_url, json=message.dict())
         except Exception as e:
-            logger.error(f"Callback fail! Failed with {e} on {callback_url} with body of {body}")
+            logger.error(f"Callback fail! Failed with {e} on {callback_url} with message of {message}")

@@ -31,6 +31,12 @@ class Queue:
         """
         return queue.url.split('/')[-1]
         
+    def restrict_queues_to_suffix(self, queues: List[boto3.resources.base.ServiceResource], suffix: str) -> List[boto3.resources.base.ServiceResource]:
+        """
+        When plucking input queues, we want to omit any queues that are our paired suffix queues..
+        """
+        return [queue for queue in queues if self.queue_name(queue).endswith(suffix)]
+
     def restrict_queues_by_suffix(self, queues: List[boto3.resources.base.ServiceResource], suffix: str) -> List[boto3.resources.base.ServiceResource]:
         """
         When plucking input queues, we want to omit any queues that are our paired suffix queues..

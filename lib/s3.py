@@ -1,5 +1,5 @@
 import boto3
-
+from lib.logger import logger
 def upload_file_to_s3(bucket: str, filename: str):
     """
     Generic upload helper for s3. Could be moved over to helpers folder...
@@ -11,6 +11,6 @@ def upload_file_to_s3(bucket: str, filename: str):
     # Upload the file to S3
     try:
         s3_client.upload_file(filename, bucket, file_name)
-        print(f'Successfully uploaded file {file_name} to S3 bucket.')
+        logger.info(f'Successfully uploaded file {file_name} to S3 bucket.')
     except Exception as e:
-        print(f'Failed to upload file {file_name} to S3 bucket: {e}')
+        logger.error(f'Failed to upload file {file_name} to S3 bucket: {e}')

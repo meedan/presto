@@ -1,3 +1,7 @@
+# from lib import schemas
+# from lib.queue.worker import QueueWorker
+# queue = QueueWorker.create("mean_tokens__Model")
+# queue.push_message("mean_tokens__Model", schemas.Message(body={"callback_url": "http://0.0.0.0:8000/echo", "id": 123, "text": "Some text to vectorize"}))
 import json
 import datetime
 from typing import Any, Dict
@@ -48,3 +52,8 @@ async def fingerprint_item(message: Dict[str, Any]):
 @app.get("/ping")
 def fingerprint_item():
     return {"pong": 1}
+
+@app.post("/echo")
+async def echo(message: Dict[str, Any]):
+    logger.info(f"About to echo message of {message}")
+    return {"echo": message}

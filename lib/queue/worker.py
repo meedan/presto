@@ -28,6 +28,7 @@ class QueueWorker(Queue):
             self.output_queue_name = self.get_output_queue_name(input_queue_name, output_queue_name)
             self.output_queues = self.get_or_create_queues(output_queue_name)
         self.all_queues = self.store_queue_map([item for row in [self.input_queues, self.output_queues] for item in row])
+        logger.info(f"Worker listening to queues of {self.all_queues}")
 
     def fingerprint(self, model: Model):
         """
@@ -39,7 +40,7 @@ class QueueWorker(Queue):
         if responses:
             for response in responses:
                 logger.info(f"Processing message of: ({response})")
-                self.return_response(response)
+                self.push_message(self.output_queue_name, response)
 
     def safely_respond(self, model: Model) -> List[schemas.Message]:
         """
