@@ -18,8 +18,8 @@ class TestFasttextModel(unittest.TestCase):
         response = self.model.respond(query)
       
         self.assertEqual(len(response), 2)
-        self.assertEqual(response[0].response, "en")
-        self.assertEqual(response[1].response, "zh-Hans")
+        self.assertEqual(response[0].response, {'language': 'en', 'script': None, 'score': 1.0000062})
+        self.assertEqual(response[1].response, {'language': 'zh', 'script': 'Hans', 'score': 0.83046132})
 
 if __name__ == '__main__':
     unittest.main()
