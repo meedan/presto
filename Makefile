@@ -1,13 +1,16 @@
 .PHONY: run run_http run_worker run_test
 
 run:
-	./start_healthcheck_and_model_engine.sh
+	./start_all.sh
 
 run_http:
 	uvicorn main:app --host 0.0.0.0 --reload
 
 run_worker:
-	python run.py
+	python run_worker.py
+
+run_processor:
+	python run_processor.py
 
 run_test:
-	python -m unittest discover .
+	python -m pytest test

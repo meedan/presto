@@ -5,7 +5,7 @@ import httpx
 from httpx import HTTPStatusError
 from fastapi import FastAPI, Request
 from pydantic import BaseModel
-from lib.queue.queue import Queue
+from lib.queue.worker import QueueWorker
 from lib.logger import logger
 from lib import schemas
 
@@ -29,8 +29,8 @@ async def post_url(url: str, params: dict) -> Dict[str, Any]:
 
 @app.post("/fingerprint_item/{fingerprinter}")
 def fingerprint_item(fingerprinter: str, message: Dict[str, Any]):
-    queue = Queue.create(fingerprinter)
-    queue.push_message(fingerprinter, schemas.Message(body=message, input_queue=queue.input_queue_name, output_queue=queue.output_queue_name, start_time=str(datetime.datetime.now())))
+    queue = QueueWorker.create(fingerprinter)
+    queue.push_message(fingerprinter, schemas.Message(body=message))
     return {"message": "Message pushed successfully"}
 
 @app.post("/trigger_callback")

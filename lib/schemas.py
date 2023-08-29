@@ -51,4 +51,3 @@ class ImageOutput(BaseModel):
 class Message(BaseModel):
     body: Union[TextInput, VideoInput, AudioInput, ImageInput]
     response: Any
-
