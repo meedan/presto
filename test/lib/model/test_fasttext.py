@@ -27,7 +27,7 @@ class TestFasttextModel(unittest.TestCase):
         self.assertEqual(response[1].response, {'language': 'zh', 'script': 'Hans', 'score': 0.8305})
         self.assertEqual(response[2].response, {'language': 'ks', 'script': 'Arab', 'score': 0.9999})
         self.assertEqual(response[3].response, {'language': 'bo', 'script': 'Tibt', 'score': 0.2168}) #non-text content returns random language with low certainty
-        self.assertEqual(response[3].response, {'language': 'en', 'script': None, 'score': 0.8267})  #empty string returns english with high-ish confidence
+        self.assertEqual(response[4].response, {'language': 'en', 'script': None, 'score': 0.8267})  #empty string returns english with high-ish confidence
 
 if __name__ == '__main__':
     unittest.main()
