@@ -30,7 +30,7 @@ class Model(Model):
             ).read()
         )
 
-    def fingerprint(self, image: schemas.Message) -> schemas.ImageOutput:
+    def process(self, image: schemas.Message) -> schemas.ImageOutput:
         """
         Generic function for returning the actual response.
         """

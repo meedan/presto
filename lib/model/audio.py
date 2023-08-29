@@ -20,7 +20,7 @@ class Model(Model):
         except acoustid.FingerprintGenerationError:
             return []
 
-    def fingerprint(self, audio: schemas.Message) -> Dict[str, Union[str, List[int]]]:
+    def process(self, audio: schemas.Message) -> Dict[str, Union[str, List[int]]]:
         temp_file_name = self.get_tempfile_for_url(audio.body.url)
         try:
             hash_value = self.audio_hasher(temp_file_name)

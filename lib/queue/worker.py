@@ -30,7 +30,7 @@ class QueueWorker(Queue):
         self.all_queues = self.store_queue_map([item for row in [self.input_queues, self.output_queues] for item in row])
         logger.info(f"Worker listening to queues of {self.all_queues}")
 
-    def fingerprint(self, model: Model):
+    def process(self, model: Model):
         """
         Main routine. Given a model, in a loop, read tasks from input_queue_name,
         pass messages to model to respond (i.e. fingerprint) them, then pass responses to output queue.

@@ -168,12 +168,12 @@ Output Message:
 ```
 
 ### Endpoints
-#### /fingerprint_item/{fingerprinter}
+#### /process_item/{process_name}
 This endpoint pushes a message into a queue. It's an async operation, meaning the server will respond before the operation is complete. This is useful when working with slow or unreliable external resources.
 
 Request
 ```
-curl -X POST "http://127.0.0.1:8000/fingerprint_item/sample_fingerprinter" -H "accept: application/json" -H "Content-Type: application/json" -d "{\"message_key\":\"message_value\"}"
+curl -X POST "http://127.0.0.1:8000/process_item/mean_tokens__Model" -H "accept: application/json" -H "Content-Type: application/json" -d "{\"message_key\":\"message_value\"}"
 ```
 
 Replace sample_fingerprinter with the name of your fingerprinter, and message_key and message_value with your actual message data.

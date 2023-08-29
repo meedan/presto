@@ -34,13 +34,13 @@ class TestQueueWorker(unittest.TestCase):
         self.assertEqual(self.queue.get_output_queue_name('test'), 'test_output')
         self.assertEqual(self.queue.get_output_queue_name('test', 'new-output'), 'new-output')
 
-    def test_fingerprint(self):
+    def test_process(self):
         self.queue.receive_messages = MagicMock(return_value=[(FakeSQSMessage(receipt_handle="blah", body=json.dumps({"body": {"id": 1, "callback_url": "http://example.com", "text": "This is a test"}})), self.mock_input_queue)])
         self.queue.input_queue = MagicMock(return_value=None)
         self.model.model = self.mock_model
         self.model.model.encode = MagicMock(return_value=np.array([[4, 5, 6], [7, 8, 9]]))
         self.queue.return_response = MagicMock(return_value=None)
-        self.queue.fingerprint(self.model)
+        self.queue.process(self.model)
         self.queue.receive_messages.assert_called_once_with(1)
 
     def test_receive_messages(self):

@@ -8,6 +8,6 @@ queue = QueueWorker.create()
 
 model = Model.create()
 
-logger.info("Beginning fingerprinter loop...")
+logger.info("Beginning work loop...")
 while True:
-    queue.fingerprint(model)
+    queue.work(model)

@@ -31,14 +31,14 @@ async def post_url(url: str, params: dict) -> Dict[str, Any]:
         except HTTPStatusError:
             return {"error": f"HTTP Error on Attempt to call {url} with {params}"}
 
-@app.post("/fingerprint_item/{fingerprinter}")
-def fingerprint_item(fingerprinter: str, message: Dict[str, Any]):
-    queue = QueueWorker.create(fingerprinter)
-    queue.push_message(fingerprinter, schemas.Message(body=message))
+@app.post("/process_item/{process_name}")
+def process_item(process_name: str, message: Dict[str, Any]):
+    queue = QueueWorker.create(process_name)
+    queue.push_message(process_name, schemas.Message(body=message))
     return {"message": "Message pushed successfully"}
 
 @app.post("/trigger_callback")
-async def fingerprint_item(message: Dict[str, Any]):
+async def process_item(message: Dict[str, Any]):
     url = message.get("callback_url")
     if url:
       response = await post_url(url, message)
@@ -50,7 +50,7 @@ async def fingerprint_item(message: Dict[str, Any]):
       return {"message": "No Message Callback, Passing"}
 
 @app.get("/ping")
-def fingerprint_item():
+def process_item():
     return {"pong": 1}
 
 @app.post("/echo")
