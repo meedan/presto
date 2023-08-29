@@ -29,7 +29,7 @@ class FasttextModel(Model):
         detected_langs = []
         for text in detectable_texts:
             model_output = self.model.predict(text)  #format (('__label__zho_Hans',), array([0.81644011])), where zho is 3-letter ISO code, Hans is script tag, and 0.81 is certainty
-            model_certainty = model_output[1][0]  #float [0, 1] value representing model's certainty
+            model_certainty = model_output[1][0].round(4)  #value representing model's certainty
 
             #standardize_tag will standardize to 2-letter codes where possible
             #and will remove the script tag unless the language is often written in different scripts
