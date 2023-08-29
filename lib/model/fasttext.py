@@ -35,8 +35,11 @@ class FasttextModel(Model):
             #and will remove the script tag unless the language is often written in different scripts
             #setting macro=True allows us to standardize ISO macro languages (eg. swa == swh -> sw)
             model_language = standardize_tag(model_output[0][0][9:], macro = True)  
+            model_script = None
+            if '-' in model_language: 
+                [model_language, model_script] = model_language.split('-')
             
-            detected_langs.append(model_language)  
+            detected_langs.append({'language': model_language, 'script': model_script, 'score': model_certainty})  
 
         for doc, detected_lang in zip(docs, detected_langs):
             doc.response = detected_lang
