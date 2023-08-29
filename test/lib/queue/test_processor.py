@@ -47,11 +47,9 @@ class TestQueueProcessor(unittest.TestCase):
     def test_send_callback_failure(self, mock_post):
         mock_post.side_effect = Exception("Request Failed!")
         message_body = schemas.Message(body={"callback_url": "http://example.com", "text": "This is a test", "id": 123}, response=[1,2,3])
-        
         with self.assertLogs(level='ERROR') as cm:
             self.queue_processor.send_callback(message_body)
-            
-        self.assertIn("Callback fail! Failed with Request Failed! on http://example.com with body of", cm.output[0])
+        self.assertIn("Failed with Request Failed! on http://example.com with message of", cm.output[0])
     
 if __name__ == '__main__':
     unittest.main()
