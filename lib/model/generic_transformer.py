@@ -1,7 +1,7 @@
 import os
 from typing import Union, Dict, List
 from sentence_transformers import SentenceTransformer
-
+from lib.logger import logger
 from lib.model.model import Model
 from lib import schemas
 
@@ -21,7 +21,7 @@ class GenericTransformerModel(Model):
         """
         if not isinstance(docs, list):
             docs = [docs]
-        print(docs)
+        logger.info(docs)
         vectorizable_texts = [e.body.text for e in docs]
         vectorized = self.vectorize(vectorizable_texts)
         for doc, vector in zip(docs, vectorized):
