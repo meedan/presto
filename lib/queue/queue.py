@@ -56,7 +56,7 @@ class Queue:
         """
         try:
             found_queues = [q for q in self.sqs.queues.filter(QueueNamePrefix=queue_name)]
-            exact_match_queues = [q for q in found_queues if q.attributes['QueueArn'].split(':')[-1] == queue_name]
+            exact_match_queues = [queue for queue in found_queues if queue.attributes['QueueArn'].split(':')[-1] == queue_name]
             if exact_match_queues:
                 return exact_match_queues
             else:
