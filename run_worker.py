@@ -10,4 +10,4 @@ model = Model.create()
 
 logger.info("Beginning work loop...")
 while True:
-    queue.work(model)
+    queue.process(model)

@@ -1,7 +1,7 @@
 # from lib import schemas
 # from lib.queue.worker import QueueWorker
-# queue = QueueWorker.create("mean_tokens__Model")
-# queue.push_message("mean_tokens__Model", schemas.Message(body={"callback_url": "http://0.0.0.0:8000/echo", "id": 123, "text": "Some text to vectorize"}))
+# queue = QueueWorker.create("audio__Model")
+# queue.push_message("audio__Model", schemas.Message(body={'callback_url': 'http://alegre:3100/presto/receive/add_item/audio', 'id': 123, 'url':'http://devingaffney.com/files/blah.mp3', 'text': None, 'raw': {'doc_id': 123, 'url': 'http://devingaffney.com/files/blah.mp3'}}))
 import json
 import datetime
 from typing import Any, Dict
@@ -33,9 +33,10 @@ async def post_url(url: str, params: dict) -> Dict[str, Any]:
 
 @app.post("/process_item/{process_name}")
 def process_item(process_name: str, message: Dict[str, Any]):
+    logger.info(message)
     queue = QueueWorker.create(process_name)
     queue.push_message(process_name, schemas.Message(body=message))
-    return {"message": "Message pushed successfully"}
+    return {"message": "Message pushed successfully", "queue": process_name, "body": message}
 
 @app.post("/trigger_callback")
 async def process_item(message: Dict[str, Any]):
