@@ -12,6 +12,7 @@ from pydantic import BaseModel
 from lib.queue.worker import QueueWorker
 from lib.logger import logger
 from lib import schemas
+from lib.sentry import sentry_sdk
 
 app = FastAPI()
 
