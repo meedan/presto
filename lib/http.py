@@ -1,7 +1,3 @@
-# from lib import schemas
-# from lib.queue.worker import QueueWorker
-# queue = QueueWorker.create("audio__Model")
-# queue.push_message("audio__Model", schemas.Message(body={'callback_url': 'http://alegre:3100/presto/receive/add_item/audio', 'id': 123, 'url':'http://devingaffney.com/files/blah.mp3', 'text': None, 'raw': {'doc_id': 123, 'url': 'http://devingaffney.com/files/blah.mp3'}}))
 import json
 import datetime
 from typing import Any, Dict
