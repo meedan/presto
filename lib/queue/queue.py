@@ -56,8 +56,9 @@ class Queue:
         """
         try:
             found_queues = [q for q in self.sqs.queues.filter(QueueNamePrefix=queue_name)]
-            if found_queues:
-                return found_queues
+            exact_match_queues = [queue for queue in found_queues if queue.attributes['QueueArn'].split(':')[-1] == queue_name]
+            if exact_match_queues:
+                return exact_match_queues
             else:
                 return [self.create_queue(queue_name)]
         except botocore.exceptions.ClientError as e:
