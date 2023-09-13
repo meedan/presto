@@ -12,6 +12,8 @@ services:
       - elasticmq
     volumes:
       - ./:/app
+    ports:
+      - "8000:8000"
   elasticmq:
     image: softwaremill/elasticmq
     hostname: presto-elasticmq
