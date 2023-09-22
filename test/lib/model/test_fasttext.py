@@ -1,5 +1,6 @@
 import unittest
 from unittest.mock import patch, MagicMock
+import numpy as np
 from lib.model.fasttext import FasttextModel
 from lib import schemas
 
