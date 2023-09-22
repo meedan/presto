@@ -1,5 +1,6 @@
 import unittest
 from unittest.mock import patch, MagicMock
+import numpy as np
 from lib.model.fasttext import FasttextModel
 from lib import schemas
 
@@ -12,16 +13,12 @@ class TestFasttextModel(unittest.TestCase):
     def test_respond(self, mock_fasttext_load_model, mock_hf_hub_download):
         mock_hf_hub_download.return_value = 'mocked_path'
         mock_fasttext_load_model.return_value = self.mock_model
-        self.mock_model.predict.return_value = (['__label__eng_Latn'], [0.9])
-
+        self.mock_model.predict.return_value = (['__label__eng_Latn'], np.array([0.9]))
         model = FasttextModel()  # Now it uses mocked functions
-        query = [schemas.Message(body=schemas.TextInput(id="123", callback_url="http://example.com/callback", text="Hello, how are you?")), schemas.Message(body=schemas.TextInput(id="123", callback_url="http://example.com/callback", text="今天是星期二"))]
-
+        query = [schemas.Message(body=schemas.TextInput(id="123", callback_url="http://example.com/callback", text="Hello, how are you?"))]
         response = model.respond(query)
-
-        self.assertEqual(len(response), 2)
-        self.assertEqual(response[0].response, '__label__eng_Latn')
-        self.assertEqual(response[1].response, '__label__eng_Latn')  # Mocked, so it will be the same
+        self.assertEqual(len(response), 1)
+        self.assertEqual(response[0].response, {'language': 'en', 'script': None, 'score': 0.9})
 
 if __name__ == '__main__':
     unittest.main()
