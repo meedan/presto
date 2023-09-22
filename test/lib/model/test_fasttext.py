@@ -12,7 +12,7 @@ class TestFasttextModel(unittest.TestCase):
     def test_respond(self, mock_fasttext_load_model, mock_hf_hub_download):
         mock_hf_hub_download.return_value = 'mocked_path'
         mock_fasttext_load_model.return_value = self.mock_model
-        self.mock_model.predict.return_value = (['__label__eng_Latn'], [0.9])
+        self.mock_model.predict.return_value = (['__label__eng_Latn'], np.array([0.902323124]))
         model = FasttextModel()  # Now it uses mocked functions
         query = [schemas.Message(body=schemas.TextInput(id="123", callback_url="http://example.com/callback", text="Hello, how are you?"))]
         response = model.respond(query)
