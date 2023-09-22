@@ -10,3 +10,6 @@ httpx==0.23.1
 huggingface-hub==0.11.0
 fasttext==0.9.2
 langcodes==3.3.0 
+requests==2.31.0
+pytest==7.4.0
+sentry-sdk==1.30.0

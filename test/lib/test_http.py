@@ -2,25 +2,25 @@ from fastapi.testclient import TestClient
 import unittest
 from unittest.mock import patch
 from lib.http import app
-from lib.queue.queue import Queue
+from lib.queue.worker import QueueWorker
 
-class TestFingerprintItem(unittest.TestCase):
+class TestProcessItem(unittest.TestCase):
     def setUp(self):
         self.client = TestClient(app)
 
-    @patch.object(Queue, 'create')
-    @patch.object(Queue, 'push_message')
-    def test_fingerprint_item(self, mock_push_message, mock_create):
+    @patch.object(QueueWorker, 'create')
+    @patch.object(QueueWorker, 'push_message')
+    def test_process_item(self, mock_push_message, mock_create):
         mock_queue = mock_create.return_value
         mock_queue.input_queue_name = "input_queue"
         mock_queue.output_queue_name = "output_queue"
 
         test_data = {"id": 1, "callback_url": "http://example.com", "text": "This is a test"}
 
-        response = self.client.post("/fingerprint_item/test_fingerprinter", json=test_data)
-        mock_create.assert_called_once_with("test_fingerprinter")
+        response = self.client.post("/process_item/test_process", json=test_data)
+        mock_create.assert_called_once_with("test_process")
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json(), {"message": "Message pushed successfully"})
+        self.assertEqual(response.json(), {"message": "Message pushed successfully", "queue": "test_process", "body": test_data})
 
 
     @patch('lib.http.post_url')

@@ -2,21 +2,14 @@ import json
 import os
 import unittest
 from unittest.mock import MagicMock, patch
-from pydantic import BaseModel
 import numpy as np
 
 from lib.model.generic_transformer import GenericTransformerModel
-from lib.queue.queue import Queue
+from lib.queue.worker import QueueWorker
 from lib import schemas
-class FakeSQSMessage(BaseModel):
-    body: str
-    receipt_handle: str
+from test.lib.queue.fake_sqs_message import FakeSQSMessage
 
-class TestQueue(unittest.TestCase):
-    # def overwrite_restrict_queues_by_suffix(queues, suffix):
-    #     return [MagicMock()]
-    #
-    # @patch('lib.queue.queue.Queue.restrict_queues_by_suffix', side_effect=overwrite_restrict_queues_by_suffix)
+class TestQueueWorker(unittest.TestCase):
     @patch('lib.queue.queue.boto3.resource')
     @patch('lib.helpers.get_environment_setting', return_value='us-west-1')
     def setUp(self, mock_get_env_setting, mock_boto_resource):#, mock_restrict_queues_by_suffix):
@@ -24,31 +17,32 @@ class TestQueue(unittest.TestCase):
         self.mock_model = MagicMock()
         self.queue_name_input = 'mean_tokens__Model'
         self.queue_name_output = 'mean_tokens__Model_output'
-        self.batch_size = 5
 
         # Mock the SQS resource and the queues
         self.mock_sqs_resource = MagicMock()
         self.mock_input_queue = MagicMock()
         self.mock_input_queue.url = "http://queue/mean_tokens__Model"
+        self.mock_input_queue.attributes = {"QueueArn": "queue:mean_tokens__Model"}
         self.mock_output_queue = MagicMock()
         self.mock_output_queue.url = "http://queue/mean_tokens__Model_output"
+        self.mock_output_queue.attributes = {"QueueArn": "queue:mean_tokens__Model_output"}
         self.mock_sqs_resource.queues.filter.return_value = [self.mock_input_queue, self.mock_output_queue]
         mock_boto_resource.return_value = self.mock_sqs_resource
 
         # Initialize the SQSQueue instance
-        self.queue = Queue(self.queue_name_input, self.queue_name_output, self.batch_size)
+        self.queue = QueueWorker(self.queue_name_input, self.queue_name_output)
     
     def test_get_output_queue_name(self):
-        self.assertEqual(self.queue.get_output_queue_name('test'), 'test-output')
+        self.assertEqual(self.queue.get_output_queue_name('test'), 'test_output')
         self.assertEqual(self.queue.get_output_queue_name('test', 'new-output'), 'new-output')
 
-    def test_fingerprint(self):
+    def test_process(self):
         self.queue.receive_messages = MagicMock(return_value=[(FakeSQSMessage(receipt_handle="blah", body=json.dumps({"body": {"id": 1, "callback_url": "http://example.com", "text": "This is a test"}})), self.mock_input_queue)])
         self.queue.input_queue = MagicMock(return_value=None)
         self.model.model = self.mock_model
         self.model.model.encode = MagicMock(return_value=np.array([[4, 5, 6], [7, 8, 9]]))
         self.queue.return_response = MagicMock(return_value=None)
-        self.queue.fingerprint(self.model)
+        self.queue.process(self.model)
         self.queue.receive_messages.assert_called_once_with(1)
 
     def test_receive_messages(self):
@@ -58,7 +52,7 @@ class TestQueue(unittest.TestCase):
         mock_queue2 = MagicMock()
         mock_queue2.receive_messages.return_value = [FakeSQSMessage(receipt_handle="blah", body=json.dumps({"body": {"id": 2, "callback_url": "http://example.com", "text": "This is another test"}}))]
         self.queue.input_queues = [mock_queue1, mock_queue2]
-        received_messages = self.queue.receive_messages(self.batch_size)
+        received_messages = self.queue.receive_messages(5)
     
         # Check if the right number of messages were received and the content is correct
         self.assertEqual(len(received_messages), 2)
@@ -73,6 +67,15 @@ class TestQueue(unittest.TestCase):
         ]
         restricted_queues = self.queue.restrict_queues_by_suffix(queues, "_output")
         self.assertEqual(len(restricted_queues), 2)  # expecting two queues that don't end with _output
+
+    def test_restrict_queues_to_suffix(self):
+        queues = [
+            MagicMock(url='http://test.com/test_input'),
+            MagicMock(url='http://test.com/test_input_output'),
+            MagicMock(url='http://test.com/test_another_input')
+        ]
+        restricted_queues = self.queue.restrict_queues_to_suffix(queues, "_output")
+        self.assertEqual(len(restricted_queues), 1)  # expecting one queue that ends with _output
 
     def test_group_deletions(self):
         messages_with_queues = [
@@ -101,7 +104,7 @@ class TestQueue(unittest.TestCase):
         # Call push_message
         returned_message = self.queue.push_message(self.queue_name_output, message_to_push)
         # Check if the message was correctly serialized and sent
-        self.mock_output_queue.send_message.assert_called_once_with(MessageBody='{"body": {"id": "1", "callback_url": "http://example.com", "text": "This is a test"}, "response": null}')
+        self.mock_output_queue.send_message.assert_called_once_with(MessageBody='{"body": {"id": "1", "callback_url": "http://example.com", "url": null, "text": "This is a test", "raw": {}}, "response": null}')
         self.assertEqual(returned_message, message_to_push)
 
 if __name__ == '__main__':

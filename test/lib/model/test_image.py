@@ -39,11 +39,11 @@ class TestModel(unittest.TestCase):
 
     @patch.object(Model, "get_iobytes_for_image")
     @patch.object(Model, "compute_pdq")
-    def test_fingerprint(self, mock_compute_pdq, mock_get_iobytes_for_image):
+    def test_process(self, mock_compute_pdq, mock_get_iobytes_for_image):
         mock_compute_pdq.return_value = "1001"
         mock_get_iobytes_for_image.return_value = io.BytesIO(b"image_bytes")
         image = schemas.Message(body=schemas.ImageInput(id="123", callback_url="http://example.com?callback", url="http://example.com/image.jpg"))
-        result = Model().fingerprint(image)
+        result = Model().process(image)
         self.assertEqual(result, {"hash_value": "1001"})
 
 

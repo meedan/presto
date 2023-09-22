@@ -33,7 +33,7 @@ class Model(ABC):
         """
         return tempfile.NamedTemporaryFile()
 
-    def fingerprint(self, messages: Union[List[schemas.Message], schemas.Message]) -> List[schemas.Message]:
+    def process(self, messages: Union[List[schemas.Message], schemas.Message]) -> List[schemas.Message]:
         return []
         
     def respond(self, messages: Union[List[schemas.Message], schemas.Message]) -> List[schemas.Message]:
@@ -43,7 +43,7 @@ class Model(ABC):
         if not isinstance(messages, list):
             messages = [messages]
         for message in messages:
-            message.response = self.fingerprint(message)
+            message.response = self.process(message)
         return messages
     
     @classmethod
