@@ -47,6 +47,10 @@ async def process_item(message: Dict[str, Any]):
     else:
       return {"message": "No Message Callback, Passing"}
 
+@app.head("/ping")
+def process_item():
+    return {"pong": 1}
+
 @app.get("/ping")
 def process_item():
     return {"pong": 1}
