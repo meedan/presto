@@ -12,7 +12,6 @@ services:
       - elasticmq
     volumes:
       - ./:/app
-    ports:
       - "${PRESTO_PORT}:${PRESTO_PORT}"
     args:
       - PRESTO_PORT=${PRESTO_PORT}

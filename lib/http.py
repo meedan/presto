@@ -36,7 +36,7 @@ def process_item(process_name: str, message: Dict[str, Any]):
     return {"message": "Message pushed successfully", "queue": process_name, "body": message}
 
 @app.post("/trigger_callback")
-async def process_item(message: Dict[str, Any]):
+async def trigger_callback(message: Dict[str, Any]):
     url = message.get("callback_url")
     if url:
       response = await post_url(url, message)
@@ -48,11 +48,11 @@ async def process_item(message: Dict[str, Any]):
       return {"message": "No Message Callback, Passing"}
 
 @app.head("/ping")
-def process_item():
+def head_ping():
     return {"pong": 1}
 
 @app.get("/ping")
-def process_item():
+def get_ping():
     return {"pong": 1}
 
 @app.post("/echo")
