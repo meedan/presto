@@ -4,9 +4,8 @@ import importlib
 def get_environment_setting(os_key: str) -> str:
     """
     Get environment variable helper. Could be augmented with credential store if/when necessary.
-    Default to blank string as any .get on environ will result in string, so better to not create a None raise error
     """
-    return os.environ.get(os_key, "")
+    return os.environ.get(os_key)
 
 def get_setting(current_value: Any, default_os_key: str) -> Any:
     """
