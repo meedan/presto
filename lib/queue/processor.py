@@ -14,7 +14,8 @@ class QueueProcessor(Queue):
         Instantiate a queue. Must pass input_queue_name, output_queue_name, and batch_size.
         Pulls settings and then inits instance.
         """
-        input_queue_name = get_setting(input_queue_name, "MODEL_NAME").replace(".", "__")
+        queue_prefix = get_setting("", "QUEUE_PREFIX").replace(".", "__")
+        input_queue_name = queue_prefix+get_setting(input_queue_name, "MODEL_NAME").replace(".", "__")
         logger.info(f"Starting queue with: ('{input_queue_name}', {batch_size})")
         return QueueProcessor(input_queue_name, batch_size)
 
