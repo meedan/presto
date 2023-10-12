@@ -5,7 +5,7 @@ import os
 import boto3
 import botocore
 
-from lib.helpers import get_setting, get_environment_setting
+from lib.helpers import get_environment_setting
 from lib.logger import logger
 from lib import schemas
 SQS_MAX_BATCH_SIZE = 10
@@ -154,6 +154,5 @@ class Queue:
         """
         Actual SQS logic for pushing a message to a queue
         """
-        queue_prefix = get_setting("", "QUEUE_PREFIX").replace(".", "__")
-        self.find_queue_by_name(f"{queue_prefix}{queue_name}").send_message(MessageBody=json.dumps(message.dict()))
+        self.find_queue_by_name(queue_name).send_message(MessageBody=json.dumps(message.dict()))
         return message
