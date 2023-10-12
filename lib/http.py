@@ -9,6 +9,7 @@ from lib.queue.worker import QueueWorker
 from lib.logger import logger
 from lib import schemas
 from lib.sentry import sentry_sdk
+from lib.helpers import get_setting, get_environment_setting
 
 app = FastAPI()
 
@@ -31,8 +32,9 @@ async def post_url(url: str, params: dict) -> Dict[str, Any]:
 @app.post("/process_item/{process_name}")
 def process_item(process_name: str, message: Dict[str, Any]):
     logger.info(message)
+    queue_prefix = get_setting("", "QUEUE_PREFIX").replace(".", "__")
     queue = QueueWorker.create(process_name)
-    queue.push_message(process_name, schemas.Message(body=message))
+    queue.push_message(f"{queue_prefix}{process_name}", schemas.Message(body=message))
     return {"message": "Message pushed successfully", "queue": process_name, "body": message}
 
 @app.post("/trigger_callback")
