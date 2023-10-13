@@ -12,8 +12,7 @@ class QueueWorker(Queue):
         Instantiate a queue worker. Must pass input_queue_name.
         Pulls settings and then inits instance.
         """
-        queue_prefix = get_setting("", "QUEUE_PREFIX").replace(".", "__")
-        input_queue_name = queue_prefix+get_setting(input_queue_name, "MODEL_NAME").replace(".", "__")
+        input_queue_name = Queue.get_queue_name(input_queue_name)
         output_queue_name = f"{input_queue_name}_output"
         logger.info(f"Starting queue with: ('{input_queue_name}', '{output_queue_name}')")
         return QueueWorker(input_queue_name, output_queue_name)

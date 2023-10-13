@@ -3,7 +3,10 @@ version: '3.9'
 services:
   app:
     platform: linux/amd64
-    build: .
+    build: 
+      context: .
+      args:
+        - PRESTO_PORT=${PRESTO_PORT}
     env_file:
       - ./.env_file
     depends_on:
@@ -12,9 +15,6 @@ services:
       - elasticmq
     volumes:
       - ./:/app
-      - "${PRESTO_PORT}:${PRESTO_PORT}"
-    args:
-      - PRESTO_PORT=${PRESTO_PORT}
   elasticmq:
     image: softwaremill/elasticmq
     hostname: presto-elasticmq
