@@ -5,7 +5,7 @@ import os
 import boto3
 import botocore
 
-from lib.helpers import get_environment_setting
+from lib.helpers import get_setting, get_environment_setting
 from lib.logger import logger
 from lib import schemas
 SQS_MAX_BATCH_SIZE = 10
@@ -15,6 +15,14 @@ class Queue:
         Start a specific queue - must pass input_queue_name.
         """
         self.sqs = self.get_sqs()
+
+    @staticmethod
+    def get_queue_prefix():
+        return (get_environment_setting("QUEUE_PREFIX") or "").replace(".", "__")
+
+    @staticmethod
+    def get_queue_name(input_queue_name):
+        return Queue.get_queue_prefix()+get_setting(input_queue_name, "MODEL_NAME").replace(".", "__")
 
     def store_queue_map(self, all_queues: List[boto3.resources.base.ServiceResource]) -> Dict[str, boto3.resources.base.ServiceResource]:
         """
