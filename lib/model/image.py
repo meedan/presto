@@ -8,7 +8,7 @@ from pdqhashing.hasher.pdq_hasher import PDQHasher
 from lib import schemas
 
 class Model(Model):
-    def compute_pdq(iobytes: io.BytesIO) -> str:
+    def compute_pdq(self, iobytes: io.BytesIO) -> str:
         """Compute perceptual hash using ImageHash library
         :param im: Numpy.ndarray
         :returns: Imagehash.ImageHash
