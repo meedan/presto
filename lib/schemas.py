@@ -12,6 +12,7 @@ class TextOutput(BaseModel):
     id: str
     callback_url: str
     text: str
+    hash_value: HashValue
 
 class VideoInput(BaseModel):
     id: str
