@@ -3,59 +3,19 @@ from pydantic import BaseModel
 
 # Output hash values can be of different types.
 HashValue = Union[List[float], str, int]
-class TextInput(BaseModel):
-    id: str
-    callback_url: str
-    text: str
-
-class TextOutput(BaseModel):
-    id: str
-    callback_url: str
-    text: str
-    hash_value: HashValue
-
-class VideoInput(BaseModel):
-    id: str
-    callback_url: str
-    url: str
-
-class VideoOutput(BaseModel):
-    id: str
-    callback_url: str
-    url: str
-    bucket: str
-    outfile: str
-    hash_value: HashValue
-
-class AudioInput(BaseModel):
-    id: str
-    callback_url: str
-    url: str
-
-class AudioOutput(BaseModel):
-    id: str
-    callback_url: str
-    url: str
-    hash_value: HashValue
-
-class ImageInput(BaseModel):
-    id: str
-    callback_url: str
-    url: str
-
-class ImageOutput(BaseModel):
-    id: str
-    callback_url: str
-    url: str
-    hash_value: HashValue
-
-class GenericInput(BaseModel):
-    id: str
-    callback_url: str
+class GenericItem(BaseModel):
+    id: Optional[str] = None
+    callback_url: Optional[str] = None
     url: Optional[str] = None
     text: Optional[str] = None
     raw: Optional[dict] = {}
 
+class MediaItem(GenericItem):
+    hash_value: Optional[HashValue] = None
+
+class VideoItem(MediaItem):
+    bucket: Optional[str] = None
+    outfile: Optional[str] = None
+
 class Message(BaseModel):
-    body: GenericInput
-    response: Any
+    body: Union[GenericItem, MediaItem, VideoItem]

@@ -30,7 +30,7 @@ class Model(Model):
             ).read()
         )
 
-    def process(self, image: schemas.Message) -> schemas.ImageOutput:
+    def process(self, image: schemas.Message) -> schemas.MediaItem:
         """
         Generic function for returning the actual response.
         """

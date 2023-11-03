@@ -43,7 +43,7 @@ class Model(ABC):
         if not isinstance(messages, list):
             messages = [messages]
         for message in messages:
-            message.response = self.process(message)
+            message.body.hash_value = self.process(message)
         return messages
     
     @classmethod

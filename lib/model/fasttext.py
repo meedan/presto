@@ -18,7 +18,7 @@ class FasttextModel(Model):
         self.model = fasttext.load_model(model_path)
 
     
-    def respond(self, docs: Union[List[schemas.Message], schemas.Message]) -> List[schemas.TextOutput]:
+    def respond(self, docs: Union[List[schemas.Message], schemas.Message]) -> List[schemas.MediaItem]:
         """
         Force messages as list of messages in case we get a singular item. Then, run fingerprint routine.
         Respond can probably be genericized across all models.
