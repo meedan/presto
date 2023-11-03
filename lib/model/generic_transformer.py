@@ -25,7 +25,7 @@ class GenericTransformerModel(Model):
         vectorizable_texts = [e.body.text for e in docs]
         vectorized = self.vectorize(vectorizable_texts)
         for doc, vector in zip(docs, vectorized):
-            doc.hash_value = vector
+            doc.body.hash_value = vector
         return docs
 
     def vectorize(self, texts: List[str]) -> List[List[float]]:

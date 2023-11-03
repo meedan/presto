@@ -42,5 +42,5 @@ class FasttextModel(Model):
             detected_langs.append({'language': model_language, 'script': model_script, 'score': model_certainty})  
 
         for doc, detected_lang in zip(docs, detected_langs):
-            doc.response = detected_lang
+            doc.body.hash_value = detected_lang
         return docs
