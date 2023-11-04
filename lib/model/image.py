@@ -30,8 +30,8 @@ class Model(Model):
             ).read()
         )
 
-    def process(self, image: schemas.Message) -> schemas.MediaItem:
+    def process(self, image: schemas.Message) -> schemas.GenericItem:
         """
         Generic function for returning the actual response.
         """
-        return {"hash_value": self.compute_pdq(self.get_iobytes_for_image(image))}
+        return self.compute_pdq(self.get_iobytes_for_image(image))

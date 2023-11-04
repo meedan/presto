@@ -15,7 +15,7 @@ class TestFasttextModel(unittest.TestCase):
         mock_fasttext_load_model.return_value = self.mock_model
         self.mock_model.predict.return_value = (['__label__eng_Latn'], np.array([0.9]))
         model = FasttextModel()  # Now it uses mocked functions
-        query = [schemas.Message(body=schemas.MediaItem(id="123", callback_url="http://example.com/callback", text="Hello, how are you?"))]
+        query = [schemas.Message(body=schemas.GenericItem(id="123", callback_url="http://example.com/callback", text="Hello, how are you?"))]
         response = model.respond(query)
         self.assertEqual(len(response), 1)
         self.assertEqual(response[0].body.hash_value, {'language': 'en', 'script': None, 'score': 0.9})

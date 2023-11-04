@@ -41,7 +41,7 @@ class Model(Model):
         """
         return "presto_tmk_videos"
 
-    def process(self, video: schemas.Message) -> schemas.VideoItem:
+    def process(self, video: schemas.Message) -> schemas.GenericItem:
         """
         Main fingerprinting routine - download video to disk, get short hash,
         then calculate larger TMK hash and upload that to S3.

@@ -24,7 +24,7 @@ class TestAudio(unittest.TestCase):
 
         mock_urlopen.return_value = MagicMock(read=MagicMock(return_value=contents))
 
-        audio = schemas.Message(body=schemas.MediaItem(id="123", callback_url="http://example.com/callback", url="https://example.com/audio.mp3"))
+        audio = schemas.Message(body=schemas.GenericItem(id="123", callback_url="http://example.com/callback", url="https://example.com/audio.mp3"))
         result = self.audio_model.process(audio)
         mock_request.assert_called_once_with(audio.body.url, headers={'User-Agent': 'Mozilla/5.0'})
         mock_urlopen.assert_called_once_with(mock_request)
@@ -45,7 +45,7 @@ class TestAudio(unittest.TestCase):
 
         mock_urlopen.return_value = MagicMock(read=MagicMock(return_value=contents))
 
-        audio = schemas.Message(body=schemas.MediaItem(id="123", callback_url="http://example.com/callback", url="https://example.com/audio.mp3"))
+        audio = schemas.Message(body=schemas.GenericItem(id="123", callback_url="http://example.com/callback", url="https://example.com/audio.mp3"))
         result = self.audio_model.process(audio)
         mock_request.assert_called_once_with(audio.body.url, headers={'User-Agent': 'Mozilla/5.0'})
         mock_urlopen.assert_called_once_with(mock_request)
