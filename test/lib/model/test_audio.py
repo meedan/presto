@@ -28,7 +28,7 @@ class TestAudio(unittest.TestCase):
         result = self.audio_model.process(audio)
         mock_request.assert_called_once_with(audio.body.url, headers={'User-Agent': 'Mozilla/5.0'})
         mock_urlopen.assert_called_once_with(mock_request)
-        self.assertEqual(list, type(result["hash_value"]))
+        self.assertEqual(list, type(result))
 
     @patch('urllib.request.urlopen')
     @patch('urllib.request.Request')
@@ -49,7 +49,7 @@ class TestAudio(unittest.TestCase):
         result = self.audio_model.process(audio)
         mock_request.assert_called_once_with(audio.body.url, headers={'User-Agent': 'Mozilla/5.0'})
         mock_urlopen.assert_called_once_with(mock_request)
-        self.assertEqual([], result["hash_value"])
+        self.assertEqual([], result)
 
 if __name__ == '__main__':
     unittest.main()

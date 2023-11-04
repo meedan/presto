@@ -104,7 +104,8 @@ class TestQueueWorker(unittest.TestCase):
         # Call push_message
         returned_message = self.queue.push_message(self.queue_name_output, message_to_push)
         # Check if the message was correctly serialized and sent
-        self.mock_output_queue.send_message.assert_called_once_with(MessageBody='{"body": {"id": "1", "callback_url": "http://example.com", "url": null, "text": "This is a test", "raw": {}}}')
+        self.mock_output_queue.send_message.assert_called_once_with(MessageBody='{"body": {"id": "1", "callback_url": "http://example.com", "url": null, "text": "This is a test", "raw": {}, "hash_value": null, "bucket": null, "outfile": null}}')
+        
         self.assertEqual(returned_message, message_to_push)
 
 if __name__ == '__main__':

@@ -44,7 +44,7 @@ class TestModel(unittest.TestCase):
         mock_get_iobytes_for_image.return_value = io.BytesIO(b"image_bytes")
         image = schemas.Message(body=schemas.GenericItem(id="123", callback_url="http://example.com?callback", url="http://example.com/image.jpg"))
         result = Model().process(image)
-        self.assertEqual(result, {"hash_value": "1001"})
+        self.assertEqual(result, "1001")
 
 
 if __name__ == "__main__":
