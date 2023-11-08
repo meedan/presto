@@ -3,13 +3,13 @@ from pydantic import BaseModel, root_validator
 
 # Output hash values can be of different types.
 class GenericItem(BaseModel):
-    id: Optional[str] = None
+    id: str
     callback_url: Optional[str] = None
     url: Optional[str] = None
     text: Optional[str] = None
     raw: Optional[dict] = {}
 
-class MediaItem(BaseModel):
+class MediaItem(GenericItem):
     hash_value: Optional[Any] = None
 
 class VideoItem(MediaItem):
@@ -24,7 +24,7 @@ class Message(BaseModel):
         body = values.get("body")
         model_name = values.get("model_name")
         if model_name == "video__Model":
-            values["body"] = VideoItem(**values["body"])
+            values["body"] = VideoItem(**values["body"]).dict()
         if model_name in ["audio__Model", "image__Model", "fptg__Model", "indian_sbert__Model", "mean_tokens__Model", "fasttext__Model"]:
-            values["body"] = MediaItem(**values["body"])
+            values["body"] = MediaItem(**values["body"]).dict()
         return values

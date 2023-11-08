@@ -13,7 +13,7 @@ class TestIndianSbert(unittest.TestCase):
         self.mock_model = MagicMock()
 
     def test_vectorize(self):
-        texts = [schemas.Message(body=schemas.GenericItem(id="123", callback_url="http://example.com/callback", text="Hello, how are you?")), schemas.Message(body=schemas.GenericItem(id="123", callback_url="http://example.com/callback", text="I'm doing great, thanks!"))]
+        texts = [schemas.Message(body={"id": "123", "callback_url": "http://example.com/callback", "text": "Hello, how are you?"}, model_name="indian_sbert__Model"), schemas.Message(body={"id": "123", "callback_url": "http://example.com/callback", "text": "I'm doing great, thanks!"}, model_name="indian_sbert__Model")]
         self.model.model = self.mock_model
         self.model.model.encode = MagicMock(return_value=np.array([[4, 5, 6], [7, 8, 9]]))
         vectors = self.model.vectorize(texts)
@@ -22,7 +22,7 @@ class TestIndianSbert(unittest.TestCase):
         self.assertEqual(vectors[1], [7, 8, 9])
 
     def test_respond(self):
-        query = schemas.Message(body=schemas.GenericItem(id="123", callback_url="http://example.com/callback", text="What is the capital of India?"))
+        query = schemas.Message(body={"id": "123", "callback_url": "http://example.com/callback", "text": "What is the capital of India?"}, model_name="indian_sbert__Model")
         self.model.vectorize = MagicMock(return_value=[[1, 2, 3]])
         response = self.model.respond(query)
         self.assertEqual(len(response), 1)
