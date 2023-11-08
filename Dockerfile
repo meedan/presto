@@ -8,19 +8,19 @@ EXPOSE ${PRESTO_PORT}
 WORKDIR /app
 ENV DEBIAN_FRONTEND=noninteractive
 
-RUN git clone https://github.com/facebookresearch/sscd-copy-detection.git
-#RUN cd sscd-copy-detection && python -m pip install -r ./requirements.txt
-RUN pip install pytorch-lightning==1.5.10
-RUN pip install lightning-bolts==0.4.0
-RUN pip install classy_vision
-RUN pip install torch
-RUN pip install torchvision
-RUN pip install torchmetrics
-RUN pip install faiss-gpu
-RUN pip install augly
-RUN pip install pandas
-RUN pip install numpy
-RUN pip install tensorboard
+#RUN git clone https://github.com/facebookresearch/sscd-copy-detection.git
+##RUN cd sscd-copy-detection && python -m pip install -r ./requirements.txt
+#RUN pip install pytorch-lightning==1.5.10
+#RUN pip install lightning-bolts==0.4.0
+#RUN pip install classy_vision
+#RUN pip install torch
+#RUN pip install torchvision
+#RUN pip install torchmetrics
+#RUN pip install faiss-gpu
+#RUN pip install augly
+#RUN pip install pandas
+#RUN pip install numpy
+#RUN pip install tensorboard
 #RUN mkdir models_files
 #RUN cd sscd-copy-detection && wget https://dl.fbaipublicfiles.com/sscd-copy-detection/sscd_disc_mixup.torchscript.pt
 
