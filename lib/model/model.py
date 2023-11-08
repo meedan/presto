@@ -9,6 +9,9 @@ from lib.helpers import get_class
 from lib import schemas
 class Model(ABC):
     BATCH_SIZE = 1
+    def __init__(self):
+        self.model_name = os.environ.get("MODEL_NAME")
+
     def get_tempfile_for_url(self, url: str) -> str:
         """
         Loads a file based on specified URL into a named tempfile. 
