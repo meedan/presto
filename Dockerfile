@@ -9,7 +9,7 @@ WORKDIR /app
 ENV DEBIAN_FRONTEND=noninteractive
 
 RUN git clone https://github.com/facebookresearch/sscd-copy-detection.git
-RUN cd sscd-copy-detection && python -m pip install -r ./requirements.txt --extra-index-url https://download.pytorch.org/whl/cu113
+RUN cd sscd-copy-detection && python -m pip install -r ./requirements.txt
 RUN mkdir models_files
 RUN cd sscd-copy-detection && wget https://dl.fbaipublicfiles.com/sscd-copy-detection/sscd_disc_mixup.torchscript.pt
 
