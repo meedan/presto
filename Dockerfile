@@ -10,7 +10,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 
 RUN git clone https://github.com/facebookresearch/sscd-copy-detection.git
 #RUN cd sscd-copy-detection && python -m pip install -r ./requirements.txt
-RUN pip install pytorch-lightning==1.6
+RUN pip install pytorch-lightning==1.5.10
 RUN pip install lightning-bolts==0.4.0
 RUN pip install classy_vision
 RUN pip install torch
