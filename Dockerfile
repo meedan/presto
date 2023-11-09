@@ -8,8 +8,8 @@ EXPOSE ${PRESTO_PORT}
 WORKDIR /app
 ENV DEBIAN_FRONTEND=noninteractive
 
-#RUN git clone https://github.com/facebookresearch/sscd-copy-detection.git
-##RUN cd sscd-copy-detection && python -m pip install -r ./requirements.txt
+RUN git clone https://github.com/facebookresearch/sscd-copy-detection.git
+RUN cd sscd-copy-detection && python -m pip install -r ./requirements.txt
 #RUN pip install pytorch-lightning==1.5.10
 #RUN pip install lightning-bolts==0.4.0
 #RUN pip install classy_vision
@@ -22,7 +22,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 #RUN pip install numpy
 #RUN pip install tensorboard
 #RUN mkdir models_files
-#RUN cd sscd-copy-detection && wget https://dl.fbaipublicfiles.com/sscd-copy-detection/sscd_disc_mixup.torchscript.pt
+RUN wget https://dl.fbaipublicfiles.com/sscd-copy-detection/sscd_disc_mixup.torchscript.pt
 
 RUN apt-get update && apt-get install -y ffmpeg cmake swig libavcodec-dev libavformat-dev git
 RUN ln -s /usr/bin/ffmpeg /usr/local/bin/ffmpeg
