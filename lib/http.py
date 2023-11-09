@@ -35,7 +35,7 @@ def process_item(process_name: str, message: Dict[str, Any]):
     logger.info(message)
     queue_prefix = Queue.get_queue_prefix()
     queue = QueueWorker.create(process_name)
-    queue.push_message(f"{queue_prefix}{process_name}", schemas.Message(body=message))
+    queue.push_message(f"{queue_prefix}{process_name}", schemas.Message(body=message, model_name=process_name))
     return {"message": "Message pushed successfully", "queue": process_name, "body": message}
 
 @app.post("/trigger_callback")

@@ -14,7 +14,7 @@ class GenericTransformerModel(Model):
         if model_name:
             self.model = SentenceTransformer(model_name, cache_folder=os.getenv("MODEL_DIR", "./models"))
 
-    def respond(self, docs: Union[List[schemas.Message], schemas.Message]) -> List[schemas.TextOutput]:
+    def respond(self, docs: Union[List[schemas.Message], schemas.Message]) -> List[schemas.GenericItem]:
         """
         Force messages as list of messages in case we get a singular item. Then, run fingerprint routine.
         Respond can probably be genericized across all models.
@@ -25,7 +25,7 @@ class GenericTransformerModel(Model):
         vectorizable_texts = [e.body.text for e in docs]
         vectorized = self.vectorize(vectorizable_texts)
         for doc, vector in zip(docs, vectorized):
-            doc.response = vector
+            doc.body.hash_value = vector
         return docs
 
     def vectorize(self, texts: List[str]) -> List[List[float]]:

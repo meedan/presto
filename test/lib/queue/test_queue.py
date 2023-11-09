@@ -100,11 +100,12 @@ class TestQueueWorker(unittest.TestCase):
         mock_logger.assert_called_with(f"Deleting message: {mock_messages[-1]}")
 
     def test_push_message(self):
-        message_to_push = schemas.Message(body={"id": 1, "callback_url": "http://example.com", "text": "This is a test"})
+        message_to_push = schemas.Message(body={"id": 1, "callback_url": "http://example.com", "text": "This is a test"}, model_name="mean_tokens__Model")
         # Call push_message
         returned_message = self.queue.push_message(self.queue_name_output, message_to_push)
         # Check if the message was correctly serialized and sent
-        self.mock_output_queue.send_message.assert_called_once_with(MessageBody='{"body": {"id": "1", "callback_url": "http://example.com", "url": null, "text": "This is a test", "raw": {}}, "response": null}')
+        self.mock_output_queue.send_message.assert_called_once_with(MessageBody='{"body": {"id": "1", "callback_url": "http://example.com", "url": null, "text": "This is a test", "raw": {}, "hash_value": null}, "model_name": "mean_tokens__Model"}')
+        
         self.assertEqual(returned_message, message_to_push)
 
 if __name__ == '__main__':
