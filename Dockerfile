@@ -8,7 +8,7 @@ EXPOSE ${PRESTO_PORT}
 WORKDIR /app
 ENV DEBIAN_FRONTEND=noninteractive
 
-RUN git clone https://github.com/facebookresearch/sscd-copy-detection.git
+#RUN git clone https://github.com/facebookresearch/sscd-copy-detection.git
 #RUN cd sscd-copy-detection && python -m pip install -r ./requirements.txt
 RUN pip install pytorch-lightning==1.5.10
 RUN pip install lightning-bolts==0.4.0
