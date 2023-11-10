@@ -31,8 +31,8 @@ RUN pip install pact-python
 RUN pip install --no-cache-dir -r requirements.txt
 RUN cd threatexchange/pdq/python && pip install .
 
-# RUN mkdir models_files
-# RUN wget https://dl.fbaipublicfiles.com/sscd-copy-detection/sscd_disc_mixup.torchscript.pt
+RUN mkdir models_files
+RUN wget https://dl.fbaipublicfiles.com/sscd-copy-detection/sscd_disc_mixup.torchscript.pt
 
 COPY . .
 CMD ["make", "run"]
