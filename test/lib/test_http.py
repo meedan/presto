@@ -17,10 +17,10 @@ class TestProcessItem(unittest.TestCase):
 
         test_data = {"id": 1, "callback_url": "http://example.com", "text": "This is a test"}
 
-        response = self.client.post("/process_item/test_process", json=test_data)
-        mock_create.assert_called_once_with("test_process")
+        response = self.client.post("/process_item/fptg__Model", json=test_data)
+        mock_create.assert_called_once_with("fptg__Model")
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json(), {"message": "Message pushed successfully", "queue": "test_process", "body": test_data})
+        self.assertEqual(response.json(), {"message": "Message pushed successfully", "queue": "fptg__Model", "body": test_data})
 
 
     @patch('lib.http.post_url')

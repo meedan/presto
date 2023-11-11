@@ -25,7 +25,7 @@ class TestQueueProcessor(unittest.TestCase):
     def test_send_callbacks(self):
         # Mocking necessary methods and creating fake data
         self.queue_processor.receive_messages = MagicMock(
-            return_value=[(FakeSQSMessage(receipt_handle="blah", body=json.dumps({"body": {"callback_url": "http://example.com", "text": "This is a test", "id": 1}, "response": [1,2,3]})), self.mock_input_queue)]
+            return_value=[(FakeSQSMessage(receipt_handle="blah", body=json.dumps({"body": {"callback_url": "http://example.com", "text": "This is a test", "id": 1, "hash_value": [1,2,3]}, "model_name": "mean_tokens__Model"})), self.mock_input_queue)]
         )
         self.queue_processor.send_callback = MagicMock(return_value=None)
         self.queue_processor.delete_messages = MagicMock(return_value=None)
@@ -38,7 +38,7 @@ class TestQueueProcessor(unittest.TestCase):
 
     @patch('lib.queue.processor.requests.post')
     def test_send_callback(self, mock_post):
-        message_body = schemas.Message(body={"callback_url": "http://example.com", "text": "This is a test", "id": 123}, response=[1,2,3])
+        message_body = schemas.Message(body={"callback_url": "http://example.com", "text": "This is a test", "id": 123, "hash_value": [1,2,3]}, model_name="mean_tokens__Model")
         self.queue_processor.send_callback(message_body)
         
         mock_post.assert_called_once_with("http://example.com", json=message_body)
@@ -46,7 +46,7 @@ class TestQueueProcessor(unittest.TestCase):
     @patch('lib.queue.processor.requests.post')
     def test_send_callback_failure(self, mock_post):
         mock_post.side_effect = Exception("Request Failed!")
-        message_body = schemas.Message(body={"callback_url": "http://example.com", "text": "This is a test", "id": 123}, response=[1,2,3])
+        message_body = schemas.Message(body={"callback_url": "http://example.com", "text": "This is a test", "id": 123, "hash_value": [1,2,3]}, model_name="mean_tokens__Model")
         with self.assertLogs(level='ERROR') as cm:
             self.queue_processor.send_callback(message_body)
         self.assertIn("Failed with Request Failed! on http://example.com with message of", cm.output[0])
