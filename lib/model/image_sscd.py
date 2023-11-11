@@ -17,12 +17,12 @@ class Model(GenericImageModel):
         try:
             self.model = torch.jit.load("sscd_disc_mixup.torchscript.pt")
         except:
-            logging.info("Downloading SSCD model...")
+            logger.info("Downloading SSCD model...")
             m=urllib.request.urlopen("https://dl.fbaipublicfiles.com/sscd-copy-detection/sscd_disc_mixup.torchscript.pt").read()
             with open("sscd_disc_mixup.torchscript.pt","wb") as fh:
                 fh.write(m)
             self.model = torch.jit.load("sscd_disc_mixup.torchscript.pt")
-        logging.info("SSCD model loaded")
+        logger.info("SSCD model loaded")
 
     def compute_sscd(self, iobytes: io.BytesIO) -> str:
         """Compute perceptual hash using ImageHash library
