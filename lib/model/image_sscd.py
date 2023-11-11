@@ -8,11 +8,21 @@ import torch
 from lib.logger import logger
 import numpy as np
 from PIL import Image
+import urllib.request
 
 class Model(GenericImageModel):
     def __init__(self):
         super().__init__()
-        self.model = torch.jit.load("sscd_disc_mixup.torchscript.pt")
+        #FIXME: Load from a Meedan S3 bucket
+        try:
+            self.model = torch.jit.load("sscd_disc_mixup.torchscript.pt")
+        except:
+            logging.info("Downloading SSCD model...")
+            m=urllib.request.urlopen("https://dl.fbaipublicfiles.com/sscd-copy-detection/sscd_disc_mixup.torchscript.pt").read()
+            with open("sscd_disc_mixup.torchscript.pt","wb") as fh:
+                fh.write(m)
+            self.model = torch.jit.load("sscd_disc_mixup.torchscript.pt")
+        logging.info("SSCD model loaded")
 
     def compute_sscd(self, iobytes: io.BytesIO) -> str:
         """Compute perceptual hash using ImageHash library
