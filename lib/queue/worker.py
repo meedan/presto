@@ -53,8 +53,6 @@ class QueueWorker(Queue):
             logger.debug(f"About to respond to: ({messages_with_queues})")
             try:
                 responses = model.respond([schemas.Message(**{**json.loads(message.body), **{"model_name": model.model_name}}) for message, queue in messages_with_queues])
-                logger.info("!!!!")
-                logger.info(responses)
             except Exception as e:
                 logger.error(e)
             self.delete_messages(messages_with_queues)
