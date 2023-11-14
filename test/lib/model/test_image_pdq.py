@@ -4,7 +4,7 @@ from unittest.mock import patch, Mock
 from urllib.error import URLError
 from typing import Dict
 
-from lib.model.image import Model
+from lib.model.image_pdq import Model
 from lib import schemas
 
 class TestModel(unittest.TestCase):
