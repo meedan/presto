@@ -7,6 +7,7 @@ from typing import Dict
 
 from lib.model.image_sscd import Model
 from lib import schemas
+import numpy as np
 
 result_should_be = [-0.07144027203321457, 0.0528595857322216, -0.11396506428718567, 0.0005233244737610221,
                         -0.04154925048351288, -0.028515873476862907, -0.058826882392168045, 0.011261329986155033,
@@ -146,7 +147,7 @@ class TestModel(unittest.TestCase):
         # mock_hasher_instance = mock_pdq_hasher.return_value
         # mock_hasher_instance.fromBufferedImage.return_value.getHash.return_value.dumpBitsFlat.return_value = '1001'
         result = Model().compute_sscd(io.BytesIO(image_content))
-        self.assertEqual(result, result_should_be)
+        self.assertTrue(np.allclose(result, result_should_be))
 
     @patch("urllib.request.urlopen")
     def test_get_iobytes_for_image(self, mock_urlopen):
