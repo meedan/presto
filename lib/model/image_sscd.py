@@ -29,19 +29,24 @@ class Model(GenericImageModel):
         :param im: Numpy.ndarray #FIXME
         :returns: Imagehash.ImageHash #FIXME
         """
+        # from SSCD-copy-detection readme https://github.com/facebookresearch/sscd-copy-detection/tree/main#preprocessing
+        # Normalization using the mean and std of Imagenet
         normalize = transforms.Normalize(
             mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225],
         )
+        # It is recommended by publishers of SSCD-copy-detection to preprocess images for inference either resizing the small edge to 288 or resizing the image to a square tensor.
+        # resizing the image to a square tensor is more effecient on gpus but can lead to skewed images and so loss of information. So, we are resizing the small edge to 288
         small_288 = transforms.Compose([
             transforms.Resize(288),
             transforms.ToTensor(),
             normalize,
         ])
-        skew_320 = transforms.Compose([
-            transforms.Resize([320, 320]),
-            transforms.ToTensor(),
-            normalize,
-        ])
+        # Keeping the code example of resizing the image to a square tensor
+        # skew_320 = transforms.Compose([
+        #     transforms.Resize([320, 320]),
+        #     transforms.ToTensor(),
+        #     normalize,
+        # ])
 
         image = Image.open(iobytes)
         batch = small_288(image).unsqueeze(0)
