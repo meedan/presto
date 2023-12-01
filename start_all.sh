@@ -1,9 +1,19 @@
-#!/bin/sh
+#!/bin/bash
 
-# Start the first process in the background
-uvicorn main:app --host 0.0.0.0 --port ${PRESTO_PORT} --reload &
+case "$ROLE" in
+    server)
+        # Your command to start the worker goes here
+        echo "Starting webserver..."
+        # Example: celery -A proj worker
+        uvicorn main:app --host 0.0.0.0 --port ${PRESTO_PORT} --reload
+        ;;
 
-# Start the second process in the foreground
-# This will ensure the script won't exit until this process does
-python run_worker.py &
-python run_processor.py
+    worker)
+        # Your command to start the worker goes here
+        echo "Starting worker..."
+        # Example: celery -A proj worker
+        python run_worker.py &
+        python run_processor.py
+        ;;
+esac
+
