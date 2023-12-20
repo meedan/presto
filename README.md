@@ -122,8 +122,8 @@ Output Message:
   "id": "A unique string ID that identifies the item being processed",
   "callback_url": "A unique URL that will be requested upon completion",
   "url": "The URL at which the media is located",
-  "bucket": "bucket within which the .tmk file is stored",
-  "outfile": "The filename of the .tmk file generated for the video",
+  "folder": "bucket within which the .tmk file is stored",
+  "filepath": "The filename of the .tmk file generated for the video",
   "hash_value": "The shorter, getPureAverageFeature hash from tmk (used in first-pass approximation searches)",
 }
 ```

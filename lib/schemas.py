@@ -13,8 +13,8 @@ class MediaItem(GenericItem):
     hash_value: Optional[Any] = None
 
 class VideoItem(MediaItem):
-    bucket: Optional[str] = None
-    outfile: Optional[str] = None
+    folder: Optional[str] = None
+    filepath: Optional[str] = None
 
 class Message(BaseModel):
     body: Union[MediaItem, VideoItem]
