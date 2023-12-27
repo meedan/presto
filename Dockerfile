@@ -30,5 +30,6 @@ RUN pip install transformers
 RUN pip install pact-python
 RUN pip install --no-cache-dir -r requirements.txt
 RUN cd threatexchange/pdq/python && pip install .
+
 COPY . .
 CMD ["make", "run"]

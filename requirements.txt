@@ -13,3 +13,7 @@ langcodes==3.3.0
 requests==2.31.0
 pytest==7.4.0
 sentry-sdk==1.30.0
+pytorch-lightning==1.5.10
+lightning-bolts==0.4.0
+torch==1.9.0
+torchvision==0.10.0
