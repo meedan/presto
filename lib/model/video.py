@@ -57,5 +57,6 @@ class Model(Model):
             )
             s3.upload_file_to_s3(self.tmk_bucket(), self.tmk_file_path(video_filename))
         finally:
+            os.remove(self.tmk_file_path(video_filename))
             os.remove(temp_file_name)
         return dict(**video.dict(), **{"folder": self.tmk_bucket(), "filepath": self.tmk_file_path(video_filename), "hash_value": hash_value})
