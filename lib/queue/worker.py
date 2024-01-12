@@ -50,7 +50,7 @@ class QueueWorker(Queue):
         messages_with_queues = self.receive_messages(model.BATCH_SIZE)
         responses = []
         if messages_with_queues:
-            logger.debug(f"About to respond to: ({messages_with_queues})")
+            model_type = type(model)
             try:
                 responses = model.respond([schemas.Message(**{**json.loads(message.body), **{"model_name": model.model_name}}) for message, queue in messages_with_queues])
             except Exception as e:
