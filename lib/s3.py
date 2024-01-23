@@ -31,7 +31,7 @@ def upload_file_to_s3(bucket: str, filename: str):
         else:
             # Other errors like permissions issues
             logger.error(f'Error in accessing bucket {bucket}: {e}, {bucket} {filename}')
-            return
+            raise e
     file_name = filename.split('/')[-1]
     # Upload the file to S3
     try:
