@@ -10,6 +10,7 @@ import urllib.request
 from lib.model.model import Model
 from lib import s3
 from lib import schemas
+from lib.helpers import get_environment_setting
 
 class Model(Model):
     def __init__(self):
@@ -40,7 +41,8 @@ class Model(Model):
         """
         Constant for identifying bucket. Needed for uploading output.
         """
-        return "presto-tmk-videos"
+        prefix = get_environment_setting("QUEUE_PREFIX").replace("_", "-")
+        return f"{prefix}-presto-tmk-videos"
 
     def process(self, video: schemas.Message) -> schemas.GenericItem:
         """
