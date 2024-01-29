@@ -19,7 +19,7 @@ class Model(Model):
         #FIXME: Load from a Meedan S3 bucket
         try:
             self.model = torch.jit.load("sscd_disc_mixup.torchscript.pt")
-        except:
+        except FileNotFoundError:
             logger.info("Downloading SSCD model...")
             m=urllib.request.urlopen("https://dl.fbaipublicfiles.com/sscd-copy-detection/sscd_disc_mixup.torchscript.pt").read()
             with open("sscd_disc_mixup.torchscript.pt","wb") as fh:
