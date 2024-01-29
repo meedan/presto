@@ -11,8 +11,8 @@ import numpy as np
 from PIL import Image
 import urllib.request
 
-imagenet_normalization_mean = [0.485, 0.456, 0.406]
-imagenet_normalization_std = [0.229, 0.224, 0.225]
+IMAGENET_NORMALIZATION_MEAN = [0.485, 0.456, 0.406]
+IMAGENET_NORMALIZATION_STD = [0.229, 0.224, 0.225]
 class Model(Model):
     def __init__(self):
         super().__init__()
@@ -35,7 +35,7 @@ class Model(Model):
         # from SSCD-copy-detection readme https://github.com/facebookresearch/sscd-copy-detection/tree/main#preprocessing
         # Normalization using the mean and std of Imagenet
         normalize = transforms.Normalize(
-            mean = imagenet_normalization_mean , std = imagenet_normalization_std,
+            mean = IMAGENET_NORMALIZATION_MEAN , std = IMAGENET_NORMALIZATION_STD,
         )
         # It is recommended by publishers of SSCD-copy-detection to preprocess images for inference either resizing the small edge to 288 or resizing the image to a square tensor.
         # resizing the image to a square tensor is more effecient on gpus but can lead to skewed images and so loss of information. So, we are resizing the small edge to 288
