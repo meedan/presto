@@ -3,7 +3,7 @@ name: Build Test and Deploy
 on:
   push:
     tags:
-      - '**'  # NOTE: this will be invoked on all tag events, including hierarchies like 1.2.0/beta.
+      - 'v*'
 
 permissions:
   id-token: write
