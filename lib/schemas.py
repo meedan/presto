@@ -12,6 +12,9 @@ class GenericItem(BaseModel):
 class MediaItem(GenericItem):
     hash_value: Optional[Any] = None
 
+class ImageItem(MediaItem):
+    sscd_value: Optional[Any] = None
+
 class VideoItem(MediaItem):
     folder: Optional[str] = None
     filepath: Optional[str] = None
@@ -25,6 +28,8 @@ class Message(BaseModel):
         model_name = values.get("model_name")
         if model_name == "video__Model":
             values["body"] = VideoItem(**values["body"]).dict()
-        if model_name in ["audio__Model", "image__Model", "fptg__Model", "indian_sbert__Model", "mean_tokens__Model", "fasttext__Model"]:
+        if model_name == "image__Model":
+            values["body"] = ImageItem(**values["body"]).dict()
+        if model_name in ["audio__Model", "fptg__Model", "indian_sbert__Model", "mean_tokens__Model", "fasttext__Model"]:
             values["body"] = MediaItem(**values["body"]).dict()
         return values
