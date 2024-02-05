@@ -80,8 +80,9 @@ class Model(Model):
         )
 
 
-    def process(self, image: schemas.Message) -> schemas.GenericItem:
+    def process(self, image: schemas.Message) -> schemas.ImageItem:
         """
         Generic function for returning the actual response.
         """
-        return {"hash_value": self.compute_pdq(self.get_iobytes_for_image(image)), "sscd_value": self.sscd_value_whatever_this_function_is}
+        img_iobytes = self.get_iobytes_for_image(image)
+        return {"hash_value": self.compute_pdq(img_iobytes), "sscd_value": self.compute_sscd(img_iobytes)}
