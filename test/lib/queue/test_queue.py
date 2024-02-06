@@ -8,6 +8,7 @@ from lib.model.generic_transformer import GenericTransformerModel
 from lib.queue.worker import QueueWorker
 from lib import schemas
 from test.lib.queue.fake_sqs_message import FakeSQSMessage
+from concurrent.futures import TimeoutError
 
 class TestQueueWorker(unittest.TestCase):
     @patch('lib.queue.queue.boto3.resource')
@@ -122,9 +123,9 @@ class TestQueueWorker(unittest.TestCase):
         ]
         extracted_messages = QueueWorker.extract_messages(messages_with_queues, self.model)
         self.assertEqual(len(extracted_messages), 2)
-        self.assertIsInstance(extracted_messages[0].body, dict)
-        self.assertEqual(extracted_messages[0].body['text'], "Test message 1")
-        self.assertEqual(extracted_messages[1].body['text'], "Test message 2")
+        self.assertIsInstance(extracted_messages[0].body, MediaItem)
+        self.assertEqual(extracted_messages[0].body.text, "Test message 1")
+        self.assertEqual(extracted_messages[1].body.text, "Test message 2")
         self.assertEqual(extracted_messages[0].model_name, "mean_tokens__Model")
 
     @patch('lib.queue.worker.QueueWorker.log_and_handle_error')
