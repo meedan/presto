@@ -110,8 +110,8 @@ class TestQueueWorker(unittest.TestCase):
 
     def test_extract_messages(self):
         messages_with_queues = [
-            (FakeSQSMessage(body=json.dumps({"text": "Test message 1", "model_name": "TestModel"})), self.mock_input_queue),
-            (FakeSQSMessage(body=json.dumps({"text": "Test message 2", "model_name": "TestModel"})), self.mock_input_queue)
+            (FakeSQSMessage(receipt_handle="blah", body=json.dumps({"text": "Test message 1", "model_name": "TestModel"})), self.mock_input_queue),
+            (FakeSQSMessage(receipt_handle="blah", body=json.dumps({"text": "Test message 2", "model_name": "TestModel"})), self.mock_input_queue)
         ]
         extracted_messages = QueueWorker.extract_messages(messages_with_queues)
         self.assertEqual(len(extracted_messages), 2)
@@ -144,8 +144,8 @@ class TestQueueWorker(unittest.TestCase):
     @patch('lib.queue.worker.QueueWorker.delete_messages')
     def test_delete_processed_messages(self, mock_delete_messages):
         messages_with_queues = [
-            (FakeSQSMessage(body="message 1"), self.mock_input_queue),
-            (FakeSQSMessage(body="message 2"), self.mock_input_queue)
+            (FakeSQSMessage(receipt_handle="blah", body="message 1"), self.mock_input_queue),
+            (FakeSQSMessage(receipt_handle="blah", body="message 2"), self.mock_input_queue)
         ]
         self.queue.delete_processed_messages(messages_with_queues)
         mock_delete_messages.assert_called_once_with(messages_with_queues)
