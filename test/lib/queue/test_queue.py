@@ -110,8 +110,8 @@ class TestQueueWorker(unittest.TestCase):
 
     def test_extract_messages(self):
         messages_with_queues = [
-            (FakeSQSMessage(body=json.dumps({"text": "Test message 1", "model_name": "TestModel"})), None),
-            (FakeSQSMessage(body=json.dumps({"text": "Test message 2", "model_name": "TestModel"})), None)
+            (FakeSQSMessage(body=json.dumps({"text": "Test message 1", "model_name": "TestModel"})), self.mock_input_queue),
+            (FakeSQSMessage(body=json.dumps({"text": "Test message 2", "model_name": "TestModel"})), self.mock_input_queue)
         ]
         extracted_messages = QueueWorker.extract_messages(messages_with_queues)
         self.assertEqual(len(extracted_messages), 2)

@@ -53,13 +53,13 @@ class QueueWorker(Queue):
         messages_with_queues = self.receive_messages(model.BATCH_SIZE)
         if not messages_with_queues:
             return []
-        messages = self.extract_messages(messages_with_queues)
+        messages = self.extract_messages(messages_with_queues, model)
         responses = self.execute_with_timeout(model.respond, messages, timeout_seconds=TIMEOUT)
         self.delete_processed_messages(messages_with_queues)
         return responses
 
     @staticmethod
-    def extract_messages(messages_with_queues: List[Tuple]) -> List[schemas.Message]:
+    def extract_messages(messages_with_queues: List[Tuple], model: Model) -> List[schemas.Message]:
         """
         Extracts and transforms messages from a list of (message, queue) tuples into a list of Message schema objects.
 
