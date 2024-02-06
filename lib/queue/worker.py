@@ -91,10 +91,11 @@ class QueueWorker(Queue):
                 future = executor.submit(func, args)
                 return future.result(timeout=timeout_seconds)
         except TimeoutError:
-            QueueWorker.log_and_handle_error("Model respond timeout exceeded.")
+            error_message = "Model respond timeout exceeded."
+            QueueWorker.log_and_handle_error(error_message)
             return []
         except Exception as e:
-            QueueWorker.log_and_handle_error(e)
+            QueueWorker.log_and_handle_error(str(e))
             return []
 
     @staticmethod

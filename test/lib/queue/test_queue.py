@@ -111,13 +111,21 @@ class TestQueueWorker(unittest.TestCase):
 
     def test_extract_messages(self):
         messages_with_queues = [
-            (FakeSQSMessage(receipt_handle="blah", body=json.dumps({"text": "Test message 1", "model_name": "TestModel"})), self.mock_input_queue),
-            (FakeSQSMessage(receipt_handle="blah", body=json.dumps({"text": "Test message 2", "model_name": "TestModel"})), self.mock_input_queue)
+            (FakeSQSMessage(receipt_handle="blah", body=json.dumps({
+                "body": {"id": "1", "text": "Test message 1", "callback_url": "http://example.com"},
+                "model_name": "mean_tokens__Model"
+            })), self.mock_input_queue),
+            (FakeSQSMessage(receipt_handle="blah", body=json.dumps({
+                "body": {"id": "2", "text": "Test message 2", "callback_url": "http://example.com"},
+                "model_name": "mean_tokens__Model"
+            })), self.mock_input_queue)
         ]
         extracted_messages = QueueWorker.extract_messages(messages_with_queues, self.model)
         self.assertEqual(len(extracted_messages), 2)
-        self.assertEqual(extracted_messages[0].text, "Test message 1")
-        self.assertEqual(extracted_messages[1].text, "Test message 2")
+        self.assertIsInstance(extracted_messages[0].body, dict)
+        self.assertEqual(extracted_messages[0].body['text'], "Test message 1")
+        self.assertEqual(extracted_messages[1].body['text'], "Test message 2")
+        self.assertEqual(extracted_messages[0].model_name, "mean_tokens__Model")
 
     @patch('lib.queue.worker.QueueWorker.log_and_handle_error')
     def test_execute_with_timeout_success(self, mock_log_error):
