@@ -123,7 +123,7 @@ class TestQueueWorker(unittest.TestCase):
         ]
         extracted_messages = QueueWorker.extract_messages(messages_with_queues, self.model)
         self.assertEqual(len(extracted_messages), 2)
-        self.assertIsInstance(extracted_messages[0].body, MediaItem)
+        self.assertIsInstance(extracted_messages[0].body, schemas.MediaItem)
         self.assertEqual(extracted_messages[0].body.text, "Test message 1")
         self.assertEqual(extracted_messages[1].body.text, "Test message 2")
         self.assertEqual(extracted_messages[0].model_name, "mean_tokens__Model")
