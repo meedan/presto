@@ -108,5 +108,47 @@ class TestQueueWorker(unittest.TestCase):
         
         self.assertEqual(returned_message, message_to_push)
 
+    def test_extract_messages(self):
+        messages_with_queues = [
+            (FakeSQSMessage(body=json.dumps({"text": "Test message 1", "model_name": "TestModel"})), None),
+            (FakeSQSMessage(body=json.dumps({"text": "Test message 2", "model_name": "TestModel"})), None)
+        ]
+        extracted_messages = QueueWorker.extract_messages(messages_with_queues)
+        self.assertEqual(len(extracted_messages), 2)
+        self.assertEqual(extracted_messages[0].text, "Test message 1")
+        self.assertEqual(extracted_messages[1].text, "Test message 2")
+
+    @patch('lib.queue.worker.QueueWorker.log_and_handle_error')
+    def test_execute_with_timeout_success(self, mock_log_error):
+        def test_func(args):
+            return ["response"]
+        
+        responses = QueueWorker.execute_with_timeout(test_func, [], timeout_seconds=1)
+        self.assertEqual(responses, ["response"])
+        mock_log_error.assert_not_called()
+
+    @patch('lib.queue.worker.QueueWorker.log_and_handle_error')
+    def test_execute_with_timeout_failure(self, mock_log_error):
+        def test_func(args):
+            raise TimeoutError
+        
+        responses = QueueWorker.execute_with_timeout(test_func, [], timeout_seconds=1)
+        self.assertEqual(responses, [])
+        mock_log_error.assert_called_once_with("Model respond timeout exceeded.")
+
+    @patch('lib.queue.worker.logger.error')
+    def test_log_and_handle_error(self, mock_logger_error):
+        QueueWorker.log_and_handle_error("Test error")
+        mock_logger_error.assert_called_once_with("Test error")
+
+    @patch('lib.queue.worker.QueueWorker.delete_messages')
+    def test_delete_processed_messages(self, mock_delete_messages):
+        messages_with_queues = [
+            (FakeSQSMessage(body="message 1"), self.mock_input_queue),
+            (FakeSQSMessage(body="message 2"), self.mock_input_queue)
+        ]
+        self.queue.delete_processed_messages(messages_with_queues)
+        mock_delete_messages.assert_called_once_with(messages_with_queues)
+
 if __name__ == '__main__':
     unittest.main()
