@@ -133,8 +133,9 @@ class TestQueueWorker(unittest.TestCase):
         def test_func(args):
             return ["response"]
         
-        responses = QueueWorker.execute_with_timeout(test_func, [], timeout_seconds=1)
+        responses, success = QueueWorker.execute_with_timeout(test_func, [], timeout_seconds=1)
         self.assertEqual(responses, ["response"])
+        self.assertTrue(success)
         mock_log_error.assert_not_called()
 
     @patch('lib.queue.worker.QueueWorker.log_and_handle_error')
@@ -142,8 +143,9 @@ class TestQueueWorker(unittest.TestCase):
         def test_func(args):
             raise TimeoutError
         
-        responses = QueueWorker.execute_with_timeout(test_func, [], timeout_seconds=1)
+        responses, success = QueueWorker.execute_with_timeout(test_func, [], timeout_seconds=1)
         self.assertEqual(responses, [])
+        self.assertFalse(success)
         mock_log_error.assert_called_once_with("Model respond timeout exceeded.")
 
     @patch('lib.queue.worker.logger.error')

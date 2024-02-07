@@ -7,7 +7,7 @@ from lib.logger import logger
 from lib.queue.queue import Queue
 from lib.model.model import Model
 from lib.helpers import get_setting
-TIMEOUT = int(os.getenv("WORK_TIMEOUT", "60"))
+TIMEOUT_SECONDS = int(os.getenv("WORK_TIMEOUT_SECONDS", "60"))
 class QueueWorker(Queue):
     @classmethod
     def create(cls, input_queue_name: str = None):
@@ -54,8 +54,9 @@ class QueueWorker(Queue):
         if not messages_with_queues:
             return []
         messages = self.extract_messages(messages_with_queues, model)
-        responses = self.execute_with_timeout(model.respond, messages, timeout_seconds=TIMEOUT)
-        self.delete_processed_messages(messages_with_queues)
+        responses, success = self.execute_with_timeout(model.respond, messages, timeout_seconds=TIMEOUT_SECONDS)
+        if success:
+            self.delete_processed_messages(messages_with_queues)
         return responses
 
     @staticmethod
@@ -89,14 +90,14 @@ class QueueWorker(Queue):
         try:
             with ThreadPoolExecutor(max_workers=1) as executor:
                 future = executor.submit(func, args)
-                return future.result(timeout=timeout_seconds)
+                return future.result(timeout=timeout_seconds), True
         except TimeoutError:
             error_message = "Model respond timeout exceeded."
             QueueWorker.log_and_handle_error(error_message)
-            return []
+            return [], False
         except Exception as e:
             QueueWorker.log_and_handle_error(str(e))
-            return []
+            return [], False
 
     @staticmethod
     def log_and_handle_error(error):
