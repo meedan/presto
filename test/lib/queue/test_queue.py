@@ -8,12 +8,14 @@ from lib.model.generic_transformer import GenericTransformerModel
 from lib.queue.worker import QueueWorker
 from lib import schemas
 from test.lib.queue.fake_sqs_message import FakeSQSMessage
+from concurrent.futures import TimeoutError
 
 class TestQueueWorker(unittest.TestCase):
     @patch('lib.queue.queue.boto3.resource')
     @patch('lib.helpers.get_environment_setting', return_value='us-west-1')
     def setUp(self, mock_get_env_setting, mock_boto_resource):#, mock_restrict_queues_by_suffix):
         self.model = GenericTransformerModel(None)
+        self.model.model_name = "generic"
         self.mock_model = MagicMock()
         self.queue_name_input = 'mean_tokens__Model'
         self.queue_name_output = 'mean_tokens__Model_output'
@@ -107,6 +109,58 @@ class TestQueueWorker(unittest.TestCase):
         self.mock_output_queue.send_message.assert_called_once_with(MessageBody='{"body": {"id": "1", "callback_url": "http://example.com", "url": null, "text": "This is a test", "raw": {}, "hash_value": null}, "model_name": "mean_tokens__Model"}')
         
         self.assertEqual(returned_message, message_to_push)
+
+    def test_extract_messages(self):
+        messages_with_queues = [
+            (FakeSQSMessage(receipt_handle="blah", body=json.dumps({
+                "body": {"id": "1", "text": "Test message 1", "callback_url": "http://example.com"},
+                "model_name": "mean_tokens__Model"
+            })), self.mock_input_queue),
+            (FakeSQSMessage(receipt_handle="blah", body=json.dumps({
+                "body": {"id": "2", "text": "Test message 2", "callback_url": "http://example.com"},
+                "model_name": "mean_tokens__Model"
+            })), self.mock_input_queue)
+        ]
+        extracted_messages = QueueWorker.extract_messages(messages_with_queues, self.model)
+        self.assertEqual(len(extracted_messages), 2)
+        self.assertIsInstance(extracted_messages[0].body, schemas.MediaItem)
+        self.assertEqual(extracted_messages[0].body.text, "Test message 1")
+        self.assertEqual(extracted_messages[1].body.text, "Test message 2")
+        self.assertEqual(extracted_messages[0].model_name, "generic")
+
+    @patch('lib.queue.worker.QueueWorker.log_and_handle_error')
+    def test_execute_with_timeout_success(self, mock_log_error):
+        def test_func(args):
+            return ["response"]
+        
+        responses, success = QueueWorker.execute_with_timeout(test_func, [], timeout_seconds=1)
+        self.assertEqual(responses, ["response"])
+        self.assertTrue(success)
+        mock_log_error.assert_not_called()
+
+    @patch('lib.queue.worker.QueueWorker.log_and_handle_error')
+    def test_execute_with_timeout_failure(self, mock_log_error):
+        def test_func(args):
+            raise TimeoutError
+        
+        responses, success = QueueWorker.execute_with_timeout(test_func, [], timeout_seconds=1)
+        self.assertEqual(responses, [])
+        self.assertFalse(success)
+        mock_log_error.assert_called_once_with("Model respond timeout exceeded.")
+
+    @patch('lib.queue.worker.logger.error')
+    def test_log_and_handle_error(self, mock_logger_error):
+        QueueWorker.log_and_handle_error("Test error")
+        mock_logger_error.assert_called_once_with("Test error")
+
+    @patch('lib.queue.worker.QueueWorker.delete_messages')
+    def test_delete_processed_messages(self, mock_delete_messages):
+        messages_with_queues = [
+            (FakeSQSMessage(receipt_handle="blah", body="message 1"), self.mock_input_queue),
+            (FakeSQSMessage(receipt_handle="blah", body="message 2"), self.mock_input_queue)
+        ]
+        self.queue.delete_processed_messages(messages_with_queues)
+        mock_delete_messages.assert_called_once_with(messages_with_queues)
 
 if __name__ == '__main__':
     unittest.main()

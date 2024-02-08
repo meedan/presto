@@ -11,6 +11,7 @@ class GenericTransformerModel(Model):
         Load specified model name from subclass constant as HuggingFace transformer.
         """
         self.model = None
+        self.model_name = model_name
         if model_name:
             self.model = SentenceTransformer(model_name, cache_folder=os.getenv("MODEL_DIR", "./models"))
 
