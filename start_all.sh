@@ -11,7 +11,7 @@ do
   (
     while true; do
       echo "Starting run_worker.py instance $i..."
-      python run_worker.py
+      python run_worker.py worker-$i
       echo "run_worker.py instance $i exited. Restarting..."
       sleep 30  # Prevent potential rapid restart loop
     done
