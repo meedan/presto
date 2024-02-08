@@ -15,7 +15,7 @@ do
       echo "run_worker.py instance $i exited. Restarting..."
       sleep 30  # Prevent potential rapid restart loop
     done
-  ) &
+  ) &.  # run workers as background processes
 done
 
 python run_processor.py
