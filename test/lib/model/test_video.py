@@ -6,13 +6,14 @@ import shutil
 import uuid
 import pathlib
 import urllib.request
-from lib.model.video import VideoModel
-from lib import s3
 import tmkpy
+from lib.model.video import Model
+from lib import s3
+from lib import schemas
 
 class TestVideoModel(unittest.TestCase):
     def setUp(self):
-        self.video_model = VideoModel()
+        self.video_model = Model()
 
     @patch('tempfile.NamedTemporaryFile')
     def test_get_tempfile(self, mock_named_tempfile):
@@ -20,18 +21,19 @@ class TestVideoModel(unittest.TestCase):
         mock_named_tempfile.assert_called_once()
 
     @patch('urllib.request.urlopen')
-    @patch('shutil.copyfileobj')
     @patch('tmkpy.hashVideo')
     @patch('s3.upload_file_to_s3')
     @patch('pathlib.Path')
-    def test_fingerprint_video(self, mock_pathlib, mock_upload_file_to_s3,
-                               mock_hash_video, mock_copyfileobj, mock_urlopen):
+    def test_process_video(self, mock_pathlib, mock_upload_file_to_s3,
+                               mock_hash_video, mock_urlopen):
+        with open("data/test-video.mp4", "rb") as video_file:
+            video_contents = video_file.read()
         mock_hash_video_output = MagicMock()
         mock_hash_video_output.getPureAverageFeature.return_value = "hash_value"
         mock_hash_video.return_value = mock_hash_video_output
-        self.video_model.fingerprint_video({"url": "http://example.com/video.mp4"})
+        mock_urlopen.return_value = MagicMock(read=MagicMock(return_value=video_contents))
+        self.video_model.process(schemas.Message(body={"id": "123", "callback_url": "http://blah.com?callback_id=123", "url": "http://example.com/video.mp4"}, model_name="video__Model"))
         mock_urlopen.assert_called_once()
-        mock_copyfileobj.assert_called_once()
         mock_hash_video.assert_called_once_with(ANY, "/usr/local/bin/ffmpeg")
 
     @patch('pathlib.Path')
@@ -47,17 +49,17 @@ class TestVideoModel(unittest.TestCase):
         self.assertEqual(result, "PrestoVideoEncoder")
 
     def test_respond_with_single_video(self):
-        video = {"url": "http://example.com/video.mp4"}
-        mock_fingerprint_video = MagicMock()
-        self.video_model.fingerprint_video = mock_fingerprint_video
+        video = schemas.Message(body={"id": "123", "callback_url": "http://blah.com?callback_id=123", "url": "http://example.com/video.mp4"}, model_name="video__Model")
+        mock_process = MagicMock()
+        self.video_model.process = mock_process
         result = self.video_model.respond(video)
-        mock_fingerprint_video.assert_called_once_with(video)
+        mock_process.assert_called_once_with(video)
         self.assertEqual(result, [video])
 
     def test_respond_with_multiple_videos(self):
-        videos = [{"url": "http://example.com/video1.mp4"}, {"url": "http://example.com/video2.mp4"}]
-        mock_fingerprint_video = MagicMock()
-        self.video_model.fingerprint_video = mock_fingerprint_video
+        videos = [schemas.Message(body={"id": "123", "callback_url": "http://blah.com?callback_id=123", "url": "http://example.com/video.mp4"}, model_name="video__Model"), schemas.Message(body={"id": "123", "callback_url": "http://blah.com?callback_id=123", "url": "http://example.com/video2.mp4"}, model_name="video__Model")]
+        mock_process = MagicMock()
+        self.video_model.process = mock_process
         result = self.video_model.respond(videos)
-        mock_fingerprint_video.assert_called_with(videos[1])
+        mock_process.assert_called_with(videos[1])
         self.assertEqual(result, videos)
