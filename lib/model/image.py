@@ -18,7 +18,7 @@ IMAGENET_NORMALIZATION_STD = [0.229, 0.224, 0.225]
 class Model(Model):
     def __init__(self):
         super().__init__()
-        #FIXME: Load from a Meedan S3 bucket
+        #FUTURE: Load from a Meedan S3 bucket
         try:
             self.model = torch.jit.load("sscd_disc_mixup.torchscript.pt")
         except ValueError:
@@ -38,10 +38,6 @@ class Model(Model):
         return hash_and_qual.getHash().dumpBitsFlat()
 
     def compute_sscd(self, iobytes: io.BytesIO) -> str:
-        """Compute perceptual hash using ImageHash library
-        :param im: Numpy.ndarray #FIXME
-        :returns: Imagehash.ImageHash #FIXME
-        """
         # from SSCD-copy-detection readme https://github.com/facebookresearch/sscd-copy-detection/tree/main#preprocessing
         # Normalization using the mean and std of Imagenet
         normalize = transforms.Normalize(
@@ -54,12 +50,6 @@ class Model(Model):
             transforms.ToTensor(),
             normalize,
         ])
-        # Keeping the code example of resizing the image to a square tensor
-        # skew_320 = transforms.Compose([
-        #     transforms.Resize([320, 320]),
-        #     transforms.ToTensor(),
-        #     normalize,
-        # ])
 
         image = Image.open(iobytes)
         batch = small_288(image).unsqueeze(0)
