@@ -12,6 +12,7 @@ import torch
 from lib.logger import logger
 import numpy as np
 from PIL import Image
+import datetime
 
 IMAGENET_NORMALIZATION_MEAN = [0.485, 0.456, 0.406]
 IMAGENET_NORMALIZATION_STD = [0.229, 0.224, 0.225]
@@ -75,4 +76,24 @@ class Model(Model):
         Generic function for returning the actual response.
         """
         img_iobytes = self.get_iobytes_for_image(image)
-        return {"hash_value": self.compute_pdq(img_iobytes), "sscd_value": self.compute_sscd(img_iobytes)}
+        pdq = None
+        sscd = None
+        try:
+            time_before_processing = datetime.datetime.now()
+            pdq = self.compute_pdq(img_iobytes)
+            time_after_processing = datetime.datetime.now()
+            processing_time = time_after_processing - time_before_processing
+            logger.info(f"PDQ took {processing_time} seconds to process imageitem {image}")
+        except:
+            logger.info("error occured while calculating pdq for the following imageitem:",image)
+
+        try:
+            time_before_processing = datetime.datetime.now()
+            sscd = self.compute_sscd(img_iobytes)
+            time_after_processing = datetime.datetime.now()
+            processing_time = time_after_processing - time_before_processing
+            logger.info(f"SSCD took {processing_time} seconds to process imageitem {image}")
+        except:
+            logger.info("error occured while calculating SSCD for the following imageitem:",image)
+
+        return {"hash_value": pdq, "sscd_value": sscd}
