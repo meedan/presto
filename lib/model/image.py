@@ -21,13 +21,13 @@ class Model(Model):
         super().__init__()
         #FUTURE: Load from a Meedan S3 bucket
         try:
-            self.model = torch.jit.load("sscd_disc_mixup.torchscript.pt")
+            self.sscd_model = torch.jit.load("sscd_disc_mixup.torchscript.pt")
         except ValueError:
             logger.info("Downloading SSCD model...")
             m=urllib.request.urlopen("https://dl.fbaipublicfiles.com/sscd-copy-detection/sscd_disc_mixup.torchscript.pt").read()
             with open("sscd_disc_mixup.torchscript.pt","wb") as fh:
                 fh.write(m)
-            self.model = torch.jit.load("sscd_disc_mixup.torchscript.pt")
+            self.sscd_model = torch.jit.load("sscd_disc_mixup.torchscript.pt")
         logger.info("SSCD model loaded")
     def compute_pdq(self, iobytes: io.BytesIO) -> str:
         """Compute perceptual hash using ImageHash library
@@ -54,7 +54,7 @@ class Model(Model):
 
         image = Image.open(iobytes)
         batch = small_288(image).unsqueeze(0)
-        embedding = self.model(batch)[0, :]
+        embedding = self.sscd_model(batch)[0, :]
         return np.asarray(embedding.detach().numpy()).tolist()
 
     def get_iobytes_for_image(self, image: schemas.Message) -> io.BytesIO:
