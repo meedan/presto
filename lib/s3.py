@@ -24,7 +24,7 @@ def upload_file_to_s3(bucket: str, filename: str):
     try:
         s3_client.head_bucket(Bucket=bucket)
     except ClientError as e:
-        if e.response['Error']['Code'] == 'NoSuchBucket' or int(e.response['Error']['Code']) == 404:
+        if e.response['Error']['Code'] == 'NoSuchBucket' or int(e.response['Error']['Code']) in [403, 404]:
             # Create the bucket since it does not exist
             s3_client.create_bucket(Bucket=bucket)
             logger.info(f'Created bucket {bucket} in MinIO.')
