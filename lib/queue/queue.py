@@ -21,8 +21,12 @@ class Queue:
         return (get_environment_setting("QUEUE_PREFIX") or "").replace(".", "__")
 
     @staticmethod
+    def get_queue_suffix():
+        return (get_environment_setting("QUEUE_SUFFIX") or "").replace(".", "__")
+
+    @staticmethod
     def get_queue_name(input_queue_name):
-        return Queue.get_queue_prefix()+get_setting(input_queue_name, "MODEL_NAME").replace(".", "__")
+        return Queue.get_queue_prefix()+get_setting(input_queue_name, "MODEL_NAME").replace(".", "__")+Queue.get_queue_suffix()
 
     def store_queue_map(self, all_queues: List[boto3.resources.base.ServiceResource]) -> Dict[str, boto3.resources.base.ServiceResource]:
         """
