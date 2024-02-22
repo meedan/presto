@@ -7,6 +7,10 @@ services:
       context: .
       args:
         - PRESTO_PORT=${PRESTO_PORT}
+        - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+        - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+        - AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION}
+        - S3_ENDPOINT=${S3_ENDPOINT}
     env_file:
       - ./.env_file
     depends_on:
