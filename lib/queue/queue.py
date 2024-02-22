@@ -60,14 +60,23 @@ class Queue:
         Create queue by name - may not work in production owing to permissions - mostly a local convenience function
         """
         logger.info(f"Queue {queue_name} doesn't exist - creating")
-        return self.sqs.create_queue(QueueName=queue_name)
+        attributes = {}
+        if queue_name.endswith('.fifo'):
+            attributes['FifoQueue'] = 'true'
+            # Optionally enable content-based deduplication for FIFO queues
+            attributes['ContentBasedDeduplication'] = 'true'
+            # Include other FIFO-specific attributes as needed
+        return self.sqs.create_queue(
+            QueueName=queue_name,
+            Attributes=attributes
+        )
 
     def get_or_create_queues(self, queue_name: str) -> List[boto3.resources.base.ServiceResource]:
         """
         Initialize all queues for the given worker - try to create them if they are not found by name for whatever reason
         """
         try:
-            found_queues = [q for q in self.sqs.queues.filter(QueueNamePrefix=queue_name)]
+            found_queues = [q for q in self.sqs.queues.filter(QueueNamePrefix=queue_name.replace(".fifo", ""))]
             exact_match_queues = [queue for queue in found_queues if queue.attributes['QueueArn'].split(':')[-1] == queue_name]
             if exact_match_queues:
                 return exact_match_queues
