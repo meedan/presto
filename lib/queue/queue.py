@@ -22,7 +22,7 @@ class Queue:
 
     @staticmethod
     def get_queue_suffix():
-        return (get_environment_setting("QUEUE_SUFFIX") or "").replace(".", "__")
+        return (get_environment_setting("QUEUE_SUFFIX") or "")
 
     @staticmethod
     def get_queue_name(input_queue_name):
