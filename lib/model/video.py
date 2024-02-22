@@ -10,7 +10,6 @@ import urllib.request
 from lib.model.model import Model
 from lib import s3
 from lib import schemas
-from lib.helpers import get_environment_setting
 
 class Model(Model):
     def __init__(self):
@@ -19,7 +18,6 @@ class Model(Model):
         """
         self.directory = "./video_files"
         self.ffmpeg_dir = "/usr/local/bin/ffmpeg"
-        self.model_name = os.environ.get("MODEL_NAME")
         pathlib.Path(self.directory).mkdir(parents=True, exist_ok=True)
 
     def tmk_file_path(self, filename: str, create_path: bool = True) -> str:
@@ -41,8 +39,7 @@ class Model(Model):
         """
         Constant for identifying bucket. Needed for uploading output.
         """
-        prefix = (get_environment_setting("QUEUE_PREFIX") or "").replace(".", "__").replace("_", "-") or "local-"
-        return f"{prefix}presto-tmk-videos"
+        return "presto_tmk_videos"
 
     def process(self, video: schemas.Message) -> schemas.GenericItem:
         """
@@ -60,7 +57,5 @@ class Model(Model):
             )
             s3.upload_file_to_s3(self.tmk_bucket(), self.tmk_file_path(video_filename))
         finally:
-            for file_path in [self.tmk_file_path(video_filename), temp_file_name]:
-                if os.path.exists(file_path):
-                    os.remove(file_path)
-        return {"folder": self.tmk_bucket(), "filepath": self.tmk_file_path(video_filename), "hash_value": hash_value}
+            os.remove(temp_file_name)
+        return dict(**video.dict(), **{"folder": self.tmk_bucket(), "filepath": self.tmk_file_path(video_filename), "hash_value": hash_value})

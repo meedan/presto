@@ -17,7 +17,7 @@ class QueueProcessor(Queue):
         input_queue_name = Queue.get_queue_name(input_queue_name)
         logger.info(f"Starting queue with: ('{input_queue_name}', {batch_size})")
         return QueueProcessor(input_queue_name, batch_size)
-    
+
     def __init__(self, input_queue_name: str, output_queue_name: str = None, batch_size: int = 1):
         """
         Start a specific queue - must pass input_queue_name - optionally pass output_queue_name, batch_size.
@@ -28,7 +28,7 @@ class QueueProcessor(Queue):
         self.all_queues = self.store_queue_map(self.input_queues)
         logger.info(f"Processor listening to queues of {self.all_queues}")
         self.batch_size = batch_size
-    
+
     def send_callbacks(self) -> List[schemas.Message]:
         """
         Main routine. Given a model, in a loop, read tasks from input_queue_name at batch_size depth,
@@ -42,7 +42,8 @@ class QueueProcessor(Queue):
             for body in bodies:
                 self.send_callback(body)
             self.delete_messages(messages_with_queues)
-    
+
+
     def send_callback(self, message):
         """
         Rescue against failures when attempting to respond (i.e. fingerprint) from models.
