@@ -109,7 +109,9 @@ class Queue:
         If output_queue_name was empty or None, set name for queue.
         """
         if not output_queue_name:
+            # workaround to ensure that .fifo suffix always comes at the end of queue name.
             output_queue_name = f'{input_queue_name}_output'
+            output_queue_name = output_queue_name.replace(Queue.get_queue_suffix(), "")+Queue.get_queue_suffix()
         return output_queue_name
 
     def group_deletions(self, messages_with_queues: List[Tuple[schemas.Message, boto3.resources.base.ServiceResource]]) -> Dict[boto3.resources.base.ServiceResource, List[schemas.Message]]:
