@@ -104,14 +104,18 @@ class Queue:
             logger.info(f"Using SQS Interface")
             return boto3.resource('sqs', region_name=get_environment_setting("AWS_DEFAULT_REGION"))
 
-    def get_output_queue_name(self, input_queue_name: str, output_queue_name: str = None) -> str:
+    @staticmethod
+    def get_output_queue_name(input_queue_name: str, output_queue_name: str = None) -> str:
         """
         If output_queue_name was empty or None, set name for queue.
         """
-        if not output_queue_name:
+        if not output_queue_name or len(output_queue_name) == 0:
             # workaround to ensure that .fifo suffix always comes at the end of queue name.
-            output_queue_name = f'{input_queue_name}_output'
-            output_queue_name = output_queue_name.replace(Queue.get_queue_suffix(), "")+Queue.get_queue_suffix()
+            suffix = Queue.get_queue_suffix()
+            if len(suffix):
+                output_queue_name = input_queue_name[:-len(suffix)] + '_output' + Queue.get_queue_suffix()
+            else:
+                output_queue_name = f'{input_queue_name}_output'
         return output_queue_name
 
     def group_deletions(self, messages_with_queues: List[Tuple[schemas.Message, boto3.resources.base.ServiceResource]]) -> Dict[boto3.resources.base.ServiceResource, List[schemas.Message]]:

@@ -16,7 +16,7 @@ class QueueWorker(Queue):
         Pulls settings and then inits instance.
         """
         input_queue_name = Queue.get_queue_name(input_queue_name)
-        output_queue_name = f"{input_queue_name}_output"
+        output_queue_name = Queue.get_output_queue_name(input_queue_name, None)
         logger.info(f"Starting queue with: ('{input_queue_name}', '{output_queue_name}')")
         return QueueWorker(input_queue_name, output_queue_name)
 
@@ -26,7 +26,8 @@ class QueueWorker(Queue):
         """
         super().__init__()
         self.input_queue_name = input_queue_name
-        self.input_queues = self.restrict_queues_by_suffix(self.get_or_create_queues(input_queue_name), "_output")
+        q_suffix = f"_output" + Queue.get_queue_suffix()
+        self.input_queues = self.restrict_queues_by_suffix(self.get_or_create_queues(input_queue_name), q_suffix) 
         if output_queue_name:
             self.output_queue_name = self.get_output_queue_name(input_queue_name, output_queue_name)
             self.output_queues = self.get_or_create_queues(output_queue_name)
