@@ -76,7 +76,7 @@ class Queue:
         Initialize all queues for the given worker - try to create them if they are not found by name for whatever reason
         """
         try:
-            found_queues = [q for q in self.sqs.queues.filter(QueueNamePrefix=queue_name.replace(".fifo", ""))]
+            found_queues = [q for q in self.sqs.queues.filter(QueueNamePrefix=queue_name)]
             exact_match_queues = [queue for queue in found_queues if queue.attributes['QueueArn'].split(':')[-1] == queue_name]
             if exact_match_queues:
                 return exact_match_queues
