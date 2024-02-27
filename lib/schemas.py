@@ -16,8 +16,16 @@ class VideoItem(MediaItem):
     folder: Optional[str] = None
     filepath: Optional[str] = None
 
+class YakeItem(GenericItem):
+    language: Optional[str] = None
+    max_ngram_size: Optional[int] = None
+    deduplication_threshold: Optional[float] = None
+    deduplication_algo: Optional[str] = None
+    windowSize: Optional[int] = None
+    numOfKeywords: Optional[int] = None
+
 class Message(BaseModel):
-    body: Union[MediaItem, VideoItem]
+    body: Union[YakeItem, MediaItem, VideoItem]
     model_name: str
     @root_validator(pre=True)
     def set_body(cls, values):
@@ -27,4 +35,6 @@ class Message(BaseModel):
             values["body"] = VideoItem(**values["body"]).dict()
         if model_name in ["audio__Model", "image__Model", "fptg__Model", "indian_sbert__Model", "mean_tokens__Model", "fasttext__Model"]:
             values["body"] = MediaItem(**values["body"]).dict()
+        if model_name == "yake__Model":
+            values["body"] = YakeItem(**values["body"]).dict()
         return values
