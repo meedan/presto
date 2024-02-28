@@ -9,13 +9,13 @@ from lib.model.model import Model
 TIMEOUT_SECONDS = int(os.getenv("WORK_TIMEOUT_SECONDS", "60"))
 class QueueWorker(Queue):
     @classmethod
-    def create(cls, input_queue_name: str = None):
+    def create(cls, model_name: str = None):
         """
         Instantiate a queue worker. Must pass input_queue_name.
         Pulls settings and then inits instance.
         """
-        input_queue_name = Queue.get_input_queue_name()
-        output_queue_name = Queue.get_output_queue_name()
+        input_queue_name = Queue.get_input_queue_name(model_name)
+        output_queue_name = Queue.get_output_queue_name(model_name)
         logger.info(f"Starting queue with: ('{input_queue_name}', '{output_queue_name}')")
         return QueueWorker(input_queue_name, output_queue_name)
 
