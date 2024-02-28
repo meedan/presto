@@ -8,12 +8,12 @@ from lib.logger import logger
 from lib.queue.queue import Queue
 class QueueProcessor(Queue):
     @classmethod
-    def create(cls, input_queue_name: str = None, batch_size: int = 10):
+    def create(cls, model_name: str = None, batch_size: int = 10):
         """
         Instantiate a queue. Must pass input_queue_name, output_queue_name, and batch_size.
         Pulls settings and then inits instance.
         """
-        input_queue_name = Queue.get_input_queue_name()
+        input_queue_name = Queue.get_input_queue_name(model_name)
         logger.info(f"Starting queue with: ('{input_queue_name}', {batch_size})")
         return QueueProcessor(input_queue_name, batch_size)
     
