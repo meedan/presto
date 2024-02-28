@@ -175,6 +175,6 @@ class Queue:
         """
         message_data = {"MessageBody": json.dumps(message.dict())}
         if queue_name.endswith('.fifo'):
-            message_data["MessageGroupId"] = message.body["id"]
+            message_data["MessageGroupId"] = message.body.id
         self.find_queue_by_name(queue_name).send_message(**message_data)
         return message
