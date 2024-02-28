@@ -5,6 +5,7 @@ from unittest.mock import MagicMock, patch
 import numpy as np
 
 from lib.model.generic_transformer import GenericTransformerModel
+from lib.queue.queue import Queue
 from lib.queue.worker import QueueWorker
 from lib import schemas
 from test.lib.queue.fake_sqs_message import FakeSQSMessage
@@ -17,17 +18,17 @@ class TestQueueWorker(unittest.TestCase):
         self.model = GenericTransformerModel(None)
         self.model.model_name = "generic"
         self.mock_model = MagicMock()
-        self.queue_name_input = 'mean_tokens__Model'
-        self.queue_name_output = 'mean_tokens__Model_output'
+        self.queue_name_input = Queue.get_input_queue_name()
+        self.queue_name_output = Queue.get_output_queue_name()
 
         # Mock the SQS resource and the queues
         self.mock_sqs_resource = MagicMock()
         self.mock_input_queue = MagicMock()
-        self.mock_input_queue.url = "http://queue/mean_tokens__Model"
-        self.mock_input_queue.attributes = {"QueueArn": "queue:mean_tokens__Model"}
+        self.mock_input_queue.url = f"http://queue/{self.queue_name_input}"
+        self.mock_input_queue.attributes = {"QueueArn": f"queue:{self.queue_name_input}"}
         self.mock_output_queue = MagicMock()
-        self.mock_output_queue.url = "http://queue/mean_tokens__Model_output"
-        self.mock_output_queue.attributes = {"QueueArn": "queue:mean_tokens__Model_output"}
+        self.mock_output_queue.url = f"http://queue/{self.queue_name_output}"
+        self.mock_output_queue.attributes = {"QueueArn": f"queue:{self.queue_name_output}"}
         self.mock_sqs_resource.queues.filter.return_value = [self.mock_input_queue, self.mock_output_queue]
         mock_boto_resource.return_value = self.mock_sqs_resource
 
@@ -35,7 +36,7 @@ class TestQueueWorker(unittest.TestCase):
         self.queue = QueueWorker(self.queue_name_input, self.queue_name_output)
     
     def test_get_output_queue_name(self):
-        self.assertEqual(self.queue.get_output_queue_name(), self.queue.get_queue_name()+'_output')
+        self.assertEqual(self.queue.get_output_queue_name().replace(".fifo", ""), (self.queue.get_input_queue_name()+'_output').replace(".fifo", ""))
 
     def test_process(self):
         self.queue.receive_messages = MagicMock(return_value=[(FakeSQSMessage(receipt_handle="blah", body=json.dumps({"body": {"id": 1, "callback_url": "http://example.com", "text": "This is a test"}})), self.mock_input_queue)])

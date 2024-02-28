@@ -5,10 +5,7 @@ def get_environment_setting(os_key: str) -> str:
     """
     Get environment variable helper. Could be augmented with credential store if/when necessary.
     """
-    env_val = os.environ.get(os_key)
-    if not env_val:
-        env_val = ""
-    return env_val
+    return os.environ.get(os_key, "") or ""
 
 def get_setting(current_value: Any, default_os_key: str) -> Any:
     """

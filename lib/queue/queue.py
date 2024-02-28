@@ -25,7 +25,7 @@ class Queue:
         return (get_environment_setting("QUEUE_SUFFIX") or "")
 
     @staticmethod
-    def get_queue_name():
+    def get_input_queue_name():
         return Queue.get_queue_prefix()+get_environment_setting("MODEL_NAME").replace(".", "__")+Queue.get_queue_suffix()
 
     @staticmethod
@@ -51,7 +51,7 @@ class Queue:
         """
         When plucking input queues, we want to omit any queues that are our paired suffix queues..
         """
-        return [queue for queue in queues if self.queue_name(queue).endswith(suffix)]
+        return [queue for queue in queues if suffix and self.queue_name(queue).endswith(suffix)]
 
     def restrict_queues_by_suffix(self, queues: List[boto3.resources.base.ServiceResource], suffix: str) -> List[boto3.resources.base.ServiceResource]:
         """
@@ -82,6 +82,8 @@ class Queue:
         try:
             found_queues = [q for q in self.sqs.queues.filter(QueueNamePrefix=queue_name)]
             exact_match_queues = [queue for queue in found_queues if queue.attributes['QueueArn'].split(':')[-1] == queue_name]
+            logger.info(f"found queues are {found_queues}")
+            logger.info(f"exact queues are {exact_match_queues}")
             if exact_match_queues:
                 return exact_match_queues
             else:
