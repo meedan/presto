@@ -42,10 +42,10 @@ class Model(Model):
 
         keywords = self.run_yake(text = text.body.text,
                                  language = text.body.language,
-                                 max_ngram_size = text.body.max_ngram_size,
-                                 deduplication_threshold = text.body.deduplication_threshold,
-                                 deduplication_algo = text.body.deduplication_algo,
-                                 windowSize = text.body.windowSize,
-                                 numOfKeywords = text.body.numOfKeywords
+                                 max_ngram_size = 3,
+                                 deduplication_threshold = 0.25,
+                                 deduplication_algo = 'seqm',
+                                 windowSize = 0,
+                                 numOfKeywords = 10
                                  )
         return keywords

@@ -8,6 +8,7 @@ class GenericItem(BaseModel):
     url: Optional[str] = None
     text: Optional[str] = None
     raw: Optional[dict] = {}
+    language: Optional[str] = None
 
 class MediaItem(GenericItem):
     hash_value: Optional[Any] = None
@@ -17,7 +18,7 @@ class VideoItem(MediaItem):
     filepath: Optional[str] = None
 
 class YakeItem(GenericItem):
-    language: Optional[str] = None
+    # language: Optional[str] = None
     max_ngram_size: Optional[int] = None
     deduplication_threshold: Optional[float] = None
     deduplication_algo: Optional[str] = None
@@ -25,8 +26,8 @@ class YakeItem(GenericItem):
     numOfKeywords: Optional[int] = None
 
 class Message(BaseModel):
-    body: Union[YakeItem, MediaItem, VideoItem]
-    model_name: str
+    body: Union[MediaItem, VideoItem]
+    model_name: str  #YakeItem,
     @root_validator(pre=True)
     def set_body(cls, values):
         body = values.get("body")
