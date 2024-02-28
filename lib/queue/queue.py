@@ -25,8 +25,12 @@ class Queue:
         return (get_environment_setting("QUEUE_SUFFIX") or "")
 
     @staticmethod
-    def get_queue_name(input_queue_name):
-        return Queue.get_queue_prefix()+get_setting(input_queue_name, "MODEL_NAME").replace(".", "__")+Queue.get_queue_suffix()
+    def get_queue_name():
+        return Queue.get_queue_prefix()+get_setting(None, "MODEL_NAME").replace(".", "__")+Queue.get_queue_suffix()
+
+    @staticmethod
+    def get_output_queue_name():
+        return Queue.get_queue_prefix()+get_setting(None, "MODEL_NAME").replace(".", "__")+"_output"+Queue.get_queue_suffix()
 
     def store_queue_map(self, all_queues: List[boto3.resources.base.ServiceResource]) -> Dict[str, boto3.resources.base.ServiceResource]:
         """
@@ -103,20 +107,6 @@ class Queue:
         else:
             logger.info(f"Using SQS Interface")
             return boto3.resource('sqs', region_name=get_environment_setting("AWS_DEFAULT_REGION"))
-
-    @staticmethod
-    def get_output_queue_name(input_queue_name: str, output_queue_name: str = None) -> str:
-        """
-        If output_queue_name was empty or None, set name for queue.
-        """
-        if not output_queue_name or len(output_queue_name) == 0:
-            # workaround to ensure that .fifo suffix always comes at the end of queue name.
-            suffix = Queue.get_queue_suffix()
-            if len(suffix):
-                output_queue_name = input_queue_name[:-len(suffix)] + '_output' + Queue.get_queue_suffix()
-            else:
-                output_queue_name = f'{input_queue_name}_output'
-        return output_queue_name
 
     def group_deletions(self, messages_with_queues: List[Tuple[schemas.Message, boto3.resources.base.ServiceResource]]) -> Dict[boto3.resources.base.ServiceResource, List[schemas.Message]]:
         """
