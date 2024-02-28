@@ -27,7 +27,7 @@ class YakeItem(GenericItem):
 
 class Message(BaseModel):
     body: Union[MediaItem, VideoItem]
-    model_name: str  #YakeItem,
+    model_name: str
     @root_validator(pre=True)
     def set_body(cls, values):
         body = values.get("body")
