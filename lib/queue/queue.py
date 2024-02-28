@@ -173,5 +173,8 @@ class Queue:
         """
         Actual SQS logic for pushing a message to a queue
         """
-        self.find_queue_by_name(queue_name).send_message(MessageBody=json.dumps(message.dict()))
+        message_data = {"MessageBody": json.dumps(message.dict())}
+        if queue_name.endswith('.fifo'):
+            message_data["MessageGroupId"] = message.id
+        self.find_queue_by_name(queue_name).send_message(**message_data)
         return message
