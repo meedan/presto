@@ -5,7 +5,6 @@ import requests
 
 from lib import schemas
 from lib.logger import logger
-from lib.helpers import get_setting
 from lib.queue.queue import Queue
 class QueueProcessor(Queue):
     @classmethod

@@ -6,7 +6,6 @@ from lib import schemas
 from lib.logger import logger
 from lib.queue.queue import Queue
 from lib.model.model import Model
-from lib.helpers import get_setting
 TIMEOUT_SECONDS = int(os.getenv("WORK_TIMEOUT_SECONDS", "60"))
 class QueueWorker(Queue):
     @classmethod
