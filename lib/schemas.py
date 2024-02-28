@@ -8,7 +8,7 @@ class GenericItem(BaseModel):
     url: Optional[str] = None
     text: Optional[str] = None
     raw: Optional[dict] = {}
-    language: Optional[str] = None
+    # language: Optional[str] = None
 
 class MediaItem(GenericItem):
     hash_value: Optional[Any] = None

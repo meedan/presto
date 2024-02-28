@@ -41,7 +41,7 @@ class Model(Model):
         """
 
         keywords = self.run_yake(text = text.body.text,
-                                 language = text.body.language,
+                                 language = 'en', #text.body.language
                                  max_ngram_size = 3,
                                  deduplication_threshold = 0.25,
                                  deduplication_algo = 'seqm',
