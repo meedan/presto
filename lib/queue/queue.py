@@ -26,11 +26,11 @@ class Queue:
 
     @staticmethod
     def get_queue_name():
-        return Queue.get_queue_prefix()+get_setting(None, "MODEL_NAME").replace(".", "__")+Queue.get_queue_suffix()
+        return Queue.get_queue_prefix()+get_setting("", "MODEL_NAME").replace(".", "__")+Queue.get_queue_suffix()
 
     @staticmethod
     def get_output_queue_name():
-        return Queue.get_queue_prefix()+get_setting(None, "MODEL_NAME").replace(".", "__")+"_output"+Queue.get_queue_suffix()
+        return Queue.get_queue_prefix()+get_setting("", "MODEL_NAME").replace(".", "__")+"_output"+Queue.get_queue_suffix()
 
     def store_queue_map(self, all_queues: List[boto3.resources.base.ServiceResource]) -> Dict[str, boto3.resources.base.ServiceResource]:
         """
