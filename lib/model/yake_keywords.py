@@ -6,8 +6,6 @@ from lib.model.model import Model
 
 from lib import schemas
 
-from lib.logger import logger
-
 import yake
 
 class Model(Model):
@@ -32,16 +30,16 @@ class Model(Model):
                                                     dedupFunc=deduplication_algo, windowsSize=windowSize,
                                                     top=numOfKeywords, features=None)
         keywords = custom_kw_extractor.extract_keywords(text)
+        logger.info(keywords)
 
-        return keywords
+        return { "keywords": keywords}
 
     def process(self, text: schemas.Message) -> schemas.GenericItem:
         """
         Generic function for returning the actual response.
         """
-
         keywords = self.run_yake(text = text.body.text,
-                                 language = 'en', #text.body.language
+                                 language = text.body.raw['language'],
                                  max_ngram_size = 3,
                                  deduplication_threshold = 0.25,
                                  deduplication_algo = 'seqm',
