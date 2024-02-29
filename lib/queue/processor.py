@@ -5,15 +5,16 @@ import requests
 
 from lib import schemas
 from lib.logger import logger
+from lib.helpers import get_setting
 from lib.queue.queue import Queue
 class QueueProcessor(Queue):
     @classmethod
-    def create(cls, model_name: str = None, batch_size: int = 10):
+    def create(cls, input_queue_name: str = None, batch_size: int = 10):
         """
         Instantiate a queue. Must pass input_queue_name, output_queue_name, and batch_size.
         Pulls settings and then inits instance.
         """
-        input_queue_name = Queue.get_output_queue_name(model_name)
+        input_queue_name = Queue.get_queue_name(input_queue_name)
         logger.info(f"Starting queue with: ('{input_queue_name}', {batch_size})")
         return QueueProcessor(input_queue_name, batch_size)
     
@@ -23,7 +24,7 @@ class QueueProcessor(Queue):
         """
         super().__init__()
         self.input_queue_name = input_queue_name
-        self.input_queues = self.restrict_queues_to_suffix(self.get_or_create_queues(input_queue_name), Queue.get_queue_suffix())
+        self.input_queues = self.restrict_queues_to_suffix(self.get_or_create_queues(input_queue_name+"_output"), "_output")
         self.all_queues = self.store_queue_map(self.input_queues)
         logger.info(f"Processor listening to queues of {self.all_queues}")
         self.batch_size = batch_size

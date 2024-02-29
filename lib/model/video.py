@@ -1,66 +1,58 @@
-from typing import Dict
+from typing import Union, List, Dict, Any
+from abc import ABC, abstractmethod
 import os
-import uuid
-import shutil
-import pathlib
+import tempfile
 
-import tmkpy
-import urllib.error
 import urllib.request
-from lib.model.model import Model
-from lib import s3
+
+from lib.helpers import get_class
 from lib import schemas
-from lib.helpers import get_environment_setting
-
-class Model(Model):
+class Model(ABC):
+    BATCH_SIZE = 1
     def __init__(self):
-        """
-        Set some basic constants during operation, create local folder for tmk workspace.
-        """
-        self.directory = "./video_files"
-        self.ffmpeg_dir = "/usr/local/bin/ffmpeg"
         self.model_name = os.environ.get("MODEL_NAME")
-        pathlib.Path(self.directory).mkdir(parents=True, exist_ok=True)
 
-    def tmk_file_path(self, filename: str, create_path: bool = True) -> str:
+    def get_tempfile_for_url(self, url: str) -> str:
         """
-        Sanity check for creating the directory as we created during init -
-        then return filename for proposed TMK file.
+        Loads a file based on specified URL into a named tempfile. 
+        Do not allow the tempfile to be deleted- we manage that directly to 
+        avoid unintended mid-process file loss.
         """
-        if create_path:
-            pathlib.Path(f"{self.directory}/").mkdir(parents=True, exist_ok=True)
-        return f"{self.directory}/{filename}.tmk"
-
-    def tmk_program_name(self) -> str:
-        """
-        Constant for identifying program. Needed for TMK library.
-        """
-        return "PrestoVideoEncoder"
-
-    def tmk_bucket(self) -> str:
-        """
-        Constant for identifying bucket. Needed for uploading output.
-        """
-        prefix = (get_environment_setting("QUEUE_PREFIX") or "").replace(".", "__").replace("_", "-") or "local-"
-        return f"{prefix}presto-tmk-videos"
-
-    def process(self, video: schemas.Message) -> schemas.GenericItem:
-        """
-        Main fingerprinting routine - download video to disk, get short hash,
-        then calculate larger TMK hash and upload that to S3.
-        """
-        temp_file_name = self.get_tempfile_for_url(video.body.url)
-        try:
-            tmk_file_output = tmkpy.hashVideo(temp_file_name,self.ffmpeg_dir)
-            hash_value=tmk_file_output.getPureAverageFeature()
-            video_filename = str(uuid.uuid4())
-            tmk_file_output.writeToOutputFile(
-                self.tmk_file_path(video_filename),
-                self.tmk_program_name()
+        temp_file = tempfile.NamedTemporaryFile(delete=False)
+        with open(temp_file.name, 'wb') as out_file:
+            out_file.write(
+                urllib.request.urlopen(
+                    urllib.request.Request(
+                        url,
+                        headers={'User-Agent': 'Mozilla/5.0'}
+                    )
+                ).read()
             )
-            s3.upload_file_to_s3(self.tmk_bucket(), self.tmk_file_path(video_filename))
-        finally:
-            for file_path in [self.tmk_file_path(video_filename), temp_file_name]:
-                if os.path.exists(file_path):
-                    os.remove(file_path)
-        return {"folder": self.tmk_bucket(), "filepath": self.tmk_file_path(video_filename), "hash_value": hash_value}
+        return temp_file.name
+
+    def get_tempfile(self) -> Any:
+        """
+        Get an immediately tossable file. Used for images only, which only needs the io bytes instead of a file.
+        """
+        return tempfile.NamedTemporaryFile()
+
+    def process(self, messages: Union[List[schemas.Message], schemas.Message]) -> List[schemas.Message]:
+        return []
+        
+    def respond(self, messages: Union[List[schemas.Message], schemas.Message]) -> List[schemas.Message]:
+        """
+        Force messages as list of messages in case we get a singular item. Then, run fingerprint routine.
+        """
+        if not isinstance(messages, list):
+            messages = [messages]
+        for message in messages:
+            message.body.hash_value = self.process(message)
+        return messages
+    
+    @classmethod
+    def create(cls):
+        """
+        abstraction for loading model based on os environment-specified model.
+        """
+        model = get_class('lib.model.', os.environ.get('MODEL_NAME'))
+        return model()
