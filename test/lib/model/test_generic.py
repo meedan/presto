@@ -26,7 +26,7 @@ class TestGenericTransformerModel(unittest.TestCase):
         self.model.vectorize = MagicMock(return_value=[[1, 2, 3]])
         response = self.model.respond(query)
         self.assertEqual(len(response), 1)
-        self.assertEqual(response[0].body.hash_value, [1, 2, 3])
+        self.assertEqual(response[0].body.result, [1, 2, 3])
 
 if __name__ == '__main__':
     unittest.main()

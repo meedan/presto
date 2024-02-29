@@ -106,8 +106,7 @@ class TestQueueWorker(unittest.TestCase):
         # Call push_message
         returned_message = self.queue.push_message(self.queue_name_output, message_to_push)
         # Check if the message was correctly serialized and sent
-        self.mock_output_queue.send_message.assert_called_once_with(MessageBody='{"body": {"id": "1", "callback_url": "http://example.com", "url": null, "text": "This is a test", "raw": {}, "hash_value": null}, "model_name": "mean_tokens__Model"}')
-        
+        self.mock_output_queue.send_message.assert_called_once_with(MessageBody='{"body": {"id": "1", "callback_url": "http://example.com", "url": null, "text": "This is a test", "raw": {}, "parameters": {}, "result": {"hash_value": null}}, "model_name": "mean_tokens__Model"}')
         self.assertEqual(returned_message, message_to_push)
 
     def test_extract_messages(self):
@@ -123,7 +122,7 @@ class TestQueueWorker(unittest.TestCase):
         ]
         extracted_messages = QueueWorker.extract_messages(messages_with_queues, self.model)
         self.assertEqual(len(extracted_messages), 2)
-        self.assertIsInstance(extracted_messages[0].body, schemas.MediaItem)
+        self.assertIsInstance(extracted_messages[0].body, schemas.GenericItem)
         self.assertEqual(extracted_messages[0].body.text, "Test message 1")
         self.assertEqual(extracted_messages[1].body.text, "Test message 2")
         self.assertEqual(extracted_messages[0].model_name, "generic")

@@ -18,7 +18,7 @@ class TestFasttextModel(unittest.TestCase):
         query = [schemas.Message(body={"id": "123", "callback_url": "http://example.com/callback", "text": "Hello, how are you?"}, model_name="fasttext__Model")]
         response = model.respond(query)
         self.assertEqual(len(response), 1)
-        self.assertEqual(response[0].body.hash_value, {'language': 'en', 'script': None, 'score': 0.9})
+        self.assertEqual(response[0].body.result, {'language': 'en', 'script': None, 'score': 0.9})
 
 if __name__ == '__main__':
     unittest.main()
