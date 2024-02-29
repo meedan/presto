@@ -30,11 +30,10 @@ class Model(Model):
                                                     dedupFunc=deduplication_algo, windowsSize=windowSize,
                                                     top=numOfKeywords, features=None)
         keywords = custom_kw_extractor.extract_keywords(text)
-        logger.info(keywords)
 
         return { "keywords": keywords}
 
-    def process(self, text: schemas.Message) -> schemas.GenericItem:
+    def process(self, text: schemas.Message) -> schemas.YakeKeywordsItem:
         """
         Generic function for returning the actual response.
         """

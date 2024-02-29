@@ -20,7 +20,7 @@ class YakeKeywordsItem(GenericItem):
     keywords: Optional[Any] = None
 
 class Message(BaseModel):
-    body: Union[MediaItem, VideoItem]
+    body: Union[MediaItem, VideoItem, YakeKeywordsItem]
     model_name: str
     @root_validator(pre=True)
     def set_body(cls, values):
