@@ -14,35 +14,39 @@ class Model(Model):
                  max_ngram_size: int,
                  deduplication_threshold: float,
                  deduplication_algo: str,
-                 windowSize: int,
-                 numOfKeywords: int) -> str:
+                 window_size: int,
+                 num_of_keywords: int) -> str:
         """run key word/phrase extraction using Yake library
         :param text: str
         :param language: str
         :param max_ngram_size: int
         :param deduplication_threshold: float
         :param deduplication_algo: str
-        :param windowSize: int
-        :param numOfKeywords: int
+        :param window_size: int
+        :param num_of_keywords: int
         :returns: str
         """
         custom_kw_extractor = yake.KeywordExtractor(lan=language, n=max_ngram_size, dedupLim=deduplication_threshold,
-                                                    dedupFunc=deduplication_algo, windowsSize=windowSize,
-                                                    top=numOfKeywords, features=None)
-        keywords = custom_kw_extractor.extract_keywords(text)
+                                                    dedupFunc=deduplication_algo, windowsSize=window_size,
+                                                    top=num_of_keywords, features=None)
+        return {"keywords": custom_kw_extractor.extract_keywords(text)}
 
-        return { "keywords": keywords}
+    def get_params(self, message: schemas.Message) -> dict:
+        params = {
+            "text": message.body.text,
+            "language": message.body.parameters.get("language", "en"),
+            "max_ngram_size": message.body.parameters.get("max_ngram_size", 3),
+            "deduplication_threshold": message.body.parameters.get("deduplication_threshold", 0.25),
+            "deduplication_algo": message.body.parameters.get("deduplication_algo", 'seqm'),
+            "window_size": message.body.parameters.get("window_size", 0),
+            "num_of_keywords": message.body.parameters.get("num_of_keywords", 10)
+        }
+        assert params.get("text") is not None
+        return params
 
-    def process(self, text: schemas.Message) -> schemas.YakeKeywordsItem:
+    def process(self, message: schemas.Message) -> schemas.YakeKeywordsResponse:
         """
         Generic function for returning the actual response.
         """
-        keywords = self.run_yake(text = text.body.text,
-                                 language = text.body.raw['language'],
-                                 max_ngram_size = 3,
-                                 deduplication_threshold = 0.25,
-                                 deduplication_algo = 'seqm',
-                                 windowSize = 0,
-                                 numOfKeywords = 10
-                                 )
+        keywords = self.run_yake(**self.get_params(message))
         return keywords
