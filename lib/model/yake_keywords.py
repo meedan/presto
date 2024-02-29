@@ -16,7 +16,7 @@ class Model(Model):
                  deduplication_algo: str,
                  window_size: int,
                  num_of_keywords: int) -> str:
-        """run key word/phrase extraction using Yake library
+        """run key word/phrase extraction using Yake library in reference https://github.com/LIAAD/yake
         :param text: str
         :param language: str
         :param max_ngram_size: int
