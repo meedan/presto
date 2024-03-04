@@ -5,7 +5,7 @@ def get_environment_setting(os_key: str) -> str:
     """
     Get environment variable helper. Could be augmented with credential store if/when necessary.
     """
-    return os.environ.get(os_key)
+    return os.environ.get(os_key, "") or ""
 
 def get_setting(current_value: Any, default_os_key: str) -> Any:
     """
@@ -22,3 +22,4 @@ def get_class(prefix: str, class_name: str) -> Any:
     module = prefix+str.join(".", class_name.split('.')[:-1])
     module_obj = importlib.import_module(module)
     return getattr(module_obj, class_name.split('.')[-1])
+    

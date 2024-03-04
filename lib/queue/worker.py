@@ -6,17 +6,16 @@ from lib import schemas
 from lib.logger import logger
 from lib.queue.queue import Queue
 from lib.model.model import Model
-from lib.helpers import get_setting
 TIMEOUT_SECONDS = int(os.getenv("WORK_TIMEOUT_SECONDS", "60"))
 class QueueWorker(Queue):
     @classmethod
-    def create(cls, input_queue_name: str = None):
+    def create(cls, model_name: str = None):
         """
         Instantiate a queue worker. Must pass input_queue_name.
         Pulls settings and then inits instance.
         """
-        input_queue_name = Queue.get_queue_name(input_queue_name)
-        output_queue_name = f"{input_queue_name}_output"
+        input_queue_name = Queue.get_input_queue_name(model_name)
+        output_queue_name = Queue.get_output_queue_name(model_name)
         logger.info(f"Starting queue with: ('{input_queue_name}', '{output_queue_name}')")
         return QueueWorker(input_queue_name, output_queue_name)
 
@@ -26,9 +25,10 @@ class QueueWorker(Queue):
         """
         super().__init__()
         self.input_queue_name = input_queue_name
-        self.input_queues = self.restrict_queues_by_suffix(self.get_or_create_queues(input_queue_name), "_output")
+        q_suffix = f"_output" + Queue.get_queue_suffix()
+        self.input_queues = self.restrict_queues_by_suffix(self.get_or_create_queues(input_queue_name), q_suffix) 
         if output_queue_name:
-            self.output_queue_name = self.get_output_queue_name(input_queue_name, output_queue_name)
+            self.output_queue_name = Queue.get_output_queue_name()
             self.output_queues = self.get_or_create_queues(output_queue_name)
         self.all_queues = self.store_queue_map([item for row in [self.input_queues, self.output_queues] for item in row])
         logger.info(f"Worker listening to queues of {self.all_queues}")
