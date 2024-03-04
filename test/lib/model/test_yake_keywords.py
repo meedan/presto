@@ -32,6 +32,17 @@ class TestYakeKeywordsModel(unittest.TestCase):
         mock_yake_response.return_value = [["ball", 0.23]]
         self.assertEqual(self.yake_model.run_yake(**self.yake_model.get_params(message)), {"keywords": [["ball", 0.23]]})
 
+    def test_run_yake_real(self):
+        message = schemas.Message(**{
+            "body": {
+                "id": "1234",
+                "text": "I love Meedan",
+            },
+            "model_name": "yake_keywords__Model"
+        })
+        results = self.yake_model.run_yake(**self.yake_model.get_params(message))
+        self.assertEqual(results, {"keywords": [('love Meedan', 0.0013670273525686505)]})
+
     def test_get_params_with_defaults(self):
         message = schemas.Message(**{
             "body": {
