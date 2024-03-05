@@ -1,4 +1,3 @@
-message_data = {'body': {'id': '123', 'callback_url': 'http://0.0.0.0:80/callback_url', 'url': None, 'text': 'Presto is a Python service that aims to perform, most generally, on-demand media fingerprints at scale. In the context of text, fingerprints are transformer vectors - video is done by TMK, images by PDQ, and audio by chromaprint.', 'raw': {}, 'parameters': {}, 'result': {'keywords': [['on-demand media fingerprints', 0.00037756579801656625], ['Python service', 0.0026918756686680483], ['transformer vectors', 0.04263260949486705], ['Presto', 0.0680162625368027], ['aims', 0.0680162625368027], ['generally', 0.0680162625368027], ['media', 0.0680162625368027], ['scale', 0.0680162625368027], ['service that aims', 0.07298009589946147], ['fingerprints at scale', 0.0795563516909433]]}}, 'model_name': 'yake_keywords.Model'}
 from pydantic import BaseModel, ValidationError
 from typing import Any, Dict, List, Optional, Union
 
@@ -10,7 +9,7 @@ class VideoResponse(MediaResponse):
     filepath: Optional[str] = None
 
 class YakeKeywordsResponse(BaseModel):
-    keywords: List[List[Union[str, float]]]
+    keywords: Optional[List[List[Union[str, float]]]] = None
 
 class GenericItem(BaseModel):
     id: str
