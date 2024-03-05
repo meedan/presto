@@ -35,7 +35,8 @@ def parse_message(message_data: Dict) -> Message:
         result_instance = VideoResponse(**result_data)
     else:
         result_instance = MediaResponse(**result_data)
-    del body_data['result']
+    if 'result' in body_data:
+        del body_data['result']
     body_instance = GenericItem(**body_data)
     body_instance.result = result_instance
     message_instance = Message(body=body_instance, model_name=model_name)
