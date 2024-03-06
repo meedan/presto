@@ -24,7 +24,7 @@ class TestIndianSbert(unittest.TestCase):
     def test_respond(self):
         query = schemas.parse_message({"body": {"id": "123", "callback_url": "http://example.com/callback", "text": "What is the capital of India?"}, "model_name": "indian_sbert__Model"})
         self.model.vectorize = MagicMock(return_value=[[1, 2, 3]])
-        response = self.model.respond(query)["hash_value"]
+        response = self.model.respond(query)
         self.assertEqual(len(response), 1)
         self.assertEqual(response[0].body.result, [1, 2, 3])
 
