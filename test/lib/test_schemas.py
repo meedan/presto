@@ -49,7 +49,7 @@ class TestSchemas(unittest.TestCase):
                 'parameters': {},
                 'result': {"folder": "foo", "filepath": "bar", "hash_value": [1,2,3]}
             },
-            'model_name': 'image.Model'
+            'model_name': 'video.Model'
         })
         self.assertIsInstance(message.body, schemas.GenericItem)
         self.assertIsInstance(message.body.result, schemas.VideoResponse)

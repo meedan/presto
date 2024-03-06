@@ -16,7 +16,7 @@ class TestXlmRBertBaseNliStsbMeanTokens(unittest.TestCase):
         texts = [schemas.parse_message({"body": {"id": "123", "callback_url": "http://example.com/callback", "text": "Hello, how are you?"}, "model_name": "mean_tokens__Model"}), schemas.parse_message({"body": {"id": "123", "callback_url": "http://example.com/callback", "text": "I'm doing great, thanks!"}, "model_name": "mean_tokens__Model"})]
         self.model.model = self.mock_model
         self.model.model.encode = MagicMock(return_value=np.array([[4, 5, 6], [7, 8, 9]]))
-        vectors = self.model.vectorize(texts)
+        vectors = self.model.vectorize(texts)["hash_value"]
         self.assertEqual(len(vectors), 2)
         self.assertEqual(vectors[0], [4, 5, 6])
         self.assertEqual(vectors[1], [7, 8, 9])
@@ -24,7 +24,7 @@ class TestXlmRBertBaseNliStsbMeanTokens(unittest.TestCase):
     def test_respond(self):
         query = schemas.parse_message({"body": {"id": "123", "callback_url": "http://example.com/callback", "text": "What is the capital of France?"}, "model_name": "mean_tokens__Model"})
         self.model.vectorize = MagicMock(return_value=[[1, 2, 3]])
-        response = self.model.respond(query)
+        response = self.model.respond(query)["hash_value"]
         self.assertEqual(len(response), 1)
         self.assertEqual(response[0].body.result, [1, 2, 3])
 
