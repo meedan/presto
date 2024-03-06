@@ -34,4 +34,4 @@ class Model(Model):
         """
         Generic function for returning the actual response.
         """
-        return self.compute_pdq(self.get_iobytes_for_image(image))
+        return {"hash_value": self.compute_pdq(self.get_iobytes_for_image(image))}

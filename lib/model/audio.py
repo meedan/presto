@@ -26,4 +26,4 @@ class Model(Model):
             hash_value = self.audio_hasher(temp_file_name)
         finally:
             os.remove(temp_file_name)
-        return hash_value
+        return {"hash_value": hash_value}

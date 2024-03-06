@@ -44,7 +44,7 @@ class TestModel(unittest.TestCase):
         mock_get_iobytes_for_image.return_value = io.BytesIO(b"image_bytes")
         image = schemas.parse_message({"body": {"id": "123", "callback_url": "http://example.com?callback", "url": "http://example.com/image.jpg"}, "model_name": "audio__Model"})
         result = Model().process(image)
-        self.assertEqual(result, "1001")
+        self.assertEqual(result, {"hash_value": "1001"})
 
 
 if __name__ == "__main__":
