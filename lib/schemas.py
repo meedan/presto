@@ -12,7 +12,7 @@ class YakeKeywordsResponse(BaseModel):
     keywords: Optional[List[List[Union[str, float]]]] = None
 
 class GenericItem(BaseModel):
-    id: str
+    id: Union[str, int, float]
     callback_url: Optional[str] = None
     url: Optional[str] = None
     text: Optional[str] = None
