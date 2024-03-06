@@ -3,7 +3,7 @@ version: '3.9'
 services:
   app:
     platform: linux/amd64
-    build: 
+    build:
       context: .
       args:
         - PRESTO_PORT=${PRESTO_PORT}
@@ -14,15 +14,62 @@ services:
     env_file:
       - ./.env_file
     depends_on:
-      - elasticmq
+      elasticmq:
+        condition: service_healthy
     links:
       - elasticmq
     volumes:
       - ./:/app
     ports:
       - "8000:8000"
+    environment:
+      ROLE: server
   elasticmq:
     image: softwaremill/elasticmq
     hostname: presto-elasticmq
     ports:
       - "9324:9324"
+    healthcheck:
+      test: ["CMD","wget","-q","-S","-O","-","127.0.0.1:9324/?Action=ListQueues"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+  image:
+    build: .
+    platform: linux/amd64
+    volumes:
+      - "./:/app"
+    env_file:
+      - ./.env_file
+    environment:
+      ROLE: worker
+      MODEL_NAME: image.Model
+    depends_on:
+      elasticmq:
+        condition: service_healthy
+  audio:
+    build: .
+    platform: linux/amd64
+    volumes:
+      - "./:/app"
+    env_file:
+      - ./.env_file
+    environment:
+      ROLE: worker
+      MODEL_NAME: audio.Model
+    depends_on:
+      elasticmq:
+        condition: service_healthy
+  yake:
+    build: .
+    platform: linux/amd64
+    volumes:
+      - "./:/app"
+    env_file:
+      - ./.env_file
+    environment: 
+      ROLE: worker
+      MODEL_NAME: yake_keywords.Model
+    depends_on:
+      elasticmq:
+        condition: service_healthy
