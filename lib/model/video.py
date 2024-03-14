@@ -42,7 +42,7 @@ class Model(Model):
         Constant for identifying bucket. Needed for uploading output.
         """
         prefix = (get_environment_setting("QUEUE_PREFIX") or "").replace(".", "__").replace("_", "-") or "local-"
-        return f"{prefix}presto-tmk-videos"
+        return f"{prefix}tmk-videos"
 
     def process(self, video: schemas.Message) -> schemas.GenericItem:
         """
