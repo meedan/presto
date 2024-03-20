@@ -5,7 +5,7 @@ import os
 import boto3
 import botocore
 
-from lib.helpers import get_setting, get_environment_setting
+from lib.helpers import get_environment_setting
 from lib.logger import logger
 from lib import schemas
 SQS_MAX_BATCH_SIZE = 10
@@ -25,8 +25,14 @@ class Queue:
         return (get_environment_setting("QUEUE_SUFFIX") or "")
 
     @staticmethod
-    def get_queue_name(input_queue_name):
-        return Queue.get_queue_prefix()+get_setting(input_queue_name, "MODEL_NAME").replace(".", "__")+Queue.get_queue_suffix()
+    def get_input_queue_name(model_name=None):
+        name = model_name or get_environment_setting("MODEL_NAME").replace(".", "__")
+        return Queue.get_queue_prefix()+name+Queue.get_queue_suffix()
+
+    @staticmethod
+    def get_output_queue_name(model_name=None):
+        name = model_name or get_environment_setting("MODEL_NAME").replace(".", "__")
+        return Queue.get_queue_prefix()+name+"_output"+Queue.get_queue_suffix()
 
     def store_queue_map(self, all_queues: List[boto3.resources.base.ServiceResource]) -> Dict[str, boto3.resources.base.ServiceResource]:
         """
@@ -47,7 +53,7 @@ class Queue:
         """
         When plucking input queues, we want to omit any queues that are our paired suffix queues..
         """
-        return [queue for queue in queues if self.queue_name(queue).endswith(suffix)]
+        return [queue for queue in queues if not suffix or suffix and self.queue_name(queue).endswith(suffix)]
 
     def restrict_queues_by_suffix(self, queues: List[boto3.resources.base.ServiceResource], suffix: str) -> List[boto3.resources.base.ServiceResource]:
         """
@@ -76,8 +82,10 @@ class Queue:
         Initialize all queues for the given worker - try to create them if they are not found by name for whatever reason
         """
         try:
-            found_queues = [q for q in self.sqs.queues.filter(QueueNamePrefix=queue_name.replace(".fifo", ""))]
+            found_queues = [q for q in self.sqs.queues.filter(QueueNamePrefix=queue_name)]
             exact_match_queues = [queue for queue in found_queues if queue.attributes['QueueArn'].split(':')[-1] == queue_name]
+            logger.info(f"found queues are {found_queues}")
+            logger.info(f"exact queues are {exact_match_queues}")
             if exact_match_queues:
                 return exact_match_queues
             else:
@@ -103,20 +111,6 @@ class Queue:
         else:
             logger.info(f"Using SQS Interface")
             return boto3.resource('sqs', region_name=get_environment_setting("AWS_DEFAULT_REGION"))
-
-    @staticmethod
-    def get_output_queue_name(input_queue_name: str, output_queue_name: str = None) -> str:
-        """
-        If output_queue_name was empty or None, set name for queue.
-        """
-        if not output_queue_name or len(output_queue_name) == 0:
-            # workaround to ensure that .fifo suffix always comes at the end of queue name.
-            suffix = Queue.get_queue_suffix()
-            if len(suffix):
-                output_queue_name = input_queue_name[:-len(suffix)] + '_output' + Queue.get_queue_suffix()
-            else:
-                output_queue_name = f'{input_queue_name}_output'
-        return output_queue_name
 
     def group_deletions(self, messages_with_queues: List[Tuple[schemas.Message, boto3.resources.base.ServiceResource]]) -> Dict[boto3.resources.base.ServiceResource, List[schemas.Message]]:
         """
@@ -181,5 +175,8 @@ class Queue:
         """
         Actual SQS logic for pushing a message to a queue
         """
-        self.find_queue_by_name(queue_name).send_message(MessageBody=json.dumps(message.dict()))
+        message_data = {"MessageBody": json.dumps(message.dict())}
+        if queue_name.endswith('.fifo'):
+            message_data["MessageGroupId"] = message.body.id
+        self.find_queue_by_name(queue_name).send_message(**message_data)
         return message
