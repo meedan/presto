@@ -26,11 +26,11 @@ class GenericTransformerModel(Model):
         vectorizable_texts = [e.body.text for e in docs]
         vectorized = self.vectorize(vectorizable_texts)
         for doc, vector in zip(docs, vectorized):
-            doc.body.hash_value = vector
+            doc.body.result = vector
         return docs
 
     def vectorize(self, texts: List[str]) -> List[List[float]]:
         """
         Vectorize the text! Run as batch.
         """
-        return self.model.encode(texts).tolist()
+        return {"hash_value": self.model.encode(texts).tolist()}

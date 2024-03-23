@@ -37,7 +37,7 @@ class QueueProcessor(Queue):
         messages_with_queues = self.receive_messages(self.batch_size)
         if messages_with_queues:
             logger.info(f"About to respond to: ({messages_with_queues})")
-            bodies = [schemas.Message(**json.loads(message.body)) for message, queue in messages_with_queues]
+            bodies = [schemas.parse_message(json.loads(message.body)) for message, queue in messages_with_queues]
             for body in bodies:
                 self.send_callback(body)
             self.delete_messages(messages_with_queues)

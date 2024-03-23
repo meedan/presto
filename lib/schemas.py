@@ -1,30 +1,42 @@
-from typing import Any, List, Optional, Union
-from pydantic import BaseModel, root_validator
+from pydantic import BaseModel, ValidationError
+from typing import Any, Dict, List, Optional, Union
 
-# Output hash values can be of different types.
-class GenericItem(BaseModel):
-    id: str
-    callback_url: Optional[str] = None
-    url: Optional[str] = None
-    text: Optional[str] = None
-    raw: Optional[dict] = {}
-
-class MediaItem(GenericItem):
+class MediaResponse(BaseModel):
     hash_value: Optional[Any] = None
 
-class VideoItem(MediaItem):
+class VideoResponse(MediaResponse):
     folder: Optional[str] = None
     filepath: Optional[str] = None
 
+class YakeKeywordsResponse(BaseModel):
+    keywords: Optional[List[List[Union[str, float]]]] = None
+
+class GenericItem(BaseModel):
+    id: Union[str, int, float]
+    callback_url: Optional[str] = None
+    url: Optional[str] = None
+    text: Optional[str] = None
+    raw: Optional[Dict] = {}
+    parameters: Optional[Dict] = {}
+    result: Optional[Union[MediaResponse, VideoResponse, YakeKeywordsResponse]] = None
+
 class Message(BaseModel):
-    body: Union[MediaItem, VideoItem]
+    body: GenericItem
     model_name: str
-    @root_validator(pre=True)
-    def set_body(cls, values):
-        body = values.get("body")
-        model_name = values.get("model_name")
-        if model_name == "video__Model":
-            values["body"] = VideoItem(**values["body"]).dict()
-        if model_name in ["audio__Model", "image__Model", "fptg__Model", "indian_sbert__Model", "mean_tokens__Model", "fasttext__Model"]:
-            values["body"] = MediaItem(**values["body"]).dict()
-        return values
+
+def parse_message(message_data: Dict) -> Message:
+    body_data = message_data['body']
+    model_name = message_data['model_name']
+    result_data = body_data.get('result', {})
+    if 'yake_keywords' in model_name:
+        result_instance = YakeKeywordsResponse(**result_data)
+    elif 'video' in model_name:
+        result_instance = VideoResponse(**result_data)
+    else:
+        result_instance = MediaResponse(**result_data)
+    if 'result' in body_data:
+        del body_data['result']
+    body_instance = GenericItem(**body_data)
+    body_instance.result = result_instance
+    message_instance = Message(body=body_instance, model_name=model_name)
+    return message_instance

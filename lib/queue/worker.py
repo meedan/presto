@@ -70,7 +70,7 @@ class QueueWorker(Queue):
         Returns:
         - List[schemas.Message]: A list of Message objects ready for processing.
         """
-        return [schemas.Message(**{**json.loads(message.body), **{"model_name": model.model_name}})
+        return [schemas.parse_message({**json.loads(message.body), **{"model_name": model.model_name}})
                 for message, queue in messages_with_queues]
 
     @staticmethod

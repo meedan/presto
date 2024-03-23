@@ -24,11 +24,11 @@ class TestAudio(unittest.TestCase):
 
         mock_urlopen.return_value = MagicMock(read=MagicMock(return_value=contents))
 
-        audio = schemas.Message(body={"id": "123", "callback_url": "http://example.com/callback", "url": "https://example.com/audio.mp3"}, model_name="audio__Model")
+        audio = schemas.parse_message({"body": {"id": "123", "callback_url": "http://example.com/callback", "url": "https://example.com/audio.mp3"}, "model_name": "audio__Model"})
         result = self.audio_model.process(audio)
         mock_request.assert_called_once_with(audio.body.url, headers={'User-Agent': 'Mozilla/5.0'})
         mock_urlopen.assert_called_once_with(mock_request)
-        self.assertEqual(list, type(result))
+        self.assertEqual(dict, type(result))
 
     @patch('urllib.request.urlopen')
     @patch('urllib.request.Request')
@@ -45,11 +45,11 @@ class TestAudio(unittest.TestCase):
 
         mock_urlopen.return_value = MagicMock(read=MagicMock(return_value=contents))
 
-        audio = schemas.Message(body={"id": "123", "callback_url": "http://example.com/callback", "url": "https://example.com/audio.mp3"}, model_name="audio__Model")
+        audio = schemas.parse_message({"body": {"id": "123", "callback_url": "http://example.com/callback", "url": "https://example.com/audio.mp3"}, "model_name": "audio__Model"})
         result = self.audio_model.process(audio)
         mock_request.assert_called_once_with(audio.body.url, headers={'User-Agent': 'Mozilla/5.0'})
         mock_urlopen.assert_called_once_with(mock_request)
-        self.assertEqual([], result)
+        self.assertEqual({'hash_value': []}, result)
 
 if __name__ == '__main__':
     unittest.main()
