@@ -1,12 +1,16 @@
+import pdb
 import os
 from concurrent.futures import ThreadPoolExecutor, TimeoutError
 import json
 from typing import List, Tuple
 from lib import schemas
 from lib.logger import logger
-from lib.queue.queue import Queue
+from lib.queue.queue import Queue, MAX_RETRIES
 from lib.model.model import Model
+from lib.sentry import capture_custom_message
+
 TIMEOUT_SECONDS = int(os.getenv("WORK_TIMEOUT_SECONDS", "60"))
+
 class QueueWorker(Queue):
     @classmethod
     def create(cls, model_name: str = None):
@@ -19,18 +23,20 @@ class QueueWorker(Queue):
         logger.info(f"Starting queue with: ('{input_queue_name}', '{output_queue_name}')")
         return QueueWorker(input_queue_name, output_queue_name)
 
-    def __init__(self, input_queue_name: str, output_queue_name: str = None):
+    def __init__(self, input_queue_name: str, output_queue_name: str = None, dlq_queue_name: str = None):
         """
-        Start a specific queue - must pass input_queue_name - optionally pass output_queue_name.
+        Start a specific queue - must pass input_queue_name, optionally pass output_queue_name, dlq_queue_name.
         """
         super().__init__()
         self.input_queue_name = input_queue_name
+        self.output_queue_name = output_queue_name or Queue.get_output_queue_name()
+        self.dlq_queue_name = dlq_queue_name or Queue.get_dead_letter_queue_name()
         q_suffix = f"_output" + Queue.get_queue_suffix()
-        self.input_queues = self.restrict_queues_by_suffix(self.get_or_create_queues(input_queue_name), q_suffix) 
-        if output_queue_name:
-            self.output_queue_name = Queue.get_output_queue_name()
-            self.output_queues = self.get_or_create_queues(output_queue_name)
-        self.all_queues = self.store_queue_map([item for row in [self.input_queues, self.output_queues] for item in row])
+        dlq_suffix = f"_dlq" + Queue.get_queue_suffix()
+        self.input_queues = self.restrict_queues_by_suffix(self.get_or_create_queues(input_queue_name), q_suffix)
+        self.output_queues = self.get_or_create_queues(self.output_queue_name)
+        self.dead_letter_queues = self.get_or_create_queues(self.dlq_queue_name)
+        self.all_queues = self.store_queue_map([item for row in [self.input_queues, self.output_queues, self.dead_letter_queues] for item in row])
         logger.info(f"Worker listening to queues of {self.all_queues}")
 
     def process(self, model: Model):
@@ -57,6 +63,8 @@ class QueueWorker(Queue):
         responses, success = self.execute_with_timeout(model.respond, messages, timeout_seconds=TIMEOUT_SECONDS)
         if success:
             self.delete_processed_messages(messages_with_queues)
+        else:
+            self.increment_message_error_counts(messages_with_queues) # Add the new functionality here
         return responses
 
     @staticmethod
@@ -117,3 +125,23 @@ class QueueWorker(Queue):
         - messages_with_queues (List[Tuple]): A list of tuples, each containing a message and its corresponding queue, to be deleted.
         """
         self.delete_messages(messages_with_queues)
+
+    def increment_message_error_counts(self, messages_with_queues: List[Tuple]):
+        """
+        Increment the error count for messages and push them back to the queue or to the dead letter queue if retries exceed the limit.
+
+        Parameters:
+        - messages_with_queues (List[Tuple]): A list of tuples, each containing a message and its corresponding queue.
+        """
+        for message, queue in messages_with_queues:
+            message_body = json.loads(message.body)
+            retry_count = message_body.get('retry_count', 0) + 1
+
+            if retry_count > MAX_RETRIES:
+                logger.info(f"Message {message_body} exceeded max retries. Moving to DLQ.")
+                capture_custom_message("Message exceeded max retries. Moving to DLQ.", 'info', {"message_body": message_body})
+                self.push_to_dead_letter_queue(schemas.parse_message(message_body))
+            else:
+                message_body['retry_count'] = retry_count
+                updated_message = schemas.parse_message(message_body)
+                self.push_message(self.input_queue_name, updated_message)

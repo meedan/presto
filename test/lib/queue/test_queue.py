@@ -20,6 +20,7 @@ class TestQueueWorker(unittest.TestCase):
         self.mock_model = MagicMock()
         self.queue_name_input = Queue.get_input_queue_name()
         self.queue_name_output = Queue.get_output_queue_name()
+        self.queue_name_dlq = Queue.get_dead_letter_queue_name()
 
         # Mock the SQS resource and the queues
         self.mock_sqs_resource = MagicMock()
@@ -29,14 +30,20 @@ class TestQueueWorker(unittest.TestCase):
         self.mock_output_queue = MagicMock()
         self.mock_output_queue.url = f"http://queue/{self.queue_name_output}"
         self.mock_output_queue.attributes = {"QueueArn": f"queue:{self.queue_name_output}"}
-        self.mock_sqs_resource.queues.filter.return_value = [self.mock_input_queue, self.mock_output_queue]
+        self.mock_dlq_queue = MagicMock()
+        self.mock_dlq_queue.url = f"http://queue/{self.queue_name_dlq}"
+        self.mock_dlq_queue.attributes = {"QueueArn": f"queue:{self.queue_name_dlq}"}
+        self.mock_sqs_resource.queues.filter.return_value = [self.mock_input_queue, self.mock_output_queue, self.mock_dlq_queue]
         mock_boto_resource.return_value = self.mock_sqs_resource
 
         # Initialize the SQSQueue instance
-        self.queue = QueueWorker(self.queue_name_input, self.queue_name_output)
-    
+        self.queue = QueueWorker(self.queue_name_input, self.queue_name_output, self.queue_name_dlq)
+
     def test_get_output_queue_name(self):
         self.assertEqual(self.queue.get_output_queue_name().replace(".fifo", ""), (self.queue.get_input_queue_name()+'_output').replace(".fifo", ""))
+
+    def test_get_dead_letter_queue_name(self):
+        self.assertEqual(self.queue.get_dead_letter_queue_name().replace(".fifo", ""), (self.queue.get_input_queue_name()+'_dlq').replace(".fifo", ""))
 
     def test_process(self):
         self.queue.receive_messages = MagicMock(return_value=[(FakeSQSMessage(receipt_handle="blah", body=json.dumps({"body": {"id": 1, "callback_url": "http://example.com", "text": "This is a test"}})), self.mock_input_queue)])
@@ -55,7 +62,7 @@ class TestQueueWorker(unittest.TestCase):
         mock_queue2.receive_messages.return_value = [FakeSQSMessage(receipt_handle="blah", body=json.dumps({"body": {"id": 2, "callback_url": "http://example.com", "text": "This is another test"}}))]
         self.queue.input_queues = [mock_queue1, mock_queue2]
         received_messages = self.queue.receive_messages(5)
-    
+
         # Check if the right number of messages were received and the content is correct
         self.assertEqual(len(received_messages), 2)
         self.assertIn("a test", received_messages[0][0].body)
@@ -109,6 +116,47 @@ class TestQueueWorker(unittest.TestCase):
         self.mock_output_queue.send_message.assert_called_once_with(MessageBody='{"body": {"id": 1, "callback_url": "http://example.com", "url": null, "text": "This is a test", "raw": {}, "parameters": {}, "result": {"hash_value": null}}, "model_name": "mean_tokens__Model"}')
         self.assertEqual(returned_message, message_to_push)
 
+    def test_push_to_dead_letter_queue(self):
+        message_to_push = schemas.parse_message({"body": {"id": 1, "callback_url": "http://example.com", "text": "This is a test"}, "model_name": "mean_tokens__Model"})
+        # Call push_to_dead_letter_queue
+        self.queue.push_to_dead_letter_queue(message_to_push)
+        # Check if the message was correctly serialized and sent to the DLQ
+        self.mock_dlq_queue.send_message.assert_called_once_with(MessageBody='{"body": {"id": 1, "callback_url": "http://example.com", "url": null, "text": "This is a test", "raw": {}, "parameters": {}, "result": {"hash_value": null}}, "model_name": "mean_tokens__Model"}')
+
+    def test_increment_message_error_counts_exceed_max_retries(self):
+        message_body = {
+            "body": {"id": 1, "callback_url": "http://example.com", "text": "This is a test"},
+            "retry_count": 5,  # Already at max retries
+            "model_name": "mean_tokens__Model"
+        }
+        fake_message = FakeSQSMessage(receipt_handle="blah", body=json.dumps(message_body))
+        messages_with_queues = [(fake_message, self.mock_input_queue)]
+
+        self.queue.push_to_dead_letter_queue = MagicMock()
+        self.queue.push_message = MagicMock()
+
+        self.queue.increment_message_error_counts(messages_with_queues)
+
+        self.queue.push_to_dead_letter_queue.assert_called_once()
+        self.queue.push_message.assert_not_called()
+
+    def test_increment_message_error_counts_increment(self):
+        message_body = {
+            "body": {"id": 1, "callback_url": "http://example.com", "text": "This is a test"},
+            "retry_count": 2,  # Less than max retries
+            "model_name": "mean_tokens__Model"
+        }
+        fake_message = FakeSQSMessage(receipt_handle="blah", body=json.dumps(message_body))
+        messages_with_queues = [(fake_message, self.mock_input_queue)]
+
+        self.queue.push_to_dead_letter_queue = MagicMock()
+        self.queue.push_message = MagicMock()
+
+        self.queue.increment_message_error_counts(messages_with_queues)
+
+        self.queue.push_to_dead_letter_queue.assert_not_called()
+        self.queue.push_message.assert_called_once()
+
     def test_extract_messages(self):
         messages_with_queues = [
             (FakeSQSMessage(receipt_handle="blah", body=json.dumps({
@@ -131,7 +179,7 @@ class TestQueueWorker(unittest.TestCase):
     def test_execute_with_timeout_success(self, mock_log_error):
         def test_func(args):
             return ["response"]
-        
+
         responses, success = QueueWorker.execute_with_timeout(test_func, [], timeout_seconds=1)
         self.assertEqual(responses, ["response"])
         self.assertTrue(success)
@@ -141,7 +189,7 @@ class TestQueueWorker(unittest.TestCase):
     def test_execute_with_timeout_failure(self, mock_log_error):
         def test_func(args):
             raise TimeoutError
-        
+
         responses, success = QueueWorker.execute_with_timeout(test_func, [], timeout_seconds=1)
         self.assertEqual(responses, [])
         self.assertFalse(success)

@@ -1,3 +1,4 @@
+import pdb
 import json
 from typing import List, Dict, Tuple
 import os
@@ -8,7 +9,10 @@ import botocore
 from lib.helpers import get_environment_setting
 from lib.logger import logger
 from lib import schemas
-SQS_MAX_BATCH_SIZE = 10
+
+SQS_MAX_BATCH_SIZE = int(os.getenv("SQS_MAX_BATCH_SIZE", "10"))
+MAX_RETRIES = int(os.getenv("MAX_RETRIES", "5"))
+
 class Queue:
     def __init__(self):
         """
@@ -34,6 +38,11 @@ class Queue:
         name = model_name or get_environment_setting("MODEL_NAME").replace(".", "__")
         return Queue.get_queue_prefix()+name+"_output"+Queue.get_queue_suffix()
 
+    @staticmethod
+    def get_dead_letter_queue_name(model_name=None):
+        name = model_name or get_environment_setting("MODEL_NAME").replace(".", "__")
+        return Queue.get_queue_prefix()+name+"_dlq"+Queue.get_queue_suffix()
+
     def store_queue_map(self, all_queues: List[boto3.resources.base.ServiceResource]) -> Dict[str, boto3.resources.base.ServiceResource]:
         """
         Store a quick lookup so that we dont loop through this over and over in other places.
@@ -42,13 +51,13 @@ class Queue:
         for queue in all_queues:
             queue_map[self.queue_name(queue)] = queue
         return queue_map
-    
+
     def queue_name(self, queue: boto3.resources.base.ServiceResource) -> str:
         """
         Pull queue name from a given queue
         """
         return queue.url.split('/')[-1]
-        
+
     def restrict_queues_to_suffix(self, queues: List[boto3.resources.base.ServiceResource], suffix: str) -> List[boto3.resources.base.ServiceResource]:
         """
         When plucking input queues, we want to omit any queues that are our paired suffix queues..
@@ -122,7 +131,7 @@ class Queue:
                 queue_to_messages[queue] = []
             queue_to_messages[queue].append(message)
         return queue_to_messages
-    
+
     def delete_messages(self, messages_with_queues: List[Tuple[schemas.Message, boto3.resources.base.ServiceResource]]) -> None:
         """
         Delete messages as we process them so other processes don't pick them up.
@@ -131,7 +140,6 @@ class Queue:
         """
         for queue, messages in self.group_deletions(messages_with_queues).items():
             self.delete_messages_from_queue(queue, messages)
-
 
     def delete_messages_from_queue(self, queue: boto3.resources.base.ServiceResource, messages: List[schemas.Message]) -> None:
         """
@@ -170,7 +178,7 @@ class Queue:
         Search through queues to find the right one
         """
         return self.all_queues.get(queue_name)
-    
+
     def push_message(self, queue_name: str, message: schemas.Message) -> schemas.Message:
         """
         Actual SQS logic for pushing a message to a queue
@@ -180,3 +188,10 @@ class Queue:
             message_data["MessageGroupId"] = message.body.id
         self.find_queue_by_name(queue_name).send_message(**message_data)
         return message
+
+    def push_to_dead_letter_queue(self, message: schemas.Message):
+        """
+        Push a message to the dead letter queue.
+        """
+        dlq_name = Queue.get_dead_letter_queue_name()
+        self.push_message(dlq_name, message)
