@@ -7,6 +7,7 @@ from lib import schemas
 from lib.logger import logger
 from lib.queue.queue import Queue, MAX_RETRIES
 from lib.model.model import Model
+from lib.sentry import capture_custom_message
 
 TIMEOUT_SECONDS = int(os.getenv("WORK_TIMEOUT_SECONDS", "60"))
 
@@ -29,7 +30,7 @@ class QueueWorker(Queue):
         super().__init__()
         self.input_queue_name = input_queue_name
         self.output_queue_name = output_queue_name or Queue.get_output_queue_name()
-        self.dlq_queue_name = dlq_queue_name or Queue.get_output_queue_name()
+        self.dlq_queue_name = dlq_queue_name or Queue.get_dead_letter_queue_name()
         q_suffix = f"_output" + Queue.get_queue_suffix()
         dlq_suffix = f"_dlq" + Queue.get_queue_suffix()
         self.input_queues = self.restrict_queues_by_suffix(self.get_or_create_queues(input_queue_name), q_suffix)
@@ -138,6 +139,7 @@ class QueueWorker(Queue):
 
             if retry_count > MAX_RETRIES:
                 logger.info(f"Message {message_body} exceeded max retries. Moving to DLQ.")
+                capture_custom_message("Message exceeded max retries. Moving to DLQ.", 'info', {"message_body": message_body})
                 self.push_to_dead_letter_queue(schemas.parse_message(message_body))
             else:
                 message_body['retry_count'] = retry_count
