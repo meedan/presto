@@ -142,6 +142,6 @@ class QueueWorker(Queue):
                 capture_custom_message("Message exceeded max retries. Moving to DLQ.", 'info', {"message_body": message_body})
                 self.push_to_dead_letter_queue(schemas.parse_message(message_body))
             else:
-                message_body['retry_count'] = retry_count
                 updated_message = schemas.parse_message(message_body)
+                updated_message.retry_count = retry_count
                 self.push_message(self.input_queue_name, updated_message)

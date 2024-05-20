@@ -23,6 +23,7 @@ class GenericItem(BaseModel):
 class Message(BaseModel):
     body: GenericItem
     model_name: str
+    retry_count: int = 0
 
 def parse_message(message_data: Dict) -> Message:
     body_data = message_data['body']
