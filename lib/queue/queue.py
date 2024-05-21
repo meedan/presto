@@ -153,7 +153,7 @@ class Queue:
                 entries.append(self.delete_message_entry(message, idx))
             queue.delete_messages(Entries=entries)
 
-    def delete_message_entry(message: schemas.Message, idx: int = 0) -> Dict[str, str]:
+    def delete_message_entry(self, message: schemas.Message, idx: int = 0) -> Dict[str, str]:
         """
         Helper function to generate correct format of entry
         """
