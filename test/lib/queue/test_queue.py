@@ -46,8 +46,53 @@ class TestQueueWorker(unittest.TestCase):
     def test_get_dead_letter_queue_name(self):
         self.assertEqual(self.queue.get_dead_letter_queue_name().replace(".fifo", ""), (self.queue.get_input_queue_name()+'_dlq').replace(".fifo", ""))
 
+    @patch('lib.queue.worker.time.time', side_effect=[0, 1])
+    @patch('lib.queue.worker.cloudwatch.put_metric_data')
+    def test_execute_with_timeout_failure(self, mock_put_metric_data, mock_time, mock_log_error):
+        def test_func(args):
+            raise TimeoutError
+
+        with patch('lib.queue.worker.QueueWorker.log_and_handle_error') as mock_log_error:
+            responses, success = QueueWorker.execute_with_timeout(test_func, [], timeout_seconds=1)
+            self.assertEqual(responses, [])
+            self.assertFalse(success)
+            mock_log_error.assert_called_once_with("Model respond timeout exceeded.")
+            mock_put_metric_data.assert_called_once_with(
+                Namespace='QueueWorkerMetrics',
+                MetricData=[{
+                    'MetricName': 'test_func_ExecutionTime',
+                    'Dimensions': [{'Name': 'FunctionName', 'Value': 'test_func'}],
+                    'Unit': 'Seconds',
+                    'Value': 1
+                }]
+            )
+
+    @patch('lib.queue.worker.time.time', side_effect=[0, 0.5])
+    @patch('lib.queue.worker.cloudwatch.put_metric_data')
+    def test_execute_with_timeout_success(self, mock_put_metric_data, mock_time, mock_log_error):
+        def test_func(args):
+            return ["response"]
+
+        with patch('lib.queue.worker.QueueWorker.log_and_handle_error') as mock_log_error:
+            responses, success = QueueWorker.execute_with_timeout(test_func, [], timeout_seconds=1)
+            self.assertEqual(responses, ["response"])
+            self.assertTrue(success)
+            mock_log_error.assert_not_called()
+            mock_put_metric_data.assert_called_once_with(
+                Namespace='QueueWorkerMetrics',
+                MetricData=[{
+                    'MetricName': 'test_func_ExecutionTime',
+                    'Dimensions': [{'Name': 'FunctionName', 'Value': 'test_func'}],
+                    'Unit': 'Seconds',
+                    'Value': 0.5
+                }]
+            )
+
     def test_process(self):
-        self.queue.receive_messages = MagicMock(return_value=[(FakeSQSMessage(receipt_handle="blah", body=json.dumps({"body": {"id": 1, "callback_url": "http://example.com", "text": "This is a test"}})), self.mock_input_queue)])
+        self.queue.receive_messages = MagicMock(return_value=[(FakeSQSMessage(receipt_handle="blah", body=json.dumps({
+            "body": {"id": 1, "callback_url": "http://example.com", "text": "This is a test"},
+            "model_name": "generic"
+        })), self.mock_input_queue)])
         self.queue.input_queue = MagicMock(return_value=None)
         self.model.model = self.mock_model
         self.model.model.encode = MagicMock(return_value=np.array([[4, 5, 6], [7, 8, 9]]))
