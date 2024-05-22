@@ -144,4 +144,5 @@ class QueueWorker(Queue):
             else:
                 updated_message = schemas.parse_message(message_body)
                 updated_message.retry_count = retry_count
+                queue.delete_messages(Entries=[self.delete_message_entry(message)])
                 self.push_message(self.input_queue_name, updated_message)

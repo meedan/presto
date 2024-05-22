@@ -150,12 +150,17 @@ class Queue:
             entries = []
             for idx, message in enumerate(batch):
                 logger.debug(f"Deleting message: {message}")
-                entry = {
-                    'Id': str(idx),
-                    'ReceiptHandle': message.receipt_handle
-                }
-                entries.append(entry)
+                entries.append(self.delete_message_entry(message, idx))
             queue.delete_messages(Entries=entries)
+
+    def delete_message_entry(self, message: schemas.Message, idx: int = 0) -> Dict[str, str]:
+        """
+        Helper function to generate correct format of entry
+        """
+        return {
+            'Id': str(idx),
+            'ReceiptHandle': message.receipt_handle
+        }
 
     def receive_messages(self, batch_size: int = 1) -> List[Tuple[schemas.Message, boto3.resources.base.ServiceResource]]:
         """
