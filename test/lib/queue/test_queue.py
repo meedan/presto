@@ -3,6 +3,7 @@ import os
 import unittest
 from unittest.mock import MagicMock, patch
 import numpy as np
+import time
 
 from lib.model.generic_transformer import GenericTransformerModel
 from lib.queue.queue import Queue
@@ -180,20 +181,42 @@ class TestQueueWorker(unittest.TestCase):
         def test_func(args):
             return ["response"]
 
-        responses, success = QueueWorker.execute_with_timeout(test_func, [], timeout_seconds=1)
-        self.assertEqual(responses, ["response"])
-        self.assertTrue(success)
-        mock_log_error.assert_not_called()
+        with patch('lib.queue.worker.time.time', side_effect=[0, 0.5]):  # Mocking time to simulate execution time
+            with patch('lib.queue.worker.cloudwatch.put_metric_data') as mock_put_metric_data:
+                responses, success = QueueWorker.execute_with_timeout(test_func, [], timeout_seconds=1)
+                self.assertEqual(responses, ["response"])
+                self.assertTrue(success)
+                mock_log_error.assert_not_called()
+                mock_put_metric_data.assert_called_once_with(
+                    Namespace='QueueWorkerMetrics',
+                    MetricData=[{
+                        'MetricName': 'test_func_ExecutionTime',
+                        'Dimensions': [{'Name': 'FunctionName', 'Value': 'test_func'}],
+                        'Unit': 'Seconds',
+                        'Value': 0.5
+                    }]
+                )
 
     @patch('lib.queue.worker.QueueWorker.log_and_handle_error')
     def test_execute_with_timeout_failure(self, mock_log_error):
         def test_func(args):
             raise TimeoutError
 
-        responses, success = QueueWorker.execute_with_timeout(test_func, [], timeout_seconds=1)
-        self.assertEqual(responses, [])
-        self.assertFalse(success)
-        mock_log_error.assert_called_once_with("Model respond timeout exceeded.")
+        with patch('lib.queue.worker.time.time', side_effect=[0, 1]):  # Mocking time to simulate execution time
+            with patch('lib.queue.worker.cloudwatch.put_metric_data') as mock_put_metric_data:
+                responses, success = QueueWorker.execute_with_timeout(test_func, [], timeout_seconds=1)
+                self.assertEqual(responses, [])
+                self.assertFalse(success)
+                mock_log_error.assert_called_once_with("Model respond timeout exceeded.")
+                mock_put_metric_data.assert_called_once_with(
+                    Namespace='QueueWorkerMetrics',
+                    MetricData=[{
+                        'MetricName': 'test_func_ExecutionTime',
+                        'Dimensions': [{'Name': 'FunctionName', 'Value': 'test_func'}],
+                        'Unit': 'Seconds',
+                        'Value': 1
+                    }]
+                )
 
     @patch('lib.queue.worker.logger.error')
     def test_log_and_handle_error(self, mock_logger_error):

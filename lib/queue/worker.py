@@ -1,15 +1,21 @@
 import pdb
 import os
+import time
 from concurrent.futures import ThreadPoolExecutor, TimeoutError
 import json
+import boto3
 from typing import List, Tuple
 from lib import schemas
 from lib.logger import logger
 from lib.queue.queue import Queue, MAX_RETRIES
 from lib.model.model import Model
 from lib.sentry import capture_custom_message
+from lib.helpers import get_environment_setting
 
 TIMEOUT_SECONDS = int(os.getenv("WORK_TIMEOUT_SECONDS", "60"))
+
+# Initialize CloudWatch client
+cloudwatch = boto3.client('cloudwatch', region_name='us-west-2')
 
 class QueueWorker(Queue):
     @classmethod
@@ -64,7 +70,7 @@ class QueueWorker(Queue):
         if success:
             self.delete_processed_messages(messages_with_queues)
         else:
-            self.increment_message_error_counts(messages_with_queues) # Add the new functionality here
+            self.increment_message_error_counts(messages_with_queues)
         return responses
 
     @staticmethod
@@ -95,10 +101,14 @@ class QueueWorker(Queue):
         Returns:
         - List[schemas.Message]: The result of the function if it completes within the timeout, otherwise an empty list.
         """
+        start_time = time.time()
         try:
             with ThreadPoolExecutor(max_workers=1) as executor:
                 future = executor.submit(func, args)
-                return future.result(timeout=timeout_seconds), True
+                result = future.result(timeout=timeout_seconds)
+                execution_time = time.time() - start_time
+                QueueWorker.log_execution_time(func.__name__, execution_time)
+                return result, True
         except TimeoutError:
             error_message = "Model respond timeout exceeded."
             QueueWorker.log_and_handle_error(error_message)
@@ -106,6 +116,34 @@ class QueueWorker(Queue):
         except Exception as e:
             QueueWorker.log_and_handle_error(str(e))
             return [], False
+
+    @staticmethod
+    def log_execution_time(func_name: str, execution_time: float):
+        """
+        Logs the execution time of a function to CloudWatch.
+
+        Parameters:
+        - func_name (str): The name of the function that was executed.
+        - execution_time (float): The time taken to execute the function.
+        """
+        env_name = get_environment_setting("DEPLOY_ENV")
+        logger.info(f"Function {func_name} executed in {execution_time:.2f} seconds.")
+        cloudwatch.put_metric_data(
+            Namespace='QueueWorkerMetrics',
+            MetricData=[
+                {
+                    'MetricName': f'{env_name}_presto_{func_name}_ExecutionTime',
+                    'Dimensions': [
+                        {
+                            'Name': 'FunctionName',
+                            'Value': func_name
+                        },
+                    ],
+                    'Unit': 'Seconds',
+                    'Value': execution_time
+                },
+            ]
+        )
 
     @staticmethod
     def log_and_handle_error(error):
