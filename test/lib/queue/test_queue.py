@@ -15,7 +15,8 @@ from concurrent.futures import TimeoutError
 class TestQueueWorker(unittest.TestCase):
     @patch('lib.queue.queue.boto3.resource')
     @patch('lib.helpers.get_environment_setting', return_value='us-west-1')
-    def setUp(self, mock_get_env_setting, mock_boto_resource):
+    @patch('lib.telemetry.OpenTelemetryExporter.log_execution_time')
+    def setUp(self, mock_log_execution_time, mock_get_env_setting, mock_boto_resource):
         self.model = GenericTransformerModel(None)
         self.model.model_name = "generic"
         self.mock_model = MagicMock()
@@ -37,7 +38,7 @@ class TestQueueWorker(unittest.TestCase):
         self.mock_sqs_resource.queues.filter.return_value = [self.mock_input_queue, self.mock_output_queue, self.mock_dlq_queue]
         mock_boto_resource.return_value = self.mock_sqs_resource
 
-        # Initialize the SQSQueue instance
+        # Initialize the QueueWorker instance
         self.queue = QueueWorker(self.queue_name_input, self.queue_name_output, self.queue_name_dlq)
 
     def test_get_output_queue_name(self):
@@ -51,7 +52,7 @@ class TestQueueWorker(unittest.TestCase):
     def test_execute_with_timeout_failure(self, mock_time, mock_log_error):
         def test_func(args):
             raise TimeoutError
-        responses, success = QueueWorker.execute_with_timeout(test_func, [], timeout_seconds=1)
+        responses, success = self.queue.execute_with_timeout(test_func, [], timeout_seconds=1)
         self.assertEqual(responses, [])
         self.assertFalse(success)
         mock_log_error.assert_called_once_with("Model respond timeout exceeded.")
@@ -63,7 +64,7 @@ class TestQueueWorker(unittest.TestCase):
         def test_func(args):
             return ["response"]
 
-        responses, success = QueueWorker.execute_with_timeout(test_func, [], timeout_seconds=1)
+        responses, success = self.queue.execute_with_timeout(test_func, [], timeout_seconds=1)
         self.assertEqual(responses in [[], ["response"]], True)
         self.assertTrue(success)
         mock_log_error.assert_not_called()
@@ -204,7 +205,7 @@ class TestQueueWorker(unittest.TestCase):
 
     @patch('lib.queue.worker.logger.error')
     def test_log_and_handle_error(self, mock_logger_error):
-        QueueWorker.log_and_handle_error("Test error")
+        self.queue.log_and_handle_error("Test error")
         mock_logger_error.assert_called_once_with("Test error")
 
     @patch('lib.queue.worker.QueueWorker.delete_messages')

@@ -3,7 +3,6 @@ import os
 import time
 from concurrent.futures import ThreadPoolExecutor, TimeoutError
 import json
-import boto3
 from typing import List, Tuple
 from lib import schemas
 from lib.logger import logger
@@ -11,11 +10,10 @@ from lib.queue.queue import Queue, MAX_RETRIES
 from lib.model.model import Model
 from lib.sentry import capture_custom_message
 from lib.helpers import get_environment_setting
+from lib.telemetry import OpenTelemetryExporter
 
 TIMEOUT_SECONDS = int(os.getenv("WORK_TIMEOUT_SECONDS", "60"))
-
-# Initialize CloudWatch client
-cloudwatch = boto3.client('cloudwatch', region_name='us-west-2')
+OPEN_TELEMETRY_EXPORTER = OpenTelemetryExporter(service_name="QueueWorkerService", local_debug=False)
 
 class QueueWorker(Queue):
     @classmethod
@@ -118,7 +116,7 @@ class QueueWorker(Queue):
             return [], False
 
     @staticmethod
-    def log_execution_time(func_name: str, execution_time: float):
+    def log_execution_time(self, func_name: str, execution_time: float):
         """
         Logs the execution time of a function to CloudWatch.
 
@@ -126,24 +124,8 @@ class QueueWorker(Queue):
         - func_name (str): The name of the function that was executed.
         - execution_time (float): The time taken to execute the function.
         """
-        env_name = get_environment_setting("DEPLOY_ENV")
         logger.info(f"Function {func_name} executed in {execution_time:.2f} seconds.")
-        cloudwatch.put_metric_data(
-            Namespace='QueueWorkerMetrics',
-            MetricData=[
-                {
-                    'MetricName': f'{env_name}_presto_{func_name}_ExecutionTime',
-                    'Dimensions': [
-                        {
-                            'Name': 'FunctionName',
-                            'Value': func_name
-                        },
-                    ],
-                    'Unit': 'Seconds',
-                    'Value': execution_time
-                },
-            ]
-        )
+        OPEN_TELEMETRY_EXPORTER.log_execution_time(func_name, execution_time)
 
     @staticmethod
     def log_and_handle_error(error):
