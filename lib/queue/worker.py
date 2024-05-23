@@ -116,7 +116,7 @@ class QueueWorker(Queue):
             return [], False
 
     @staticmethod
-    def log_execution_time(self, func_name: str, execution_time: float):
+    def log_execution_time(func_name: str, execution_time: float):
         """
         Logs the execution time of a function to CloudWatch.
 
