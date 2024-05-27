@@ -121,13 +121,13 @@ class QueueWorker(Queue):
     @staticmethod
     def log_execution_time(func_name: str, execution_time: float):
         """
-        Logs the execution time of a function to CloudWatch.
+        Logs the execution time of a function to OpenTelemetry.
 
         Parameters:
         - func_name (str): The name of the function that was executed.
         - execution_time (float): The time taken to execute the function.
         """
-        logger.info(f"Function {func_name} executed in {execution_time:.2f} seconds.")
+        logger.debug(f"Function {func_name} executed in {execution_time:.2f} seconds.")
         OPEN_TELEMETRY_EXPORTER.log_execution_time(func_name, execution_time)
 
     @staticmethod

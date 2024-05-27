@@ -55,7 +55,7 @@ class OpenTelemetryExporter:
                 meter_provider = MeterProvider(resource=resource, metric_readers=[reader])
         metrics.set_meter_provider(meter_provider)
         self.meter = metrics.get_meter(service_name)
-        self.execution_time_counter = self.meter.create_gauge(
+        self.execution_time_gauge = self.meter.create_gauge(
             name="execution_time",
             unit="s",
             description="Time taken for function execution"
@@ -78,7 +78,7 @@ class OpenTelemetryExporter:
 
     def log_execution_time(self, func_name: str, execution_time: float):
         env_name = os.getenv("DEPLOY_ENV", "development")
-        self.execution_time_counter.set(execution_time, {"function_name": func_name, "env": env_name})
+        self.execution_time_gauge.set(execution_time, {"function_name": func_name, "env": env_name})
 
     def log_execution_status(self, func_name: str, function_name: str):
         env_name = os.getenv("DEPLOY_ENV", "development")
