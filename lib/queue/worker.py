@@ -3,7 +3,7 @@ import os
 import time
 from concurrent.futures import ThreadPoolExecutor, TimeoutError
 import json
-from typing import List, Tuple
+from typing import List, Tuple, Any
 from lib import schemas
 from lib.logger import logger
 from lib.queue.queue import Queue, MAX_RETRIES
@@ -106,13 +106,16 @@ class QueueWorker(Queue):
                 result = future.result(timeout=timeout_seconds)
                 execution_time = time.time() - start_time
                 QueueWorker.log_execution_time(func.__name__, execution_time)
+                QueueWorker.log_execution_status(func.__name__, "successful_message_response")
                 return result, True
         except TimeoutError:
             error_message = "Model respond timeout exceeded."
             QueueWorker.log_and_handle_error(error_message)
+            QueueWorker.log_execution_status(func.__name__, "timeout_message_response")
             return [], False
         except Exception as e:
             QueueWorker.log_and_handle_error(str(e))
+            QueueWorker.log_execution_status(func.__name__, "error_message_response")
             return [], False
 
     @staticmethod
@@ -126,6 +129,18 @@ class QueueWorker(Queue):
         """
         logger.info(f"Function {func_name} executed in {execution_time:.2f} seconds.")
         OPEN_TELEMETRY_EXPORTER.log_execution_time(func_name, execution_time)
+
+    @staticmethod
+    def log_execution_status(func_name: str, logging_metric: str):
+        """
+        Logs the execution of a function to CloudWatch.
+
+        Parameters:
+        - func_name (str): The name of the function that was executed.
+        - logging_metric (func): The function to log the message status to - log as success, timeout, or error
+        """
+        logger.info(f"Function {func_name} executed, passing to {logging_metric}")
+        OPEN_TELEMETRY_EXPORTER.log_execution_status(func_name, logging_metric)
 
     @staticmethod
     def log_and_handle_error(error):

@@ -62,6 +62,6 @@ def test_log_execution_time(set_env_vars):
     with patch('lib.telemetry.MeterProvider', MagicMock()) as mock_meter_provider:
         exporter = OpenTelemetryExporter(service_name="TestService", local_debug=False)
 
-        with patch.object(exporter.execution_time_counter, 'add') as mock_add:
+        with patch.object(exporter.execution_time_counter, 'set') as mock_set:
             exporter.log_execution_time("test_func", 1.23)
-            mock_add.assert_called_once_with(1.23, {"function_name": "test_func", "env": "test_env"})
+            mock_set.assert_called_once_with(1.23, {"function_name": "test_func", "env": "test_env"})

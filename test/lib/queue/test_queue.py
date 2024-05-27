@@ -60,7 +60,8 @@ class TestQueueWorker(unittest.TestCase):
     @patch('lib.queue.worker.QueueWorker.log_and_handle_error')
     @patch('lib.queue.worker.time.time', side_effect=[0, 0.5])
     @patch('lib.queue.worker.QueueWorker.log_execution_time')
-    def test_execute_with_timeout_success(self, mock_log_execution_time, mock_time, mock_log_error):
+    @patch('lib.queue.worker.QueueWorker.log_execution_status')
+    def test_execute_with_timeout_success(self, mock_log_execution_status, mock_log_execution_time, mock_time, mock_log_error):
         def test_func(args):
             return ["response"]
 
@@ -69,6 +70,7 @@ class TestQueueWorker(unittest.TestCase):
         self.assertTrue(success)
         mock_log_error.assert_not_called()
         mock_log_execution_time.assert_called_once_with('test_func', 0.5)
+        mock_log_execution_status.assert_called_once_with('test_func', 'successful_message_response')
 
     def test_process(self):
         self.queue.receive_messages = MagicMock(return_value=[(FakeSQSMessage(receipt_handle="blah", body=json.dumps({
