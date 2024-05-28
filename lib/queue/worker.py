@@ -100,23 +100,22 @@ class QueueWorker(Queue):
         - List[schemas.Message]: The result of the function if it completes within the timeout, otherwise an empty list.
         """
         start_time = time.time()
-        model_name = model.__dict__["model_name"]
         try:
             with ThreadPoolExecutor(max_workers=1) as executor:
                 future = executor.submit(model.respond, args)
                 result = future.result(timeout=timeout_seconds)
                 execution_time = time.time() - start_time
-                QueueWorker.log_execution_time(model_name, execution_time)
-                QueueWorker.log_execution_status(model_name, "successful_message_response")
+                QueueWorker.log_execution_time(model.model_name, execution_time)
+                QueueWorker.log_execution_status(model.model_name, "successful_message_response")
                 return result, True
         except TimeoutError:
             error_message = "Model respond timeout exceeded."
             QueueWorker.log_and_handle_error(error_message)
-            QueueWorker.log_execution_status(model_name, "timeout_message_response")
+            QueueWorker.log_execution_status(model.model_name, "timeout_message_response")
             return [], False
         except Exception as e:
             QueueWorker.log_and_handle_error(str(e))
-            QueueWorker.log_execution_status(model_name, "error_message_response")
+            QueueWorker.log_execution_status(model.model_name, "error_message_response")
             return [], False
 
     @staticmethod
