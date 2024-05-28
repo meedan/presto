@@ -77,8 +77,8 @@ class TestQueueWorker(unittest.TestCase):
         self.assertEqual(responses in [[], ["response"]], True)
         self.assertTrue(success)
         mock_log_error.assert_not_called()
-        mock_log_execution_time.assert_called_once_with('test_func', 0.5)
-        mock_log_execution_status.assert_called_once_with('test_func', 'successful_message_response')
+        mock_log_execution_time.assert_called_once_with('timeout.TestModelNoTimeout', 0.5)
+        mock_log_execution_status.assert_called_once_with('timeout.TestModelNoTimeout', 'successful_message_response')
 
     def test_process(self):
         self.queue.receive_messages = MagicMock(return_value=[(FakeSQSMessage(receipt_handle="blah", body=json.dumps({
