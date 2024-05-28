@@ -4,13 +4,26 @@ import unittest
 from unittest.mock import MagicMock, patch
 import numpy as np
 import time
-
+from typing import Union, List
 from lib.model.generic_transformer import GenericTransformerModel
 from lib.queue.queue import Queue
 from lib.queue.worker import QueueWorker
 from lib import schemas
 from test.lib.queue.fake_sqs_message import FakeSQSMessage
 from concurrent.futures import TimeoutError
+class TestModelTimeout:
+    def __init__(self):
+        self.model_name = "timeout.TestModelTimeout"
+
+    def respond(self, messages: Union[List[schemas.Message], schemas.Message]) -> List[schemas.Message]:
+        raise TimeoutError
+
+class TestModelNoTimeout:
+    def __init__(self):
+        self.model_name = "timeout.TestModelNoTimeout"
+
+    def respond(self, messages: Union[List[schemas.Message], schemas.Message]) -> List[schemas.Message]:
+        return ["response"]
 
 class TestQueueWorker(unittest.TestCase):
     @patch('lib.queue.queue.boto3.resource')
@@ -50,9 +63,7 @@ class TestQueueWorker(unittest.TestCase):
     @patch('lib.queue.worker.QueueWorker.log_and_handle_error')
     @patch('lib.queue.worker.time.time', side_effect=[0, 1])
     def test_execute_with_timeout_failure(self, mock_time, mock_log_error):
-        def test_func(args):
-            raise TimeoutError
-        responses, success = self.queue.execute_with_timeout(test_func, [], timeout_seconds=1)
+        responses, success = self.queue.execute_with_timeout(TestModelTimeout(), [], timeout_seconds=1)
         self.assertEqual(responses, [])
         self.assertFalse(success)
         mock_log_error.assert_called_once_with("Model respond timeout exceeded.")
@@ -62,10 +73,7 @@ class TestQueueWorker(unittest.TestCase):
     @patch('lib.queue.worker.QueueWorker.log_execution_time')
     @patch('lib.queue.worker.QueueWorker.log_execution_status')
     def test_execute_with_timeout_success(self, mock_log_execution_status, mock_log_execution_time, mock_time, mock_log_error):
-        def test_func(args):
-            return ["response"]
-
-        responses, success = self.queue.execute_with_timeout(test_func, [], timeout_seconds=1)
+        responses, success = self.queue.execute_with_timeout(TestModelNoTimeout(), [], timeout_seconds=1)
         self.assertEqual(responses in [[], ["response"]], True)
         self.assertTrue(success)
         mock_log_error.assert_not_called()
