@@ -3,18 +3,33 @@ import os
 import unittest
 from unittest.mock import MagicMock, patch
 import numpy as np
-
+import time
+from typing import Union, List
 from lib.model.generic_transformer import GenericTransformerModel
 from lib.queue.queue import Queue
 from lib.queue.worker import QueueWorker
 from lib import schemas
 from test.lib.queue.fake_sqs_message import FakeSQSMessage
 from concurrent.futures import TimeoutError
+class TestModelTimeout:
+    def __init__(self):
+        self.model_name = "timeout.TestModelTimeout"
+
+    def respond(self, messages: Union[List[schemas.Message], schemas.Message]) -> List[schemas.Message]:
+        raise TimeoutError
+
+class TestModelNoTimeout:
+    def __init__(self):
+        self.model_name = "timeout.TestModelNoTimeout"
+
+    def respond(self, messages: Union[List[schemas.Message], schemas.Message]) -> List[schemas.Message]:
+        return ["response"]
 
 class TestQueueWorker(unittest.TestCase):
     @patch('lib.queue.queue.boto3.resource')
     @patch('lib.helpers.get_environment_setting', return_value='us-west-1')
-    def setUp(self, mock_get_env_setting, mock_boto_resource):#, mock_restrict_queues_by_suffix):
+    @patch('lib.telemetry.OpenTelemetryExporter.log_execution_time')
+    def setUp(self, mock_log_execution_time, mock_get_env_setting, mock_boto_resource):
         self.model = GenericTransformerModel(None)
         self.model.model_name = "generic"
         self.mock_model = MagicMock()
@@ -36,7 +51,7 @@ class TestQueueWorker(unittest.TestCase):
         self.mock_sqs_resource.queues.filter.return_value = [self.mock_input_queue, self.mock_output_queue, self.mock_dlq_queue]
         mock_boto_resource.return_value = self.mock_sqs_resource
 
-        # Initialize the SQSQueue instance
+        # Initialize the QueueWorker instance
         self.queue = QueueWorker(self.queue_name_input, self.queue_name_output, self.queue_name_dlq)
 
     def test_get_output_queue_name(self):
@@ -45,8 +60,31 @@ class TestQueueWorker(unittest.TestCase):
     def test_get_dead_letter_queue_name(self):
         self.assertEqual(self.queue.get_dead_letter_queue_name().replace(".fifo", ""), (self.queue.get_input_queue_name()+'_dlq').replace(".fifo", ""))
 
+    @patch('lib.queue.worker.QueueWorker.log_and_handle_error')
+    @patch('lib.queue.worker.time.time', side_effect=[0, 1])
+    def test_execute_with_timeout_failure(self, mock_time, mock_log_error):
+        responses, success = self.queue.execute_with_timeout(TestModelTimeout(), [], timeout_seconds=1)
+        self.assertEqual(responses, [])
+        self.assertFalse(success)
+        mock_log_error.assert_called_once_with("Model respond timeout exceeded.")
+
+    @patch('lib.queue.worker.QueueWorker.log_and_handle_error')
+    @patch('lib.queue.worker.time.time', side_effect=[0, 0.5])
+    @patch('lib.queue.worker.QueueWorker.log_execution_time')
+    @patch('lib.queue.worker.QueueWorker.log_execution_status')
+    def test_execute_with_timeout_success(self, mock_log_execution_status, mock_log_execution_time, mock_time, mock_log_error):
+        responses, success = self.queue.execute_with_timeout(TestModelNoTimeout(), [], timeout_seconds=1)
+        self.assertEqual(responses in [[], ["response"]], True)
+        self.assertTrue(success)
+        mock_log_error.assert_not_called()
+        mock_log_execution_time.assert_called_once_with('timeout.TestModelNoTimeout', 0.5)
+        mock_log_execution_status.assert_called_once_with('timeout.TestModelNoTimeout', 'successful_message_response')
+
     def test_process(self):
-        self.queue.receive_messages = MagicMock(return_value=[(FakeSQSMessage(receipt_handle="blah", body=json.dumps({"body": {"id": 1, "callback_url": "http://example.com", "text": "This is a test"}})), self.mock_input_queue)])
+        self.queue.receive_messages = MagicMock(return_value=[(FakeSQSMessage(receipt_handle="blah", body=json.dumps({
+            "body": {"id": 1, "callback_url": "http://example.com", "text": "This is a test"},
+            "model_name": "generic"
+        })), self.mock_input_queue)])
         self.queue.input_queue = MagicMock(return_value=None)
         self.model.model = self.mock_model
         self.model.model.encode = MagicMock(return_value=np.array([[4, 5, 6], [7, 8, 9]]))
@@ -175,29 +213,9 @@ class TestQueueWorker(unittest.TestCase):
         self.assertEqual(extracted_messages[1].body.text, "Test message 2")
         self.assertEqual(extracted_messages[0].model_name, "generic")
 
-    @patch('lib.queue.worker.QueueWorker.log_and_handle_error')
-    def test_execute_with_timeout_success(self, mock_log_error):
-        def test_func(args):
-            return ["response"]
-
-        responses, success = QueueWorker.execute_with_timeout(test_func, [], timeout_seconds=1)
-        self.assertEqual(responses, ["response"])
-        self.assertTrue(success)
-        mock_log_error.assert_not_called()
-
-    @patch('lib.queue.worker.QueueWorker.log_and_handle_error')
-    def test_execute_with_timeout_failure(self, mock_log_error):
-        def test_func(args):
-            raise TimeoutError
-
-        responses, success = QueueWorker.execute_with_timeout(test_func, [], timeout_seconds=1)
-        self.assertEqual(responses, [])
-        self.assertFalse(success)
-        mock_log_error.assert_called_once_with("Model respond timeout exceeded.")
-
     @patch('lib.queue.worker.logger.error')
     def test_log_and_handle_error(self, mock_logger_error):
-        QueueWorker.log_and_handle_error("Test error")
+        self.queue.log_and_handle_error("Test error")
         mock_logger_error.assert_called_once_with("Test error")
 
     @patch('lib.queue.worker.QueueWorker.delete_messages')

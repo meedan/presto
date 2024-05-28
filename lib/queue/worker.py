@@ -1,15 +1,19 @@
 import pdb
 import os
+import time
 from concurrent.futures import ThreadPoolExecutor, TimeoutError
 import json
-from typing import List, Tuple
+from typing import List, Tuple, Any
 from lib import schemas
 from lib.logger import logger
 from lib.queue.queue import Queue, MAX_RETRIES
 from lib.model.model import Model
 from lib.sentry import capture_custom_message
+from lib.helpers import get_environment_setting
+from lib.telemetry import OpenTelemetryExporter
 
 TIMEOUT_SECONDS = int(os.getenv("WORK_TIMEOUT_SECONDS", "60"))
+OPEN_TELEMETRY_EXPORTER = OpenTelemetryExporter(service_name="QueueWorkerService", local_debug=False)
 
 class QueueWorker(Queue):
     @classmethod
@@ -60,11 +64,11 @@ class QueueWorker(Queue):
         if not messages_with_queues:
             return []
         messages = self.extract_messages(messages_with_queues, model)
-        responses, success = self.execute_with_timeout(model.respond, messages, timeout_seconds=TIMEOUT_SECONDS)
+        responses, success = self.execute_with_timeout(model, messages, timeout_seconds=TIMEOUT_SECONDS)
         if success:
             self.delete_processed_messages(messages_with_queues)
         else:
-            self.increment_message_error_counts(messages_with_queues) # Add the new functionality here
+            self.increment_message_error_counts(messages_with_queues)
         return responses
 
     @staticmethod
@@ -82,30 +86,61 @@ class QueueWorker(Queue):
                 for message, queue in messages_with_queues]
 
     @staticmethod
-    def execute_with_timeout(func, args, timeout_seconds: int) -> List[schemas.Message]:
+    def execute_with_timeout(model, args, timeout_seconds: int) -> List[schemas.Message]:
         """
         Executes a given hasher/fingerprinter with a specified timeout. If the hasher/fingerprinter execution time exceeds the timeout,
         logs an error and returns an empty list.
 
         Parameters:
-        - func (callable): The function to execute.
+        - model (callable): The model to execute a respond request upon.
         - args (any): The arguments to pass to the function.
         - timeout_seconds (int): The maximum number of seconds to wait for the function to complete.
 
         Returns:
         - List[schemas.Message]: The result of the function if it completes within the timeout, otherwise an empty list.
         """
+        start_time = time.time()
         try:
             with ThreadPoolExecutor(max_workers=1) as executor:
-                future = executor.submit(func, args)
-                return future.result(timeout=timeout_seconds), True
+                future = executor.submit(model.respond, args)
+                result = future.result(timeout=timeout_seconds)
+                execution_time = time.time() - start_time
+                QueueWorker.log_execution_time(model.model_name, execution_time)
+                QueueWorker.log_execution_status(model.model_name, "successful_message_response")
+                return result, True
         except TimeoutError:
             error_message = "Model respond timeout exceeded."
             QueueWorker.log_and_handle_error(error_message)
+            QueueWorker.log_execution_status(model.model_name, "timeout_message_response")
             return [], False
         except Exception as e:
             QueueWorker.log_and_handle_error(str(e))
+            QueueWorker.log_execution_status(model.model_name, "error_message_response")
             return [], False
+
+    @staticmethod
+    def log_execution_time(func_name: str, execution_time: float):
+        """
+        Logs the execution time of a function to OpenTelemetry.
+
+        Parameters:
+        - func_name (str): The name of the function that was executed.
+        - execution_time (float): The time taken to execute the function.
+        """
+        logger.debug(f"Function {func_name} executed in {execution_time:.2f} seconds.")
+        OPEN_TELEMETRY_EXPORTER.log_execution_time(func_name, execution_time)
+
+    @staticmethod
+    def log_execution_status(func_name: str, logging_metric: str):
+        """
+        Logs the execution of a function to CloudWatch.
+
+        Parameters:
+        - func_name (str): The name of the function that was executed.
+        - logging_metric (func): The function to log the message status to - log as success, timeout, or error
+        """
+        logger.info(f"Function {func_name} executed, passing to {logging_metric}")
+        OPEN_TELEMETRY_EXPORTER.log_execution_status(func_name, logging_metric)
 
     @staticmethod
     def log_and_handle_error(error):
