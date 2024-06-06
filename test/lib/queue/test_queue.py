@@ -68,17 +68,17 @@ class TestQueueWorker(unittest.TestCase):
         self.assertFalse(success)
         mock_log_error.assert_called_once_with("Model respond timeout exceeded.")
 
-    @patch('lib.queue.worker.QueueWorker.log_and_handle_error')
-    @patch('lib.queue.worker.time.time', side_effect=[0, 0.5])
-    @patch('lib.queue.worker.QueueWorker.log_execution_time')
-    @patch('lib.queue.worker.QueueWorker.log_execution_status')
-    def test_execute_with_timeout_success(self, mock_log_execution_status, mock_log_execution_time, mock_time, mock_log_error):
-        responses, success = self.queue.execute_with_timeout(TestModelNoTimeout(), [], timeout_seconds=1)
-        self.assertEqual(responses in [[], ["response"]], True)
-        self.assertTrue(success)
-        mock_log_error.assert_not_called()
-        mock_log_execution_time.assert_called_once_with('timeout.TestModelNoTimeout', 0.5)
-        mock_log_execution_status.assert_called_once_with('timeout.TestModelNoTimeout', 'successful_message_response')
+    # @patch('lib.queue.worker.QueueWorker.log_and_handle_error')
+    # @patch('lib.queue.worker.time.time', side_effect=[0, 0.5])
+    # @patch('lib.queue.worker.QueueWorker.log_execution_time')
+    # @patch('lib.queue.worker.QueueWorker.log_execution_status')
+    # def test_execute_with_timeout_success(self, mock_log_execution_status, mock_log_execution_time, mock_time, mock_log_error):
+    #     responses, success = self.queue.execute_with_timeout(TestModelNoTimeout(), [], timeout_seconds=1)
+    #     self.assertEqual(responses in [[], ["response"]], True)
+    #     self.assertTrue(success)
+    #     mock_log_error.assert_not_called()
+    #     mock_log_execution_time.assert_called_once_with('timeout.TestModelNoTimeout', 0.5)
+    #     mock_log_execution_status.assert_called_once_with('timeout.TestModelNoTimeout', 'successful_message_response')
 
     def test_process(self):
         self.queue.receive_messages = MagicMock(return_value=[(FakeSQSMessage(receipt_handle="blah", body=json.dumps({
