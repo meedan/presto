@@ -31,7 +31,7 @@ class OpenTelemetryExporter:
             # write metrics to console instead of sending them
             reader = PeriodicExportingMetricReader(
                 ConsoleMetricExporter(),
-                export_interval_millis=int(os.getenv("METRICS_REPORTING_INTERVAL", "60000")),
+                export_interval_millis=int(os.getenv("METRICS_REPORTING_INTERVAL", "10000")),
             )
             meter_provider = MeterProvider(resource=resource, metric_readers=[reader])
         else:
@@ -50,7 +50,7 @@ class OpenTelemetryExporter:
                             "X-Honeycomb-Dataset": honeycomb_dataset,
                         },
                     ),
-                    export_interval_millis=int(os.getenv("METRICS_REPORTING_INTERVAL", "60000")),
+                    export_interval_millis=int(os.getenv("METRICS_REPORTING_INTERVAL", "10000")),
                 )
                 meter_provider = MeterProvider(resource=resource, metric_readers=[reader])
         metrics.set_meter_provider(meter_provider)
