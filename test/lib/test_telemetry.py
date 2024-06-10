@@ -14,7 +14,7 @@ from lib.telemetry import OpenTelemetryExporter
 def set_env_vars():
     os.environ['HONEYCOMB_API_KEY'] = 'test_api_key'
     os.environ['HONEYCOMB_DATASET'] = 'test_dataset'
-    os.environ['METRICS_REPORTING_INTERVAL'] = '60000'
+    os.environ['METRICS_REPORTING_INTERVAL'] = '10000'
     os.environ['HONEYCOMB_API_ENDPOINT'] = 'https://api.honeycomb.io'
     os.environ['DEPLOY_ENV'] = 'test_env'
     yield
