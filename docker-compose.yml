@@ -23,6 +23,8 @@ services:
     depends_on:
       elasticmq:
         condition: service_healthy
+      redis:
+        condition: service_healthy
     links:
       - elasticmq
     volumes:
@@ -41,6 +43,16 @@ services:
       interval: 10s
       timeout: 5s
       retries: 10
+  redis:
+    image: redis:latest
+    hostname: presto-redis
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
   image:
     build: .
     platform: linux/amd64
@@ -53,6 +65,8 @@ services:
       MODEL_NAME: image.Model
     depends_on:
       elasticmq:
+        condition: service_healthy
+      redis:
         condition: service_healthy
   audio:
     build: .
@@ -67,6 +81,8 @@ services:
     depends_on:
       elasticmq:
         condition: service_healthy
+      redis:
+        condition: service_healthy
   yake:
     build: .
     platform: linux/amd64
@@ -79,4 +95,6 @@ services:
       MODEL_NAME: yake_keywords.Model
     depends_on:
       elasticmq:
+        condition: service_healthy
+      redis:
         condition: service_healthy
