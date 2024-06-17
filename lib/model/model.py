@@ -46,7 +46,12 @@ class Model(ABC):
         if not isinstance(messages, list):
             messages = [messages]
         for message in messages:
-            message.body.result = self.process(message)
+            existing = Cache.get_cached_result(message.body.content_hash)
+            if existing:
+                message.body.result = existing
+            else:
+                message.body.result = self.process(message)
+                Cache.set_cached_result(message.body.content_hash, message.body.result)
         return messages
     
     @classmethod
