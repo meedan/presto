@@ -18,6 +18,8 @@ services:
         - OTEL_EXPORTER_OTLP_HEADERS=${OTEL_EXPORTER_OTLP_HEADERS}
         - HONEYCOMB_API_KEY=${HONEYCOMB_API_KEY}
         - HONEYCOMB_API_ENDPOINT=${HONEYCOMB_API_ENDPOINT}
+        - REDIS_URL=${REDIS_URL}
+        - CACHE_DEFAULT_TTL=${CACHE_DEFAULT_TTL}
     env_file:
       - ./.env_file
     depends_on:
