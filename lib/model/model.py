@@ -40,6 +40,16 @@ class Model(ABC):
     def process(self, messages: Union[List[schemas.Message], schemas.Message]) -> List[schemas.Message]:
         return []
         
+    def get_response(self, message: schemas.Message) -> schemas.GenericItem:
+        """
+        Perform a lookup on the cache for a message, and if found, return that cached value.
+        """
+        result = Cache.get_cached_result(message.body.content_hash)
+        if not result:
+            result = self.process(message)
+            Cache.set_cached_result(message.body.content_hash, message.body.result)
+        return result
+
     def respond(self, messages: Union[List[schemas.Message], schemas.Message]) -> List[schemas.Message]:
         """
         Force messages as list of messages in case we get a singular item. Then, run fingerprint routine.
@@ -47,12 +57,7 @@ class Model(ABC):
         if not isinstance(messages, list):
             messages = [messages]
         for message in messages:
-            existing = Cache.get_cached_result(message.body.content_hash)
-            if existing:
-                message.body.result = existing
-            else:
-                message.body.result = self.process(message)
-                Cache.set_cached_result(message.body.content_hash, message.body.result)
+            message.body.result = self.get_response(message)
         return messages
     
     @classmethod

@@ -29,12 +29,13 @@ class Cache:
         Returns:
             Optional[Any]: The cached result, or None if the key does not exist.
         """
-        client = Cache.get_client()
-        cached_result = client.get(content_hash)
-        if cached_result is not None:
-            if reset_ttl:
-                client.expire(content_hash, ttl)
-            return json.loads(cached_result)
+        if content_hash:
+            client = Cache.get_client()
+            cached_result = client.get(content_hash)
+            if cached_result is not None:
+                if reset_ttl:
+                    client.expire(content_hash, ttl)
+                return json.loads(cached_result)
         return None
 
     @staticmethod
