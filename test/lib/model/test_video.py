@@ -48,7 +48,11 @@ class TestVideoModel(unittest.TestCase):
         result = self.video_model.tmk_program_name()
         self.assertEqual(result, "PrestoVideoEncoder")
 
-    def test_respond_with_single_video(self):
+    @patch('lib.cache.Cache.get_cached_result')
+    @patch('lib.cache.Cache.set_cached_result')
+    def test_respond_with_single_video(self, mock_cache_set, mock_cache_get):
+        mock_cache_get.return_value = None
+        mock_cache_set.return_value = True
         video = schemas.parse_message({"body": {"id": "123", "callback_url": "http://blah.com?callback_id=123", "url": "http://example.com/video.mp4"}, "model_name": "video__Model"})
         mock_process = MagicMock()
         self.video_model.process = mock_process
@@ -56,10 +60,11 @@ class TestVideoModel(unittest.TestCase):
         mock_process.assert_called_once_with(video)
         self.assertEqual(result, [video])
 
-    @patch('lib.cache.Cache')
-    def test_respond_with_multiple_videos(self, mock_cache):
-        mock_cache.get_cached_result.return_value = None
-        mock_cache.set_cached_result.return_value = True
+    @patch('lib.cache.Cache.get_cached_result')
+    @patch('lib.cache.Cache.set_cached_result')
+    def test_respond_with_multiple_videos(self, mock_cache_set, mock_cache_get):
+        mock_cache_get.return_value = None
+        mock_cache_set.return_value = True
         videos = [schemas.parse_message({"body": {"id": "123", "callback_url": "http://blah.com?callback_id=123", "url": "http://example.com/video.mp4"}, "model_name": "video__Model"}), schemas.parse_message({"body": {"id": "123", "callback_url": "http://blah.com?callback_id=123", "url": "http://example.com/video2.mp4"}, "model_name": "video__Model"})]
         mock_process = MagicMock()
         self.video_model.process = mock_process
