@@ -47,7 +47,7 @@ class Model(ABC):
         result = Cache.get_cached_result(message.body.content_hash)
         if not result:
             result = self.process(message)
-            Cache.set_cached_result(message.body.content_hash, message.body.result)
+            Cache.set_cached_result(message.body.content_hash, result)
         return result
 
     def respond(self, messages: Union[List[schemas.Message], schemas.Message]) -> List[schemas.Message]:

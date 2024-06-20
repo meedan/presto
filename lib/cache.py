@@ -48,5 +48,6 @@ class Cache:
             result (Any): The result to cache.
             ttl (int): Time-to-live for the cache in seconds. Default is 86400 seconds (24 hours).
         """
-        client = Cache.get_client()
-        client.setex(content_hash, ttl, json.dumps(result))
+        if content_hash:
+            client = Cache.get_client()
+            client.setex(content_hash, ttl, json.dumps(result))
