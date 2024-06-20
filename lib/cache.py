@@ -5,6 +5,7 @@ from lib.helpers import get_environment_setting
 
 REDIS_URL = get_environment_setting("REDIS_URL")
 DEFAULT_TTL = int(get_environment_setting("CACHE_DEFAULT_TTL") or 24*60*60)
+CACHE_PREFIX = "presto_media_cache:"
 class Cache:
     @staticmethod
     def get_client() -> redis.Redis:
@@ -31,10 +32,10 @@ class Cache:
         """
         if content_hash:
             client = Cache.get_client()
-            cached_result = client.get(content_hash)
+            cached_result = client.get(CACHE_PREFIX+content_hash)
             if cached_result is not None:
                 if reset_ttl:
-                    client.expire(content_hash, ttl)
+                    client.expire(CACHE_PREFIX+content_hash, ttl)
                 return json.loads(cached_result)
         return None
 
@@ -50,4 +51,4 @@ class Cache:
         """
         if content_hash:
             client = Cache.get_client()
-            client.setex(content_hash, ttl, json.dumps(result))
+            client.setex(CACHE_PREFIX+content_hash, ttl, json.dumps(result))
