@@ -16,7 +16,7 @@ def test_set_cached_result(mock_redis_client):
 
     Cache.set_cached_result(content_hash, result, ttl)
 
-    mock_instance.setex.assert_called_once_with(content_hash, ttl, '{"data": "example"}')
+    mock_instance.setex.assert_called_once_with('presto_media_cache:'+content_hash, ttl, '{"data": "example"}')
 
 def test_get_cached_result_exists(mock_redis_client):
     mock_instance = mock_redis_client.from_url.return_value
@@ -28,7 +28,7 @@ def test_get_cached_result_exists(mock_redis_client):
     result = Cache.get_cached_result(content_hash, reset_ttl=True, ttl=ttl)
 
     assert result == {"data": "example"}
-    mock_instance.expire.assert_called_once_with(content_hash, ttl)
+    mock_instance.expire.assert_called_once_with('presto_media_cache:'+content_hash, ttl)
 
 def test_get_cached_result_not_exists(mock_redis_client):
     mock_instance = mock_redis_client.from_url.return_value
