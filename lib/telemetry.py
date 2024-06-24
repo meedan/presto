@@ -75,6 +75,16 @@ class OpenTelemetryExporter:
             unit="s",
             description="Errored Message Response"
         )
+        self.cache_hit_response = self.meter.create_counter(
+            name="cache_hit_response",
+            unit="s",
+            description="Returned cached response"
+        )
+        self.cache_miss_response = self.meter.create_counter(
+            name="cache_miss_response",
+            unit="s",
+            description="Returned non-cached response"
+        )
 
     def log_execution_time(self, func_name: str, execution_time: float):
         env_name = os.getenv("DEPLOY_ENV", "development")

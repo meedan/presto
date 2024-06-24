@@ -8,6 +8,7 @@ import urllib.request
 from lib.helpers import get_class
 from lib import schemas
 from lib.cache import Cache
+
 class Model(ABC):
     BATCH_SIZE = 1
     def __init__(self):
