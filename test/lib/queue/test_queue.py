@@ -147,19 +147,19 @@ class TestQueueWorker(unittest.TestCase):
         mock_logger.assert_called_with(f"Deleting message: {mock_messages[-1]}")
 
     def test_push_message(self):
-        message_to_push = schemas.parse_message({"body": {"id": 1, "callback_url": "http://example.com", "text": "This is a test"}, "model_name": "mean_tokens__Model"})
+        message_to_push = schemas.parse_message({"body": {"id": 1, "content_hash": None, "callback_url": "http://example.com", "text": "This is a test"}, "model_name": "mean_tokens__Model"})
         # Call push_message
         returned_message = self.queue.push_message(self.queue_name_output, message_to_push)
         # Check if the message was correctly serialized and sent
-        self.mock_output_queue.send_message.assert_called_once_with(MessageBody='{"body": {"id": 1, "callback_url": "http://example.com", "url": null, "text": "This is a test", "raw": {}, "parameters": {}, "result": {"hash_value": null}}, "model_name": "mean_tokens__Model", "retry_count": 0}')
+        self.mock_output_queue.send_message.assert_called_once_with(MessageBody='{"body": {"id": 1, "content_hash": null, "callback_url": "http://example.com", "url": null, "text": "This is a test", "raw": {}, "parameters": {}, "result": {"hash_value": null}}, "model_name": "mean_tokens__Model", "retry_count": 0}')
         self.assertEqual(returned_message, message_to_push)
 
     def test_push_to_dead_letter_queue(self):
-        message_to_push = schemas.parse_message({"body": {"id": 1, "callback_url": "http://example.com", "text": "This is a test"}, "model_name": "mean_tokens__Model"})
+        message_to_push = schemas.parse_message({"body": {"id": 1, "content_hash": None, "callback_url": "http://example.com", "text": "This is a test"}, "model_name": "mean_tokens__Model"})
         # Call push_to_dead_letter_queue
         self.queue.push_to_dead_letter_queue(message_to_push)
         # Check if the message was correctly serialized and sent to the DLQ
-        self.mock_dlq_queue.send_message.assert_called_once_with(MessageBody='{"body": {"id": 1, "callback_url": "http://example.com", "url": null, "text": "This is a test", "raw": {}, "parameters": {}, "result": {"hash_value": null}}, "model_name": "mean_tokens__Model", "retry_count": 0}')
+        self.mock_dlq_queue.send_message.assert_called_once_with(MessageBody='{"body": {"id": 1, "content_hash": null, "callback_url": "http://example.com", "url": null, "text": "This is a test", "raw": {}, "parameters": {}, "result": {"hash_value": null}}, "model_name": "mean_tokens__Model", "retry_count": 0}')
 
     def test_increment_message_error_counts_exceed_max_retries(self):
         message_body = {

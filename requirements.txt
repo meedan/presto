@@ -17,3 +17,4 @@ yake==0.4.8
 opentelemetry-api==1.24.0
 opentelemetry-exporter-otlp-proto-http==1.24.0
 opentelemetry-sdk==1.24.0
+redis==5.0.6

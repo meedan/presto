@@ -18,10 +18,14 @@ services:
         - OTEL_EXPORTER_OTLP_HEADERS=${OTEL_EXPORTER_OTLP_HEADERS}
         - HONEYCOMB_API_KEY=${HONEYCOMB_API_KEY}
         - HONEYCOMB_API_ENDPOINT=${HONEYCOMB_API_ENDPOINT}
+        - REDIS_URL=${REDIS_URL}
+        - CACHE_DEFAULT_TTL=${CACHE_DEFAULT_TTL}
     env_file:
       - ./.env_file
     depends_on:
       elasticmq:
+        condition: service_healthy
+      redis:
         condition: service_healthy
     links:
       - elasticmq
@@ -41,6 +45,16 @@ services:
       interval: 10s
       timeout: 5s
       retries: 10
+  redis:
+    image: redis:latest
+    hostname: presto-redis
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
   image:
     build: .
     platform: linux/amd64
@@ -53,6 +67,8 @@ services:
       MODEL_NAME: image.Model
     depends_on:
       elasticmq:
+        condition: service_healthy
+      redis:
         condition: service_healthy
   audio:
     build: .
@@ -67,6 +83,8 @@ services:
     depends_on:
       elasticmq:
         condition: service_healthy
+      redis:
+        condition: service_healthy
   yake:
     build: .
     platform: linux/amd64
@@ -79,4 +97,6 @@ services:
       MODEL_NAME: yake_keywords.Model
     depends_on:
       elasticmq:
+        condition: service_healthy
+      redis:
         condition: service_healthy

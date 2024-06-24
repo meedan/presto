@@ -13,6 +13,7 @@ class YakeKeywordsResponse(BaseModel):
 
 class GenericItem(BaseModel):
     id: Union[str, int, float]
+    content_hash: Optional[str] = None
     callback_url: Optional[str] = None
     url: Optional[str] = None
     text: Optional[str] = None

@@ -7,6 +7,8 @@ import urllib.request
 
 from lib.helpers import get_class
 from lib import schemas
+from lib.cache import Cache
+
 class Model(ABC):
     BATCH_SIZE = 1
     def __init__(self):
@@ -39,6 +41,16 @@ class Model(ABC):
     def process(self, messages: Union[List[schemas.Message], schemas.Message]) -> List[schemas.Message]:
         return []
         
+    def get_response(self, message: schemas.Message) -> schemas.GenericItem:
+        """
+        Perform a lookup on the cache for a message, and if found, return that cached value.
+        """
+        result = Cache.get_cached_result(message.body.content_hash)
+        if not result:
+            result = self.process(message)
+            Cache.set_cached_result(message.body.content_hash, result)
+        return result
+
     def respond(self, messages: Union[List[schemas.Message], schemas.Message]) -> List[schemas.Message]:
         """
         Force messages as list of messages in case we get a singular item. Then, run fingerprint routine.
@@ -46,7 +58,7 @@ class Model(ABC):
         if not isinstance(messages, list):
             messages = [messages]
         for message in messages:
-            message.body.result = self.process(message)
+            message.body.result = self.get_response(message)
         return messages
     
     @classmethod
