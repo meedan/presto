@@ -58,7 +58,7 @@ class Model(Model):
                 self.tmk_file_path(video_filename),
                 self.tmk_program_name()
             )
-            s3.upload_file_to_s3(self.tmk_bucket(), self.tmk_file_path(video_filename))
+            s3.upload_file_to_s3_using_filename(self.tmk_bucket(), self.tmk_file_path(video_filename))
         finally:
             for file_path in [self.tmk_file_path(video_filename), temp_file_name]:
                 if os.path.exists(file_path):
