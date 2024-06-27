@@ -3,6 +3,8 @@ import boto3
 from botocore.client import Config
 from botocore.exceptions import ClientError
 from lib.logger import logger
+
+
 def upload_file_to_s3_using_filename(bucket: str, filename: str):
     """
     Generic upload helper for s3. Could be moved over to helpers folder...
@@ -59,6 +61,19 @@ def load_file_from_s3(bucket: str, filename: str):
     except Exception as e:
         logger.error(f'Failed to load file {filename} from S3 bucket {bucket}: {e}')
         return None
+
+
+def file_exists_in_s3(bucket: str, filename: str):
+    try:
+        s3_client = get_s3_client()
+    except Exception as e:
+        logger.error(f'Failed to establish connection to the S3 client: {e}')
+        return False
+    try:
+        s3_client.head_object(Bucket=bucket, Key=filename)
+        return True
+    except Exception as e:
+        return False
 
 
 def get_s3_client():

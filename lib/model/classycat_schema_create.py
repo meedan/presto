@@ -1,9 +1,10 @@
 import os
 import json
 import uuid
-from lib.s3 import upload_file_to_s3
+from lib.s3 import upload_file_to_s3, file_exists_in_s3
 from lib.logger import logger
 from lib.model.model import Model
+from lib.schemas import GenericItem
 
 
 class Model(Model):
@@ -104,49 +105,34 @@ class Model(Model):
         )
 
 
-    def process(self):
+    def process(self, schema_specs: GenericItem) -> GenericItem:
         # unpack parameters for create_schema
-        schema_name = event["schema_name"]
-        # topics is a list of dictionaries:
-        # [
-        # {topic: 'topic1', description: 'topic 1 is ...'},
-        # {topic: 'topic2', description: 'topic 2 is ...'}
-        # ]
-        topics = event["topics"]
-        # examples is a list of dictionaries:
-        # [{'text': 'example 1', 'labels': ['label1', 'label2']}, {'text': 'example 2', 'labels': ['label3', 'label4']}]
-        # there should be at least one example per topic
-        examples = event["examples"]
-        languages = event["languages"]  # ['English', 'Spanish']
+        schema_name = schema_specs.parameters["schema_name"]
+        topics = schema_specs.parameters["topics"]
+        examples = schema_specs.parameters["examples"]
+        languages = schema_specs.parameters["languages"]  # ['English', 'Spanish']
 
-        if schema_name_exists(schema_name, s3_client, output_bucket):
-            return {
-                "statusCode": 400,
-                "body": {"message": f"Schema name {schema_name} already exists"},
-            }
+        result = GenericItem()
+        if self.schema_name_exists(schema_name):
+            result.text = f"Schema name {schema_name} already exists"
+            return result
 
         try:
-            verify_schema_parameters(schema_name, topics, examples, languages)
+            self.verify_schema_parameters(schema_name, topics, examples, languages)
         except Exception as e:
             logger.exception(f"Error verifying schema parameters: {e}")
-            return {
-                "statusCode": 400,
-                "body": {
-                    "message": f"Error verifying schema parameters. Stack trace: {e}"
-                },
-            }
+            result.text = f"Error verifying schema parameters. Stack trace: {e}"
+            return result
 
         try:
-            schema_id = create_schema(
-                schema_name, topics, examples, languages, s3_client, output_bucket
-            )
-            return {"statusCode": 200, "body": {"schema_id": schema_id}}
+            schema_id = self.create_schema(schema_name, topics, examples, languages)
+            result.text = 'success'
+            result.id = schema_id
+            return result
         except Exception as e:
             logger.exception(f"Error creating schema: {e}")
-            return {
-                "statusCode": 500,
-                "body": {"message": f"Error creating schema. Stack trace: {e}"},
-            }
+            result.text = f"Error creating schema. Stack trace: {e}"
+            return result
 
 
     def verify_schema_parameters(self, schema_name, topics, examples, languages): #todo
@@ -180,20 +166,5 @@ class Model(Model):
             )
 
 
-    def schema_name_exists(self, schema_name, s3_client, output_bucket): # todo
-        try:
-            s3_client.head_object(Bucket=output_bucket, Key=f"{schema_name}.json")
-            return True
-        except:
-            return False
-
-
-def schema_id_exists(schema_id, s3_client, output_bucket):
-    try:
-        s3_client.head_object(Bucket=output_bucket, Key=f"{schema_id}.json")
-        return True
-    except:
-        return False
-
-
-
+    def schema_name_exists(self, schema_name):
+        return file_exists_in_s3(self.output_bucket, f"{schema_name}.json")
