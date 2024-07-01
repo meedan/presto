@@ -228,10 +228,11 @@ class TestQueueWorker(unittest.TestCase):
         self.queue.delete_processed_messages(messages_with_queues)
         mock_delete_messages.assert_called_once_with(messages_with_queues)
 
-    def test_error_capturing_in_get_response(self):
-        """
-        Test that get_response captures errors and returns an ErrorResponse.
-        """
+    @patch('lib.cache.Cache.get_cached_result')
+    @patch('lib.cache.Cache.set_cached_result')
+    def test_error_capturing_in_get_response(self, mock_cache_set, mock_cache_get):
+        mock_cache_get.return_value = None
+        mock_cache_set.return_value = True
         message_data = {
             "body": {"id": 1, "callback_url": "http://example.com", "text": "This is a test"},
             "model_name": "generic"
