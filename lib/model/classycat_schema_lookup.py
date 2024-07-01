@@ -3,7 +3,7 @@ import json
 from lib.logger import logger
 from lib.model.model import Model
 from lib.s3 import load_file_from_s3, file_exists_in_s3
-from lib.schemas import GenericItem
+from lib.schemas import ClassyCatSchema
 
 
 class Model(Model):
@@ -24,23 +24,21 @@ class Model(Model):
         return contents["schema_id"]
 
 
-    def process(self, schema_lookup_event: GenericItem) -> GenericItem:
+    def process(self, schema_lookup_event: ClassyCatSchema) -> ClassyCatSchema:
         # check if schema with the name exists, and if so return the id
-        schema_name = schema_lookup_event.parameters["schema_name"]
-
-        result = GenericItem()
+        schema_name = schema_lookup_event.schema_name
 
         if not self.schema_name_exists(schema_name):
-            result.text = f"Schema name {schema_name} does not exist"
-            return result
+            schema_lookup_event.text = f"Schema name {schema_name} does not exist"
+            return schema_lookup_event
 
         logger.debug(f"located schema_name record for '{schema_name}'")
 
         try:
-            result.id = self.look_up_schema_id_by_name(schema_name)
-            result.text = "success"
-            return result
+            schema_lookup_event.schema_id = self.look_up_schema_id_by_name(schema_name)
+            schema_lookup_event.text = "success"
+            return schema_lookup_event
         except Exception as e:
             logger.error(f"Error looking up schema name {schema_name}: {e}")
-            result.text = f"Error looking up schema name {schema_name}: {e}"
-            return result
+            schema_lookup_event.text = f"Error looking up schema name {schema_name}: {e}"
+            return schema_lookup_event

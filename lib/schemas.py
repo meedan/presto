@@ -11,6 +11,10 @@ class VideoResponse(MediaResponse):
 class YakeKeywordsResponse(BaseModel):
     keywords: Optional[List[List[Union[str, float]]]] = None
 
+
+class ClassyCatBatchClassificationResponse(BaseModel):
+    classification_results: Optional[List[Dict[Union[str, int], str, List[str]]]] = []
+
 class GenericItem(BaseModel):
     id: Union[str, int, float]
     content_hash: Optional[str] = None
@@ -20,6 +24,18 @@ class GenericItem(BaseModel):
     raw: Optional[Dict] = {}
     parameters: Optional[Dict] = {}
     result: Optional[Union[MediaResponse, VideoResponse, YakeKeywordsResponse]] = None
+
+class ClassyCatBatchClassificationItem(GenericItem):
+    schema_id: str = None
+    items: Optional[List[Dict[Union[str, int], str]]] = []
+    result: Optional[ClassyCatBatchClassificationResponse] = None
+
+class ClassyCatSchema(GenericItem):
+    schema_name: str = None
+    topics: Optional[List[Dict[str, str]]] = None
+    examples: Optional[List[Dict[str, List[str]]]] = None
+    languages: Optional[List[str]] = None
+    schema_id: Optional[str] = None
 
 class Message(BaseModel):
     body: GenericItem

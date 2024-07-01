@@ -4,7 +4,7 @@ import uuid
 from lib.s3 import upload_file_to_s3, file_exists_in_s3
 from lib.logger import logger
 from lib.model.model import Model
-from lib.schemas import GenericItem
+from lib.schemas import ClassyCatSchema
 
 
 class Model(Model):
@@ -105,34 +105,32 @@ class Model(Model):
         )
 
 
-    def process(self, schema_specs: GenericItem) -> GenericItem:
+    def process(self, schema_specs: ClassyCatSchema) -> ClassyCatSchema:
         # unpack parameters for create_schema
-        schema_name = schema_specs.parameters["schema_name"]
-        topics = schema_specs.parameters["topics"]
-        examples = schema_specs.parameters["examples"]
-        languages = schema_specs.parameters["languages"]  # ['English', 'Spanish']
+        schema_name = schema_specs.schema_name
+        topics = schema_specs.topics
+        examples = schema_specs.examples
+        languages = schema_specs.languages  # ['English', 'Spanish']
 
-        result = GenericItem()
         if self.schema_name_exists(schema_name):
-            result.text = f"Schema name {schema_name} already exists"
-            return result
+            schema_specs.text = f"Schema name {schema_name} already exists"
+            return schema_specs
 
         try:
             self.verify_schema_parameters(schema_name, topics, examples, languages)
         except Exception as e:
             logger.exception(f"Error verifying schema parameters: {e}")
-            result.text = f"Error verifying schema parameters. Stack trace: {e}"
-            return result
+            schema_specs.text = f"Error verifying schema parameters. Stack trace: {e}"
+            return schema_specs
 
         try:
-            schema_id = self.create_schema(schema_name, topics, examples, languages)
-            result.text = 'success'
-            result.id = schema_id
-            return result
+            schema_specs.schema_id = self.create_schema(schema_name, topics, examples, languages)
+            schema_specs.text = 'success'
+            return schema_specs
         except Exception as e:
             logger.exception(f"Error creating schema: {e}")
-            result.text = f"Error creating schema. Stack trace: {e}"
-            return result
+            schema_specs.text = f"Error creating schema. Stack trace: {e}"
+            return schema_specs
 
 
     def verify_schema_parameters(self, schema_name, topics, examples, languages): #todo
