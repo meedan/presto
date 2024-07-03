@@ -3,6 +3,7 @@ from typing import Any, Dict, List, Optional, Union
 class ErrorResponse(BaseModel):
     error: Optional[str] = None
     error_details: Optional[Dict] = None
+    error_code: int = 500
 
 class MediaResponse(BaseModel):
     hash_value: Optional[Any] = None
