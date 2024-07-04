@@ -48,7 +48,7 @@ class Model(ABC):
             if attr in dir(e):
                 error_context[attr] = getattr(e, attr)
         capture_custom_message("Error during fingerprinting for {self.model_name}", 'info', error_context)
-        return schemas.ErrorResponse(error=str(e), error_details={"exception": str(e)})
+        return schemas.ErrorResponse(error=str(e), error_details=error_context)
 
     def get_response(self, message: schemas.Message) -> schemas.GenericItem:
         """
