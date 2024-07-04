@@ -247,8 +247,8 @@ class TestQueueWorker(unittest.TestCase):
 
         self.assertIsInstance(result, schemas.ErrorResponse)
         self.assertEqual(result.error, "Test error")
-        self.assertIn("exception", result.error_details)
-        self.assertEqual(result.error_details["exception"], "Test error")
+        self.assertIn("error", result.error_details)
+        self.assertEqual(result.error_details["error"], "Test error")
 
 if __name__ == '__main__':
     unittest.main()
