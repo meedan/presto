@@ -8,6 +8,7 @@ import urllib.request
 from lib.helpers import get_class
 from lib import schemas
 from lib.cache import Cache
+from lib.sentry import capture_custom_message
 
 class Model(ABC):
     BATCH_SIZE = 1
@@ -40,7 +41,15 @@ class Model(ABC):
 
     def process(self, messages: Union[List[schemas.Message], schemas.Message]) -> List[schemas.Message]:
         return []
-        
+
+    def handle_fingerprinting_error(self, e):
+        error_context = {"error": str(e)}
+        for attr in ["__cause__", "__context__", "args", "__traceback__"]:
+            if attr in dir(e):
+                error_context[attr] = getattr(e, attr)
+        capture_custom_message("Error during fingerprinting for {self.model_name}", 'info', error_context)
+        return schemas.ErrorResponse(error=str(e), error_details={"exception": str(e)})
+
     def get_response(self, message: schemas.Message) -> schemas.GenericItem:
         """
         Perform a lookup on the cache for a message, and if found, return that cached value.
@@ -51,7 +60,7 @@ class Model(ABC):
                 result = self.process(message)
                 Cache.set_cached_result(message.body.content_hash, result)
             except Exception as e:
-                return schemas.ErrorResponse(error=str(e), error_details={"exception": str(e)})
+                return self.handle_fingerprinting_error(e)
         return result
 
     def respond(self, messages: Union[List[schemas.Message], schemas.Message]) -> List[schemas.Message]:
