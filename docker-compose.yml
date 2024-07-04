@@ -100,3 +100,78 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+  video:
+    build: .
+    platform: linux/amd64
+    volumes:
+      - "./:/app"
+    env_file:
+      - ./.env_file
+    environment: 
+      ROLE: worker
+      MODEL_NAME: video.Model
+    depends_on:
+      elasticmq:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+  mean_tokens:
+    build: .
+    platform: linux/amd64
+    volumes:
+      - "./:/app"
+    env_file:
+      - ./.env_file
+    environment: 
+      ROLE: worker
+      MODEL_NAME: mean_tokens.Model
+    depends_on:
+      elasticmq:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+  fasttext:
+    build: .
+    platform: linux/amd64
+    volumes:
+      - "./:/app"
+    env_file:
+      - ./.env_file
+    environment: 
+      ROLE: worker
+      MODEL_NAME: fasttext.Model
+    depends_on:
+      elasticmq:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+  fptg:
+    build: .
+    platform: linux/amd64
+    volumes:
+      - "./:/app"
+    env_file:
+      - ./.env_file
+    environment: 
+      ROLE: worker
+      MODEL_NAME: fptg.Model
+    depends_on:
+      elasticmq:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+  indian_sbert:
+    build: .
+    platform: linux/amd64
+    volumes:
+      - "./:/app"
+    env_file:
+      - ./.env_file
+    environment: 
+      ROLE: worker
+      MODEL_NAME: indian_sbert.Model
+    depends_on:
+      elasticmq:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
