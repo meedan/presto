@@ -8,9 +8,7 @@ from lib.schemas import Message, ClassyCatSchemaResponse
 
 class Model(Model):
     def __init__(self):
-        """
-        Set some basic constants during operation, create local folder for tmk workspace.
-        """
+        super().__init__()
         self.schemas_bucket = os.getenv("CLASSYCAT_OUTPUT_BUCKET")
 
 

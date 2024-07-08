@@ -48,9 +48,7 @@ class OpenRouterClient(LLMClient):
 
 class Model(Model):
     def __init__(self):
-        """
-        Set some basic constants during operation, create local folder for tmk workspace.
-        """
+        super().__init__()
         self.output_bucket = os.getenv("CLASSYCAT_OUTPUT_BUCKET")
         self.batch_size_limit = int(os.environ.get("BATCH_SIZE_LIMIT"))
         llm_model_name = os.environ.get('CLASSYCAT_LLM_MODEL_NAME')
