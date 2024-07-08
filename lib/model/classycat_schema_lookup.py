@@ -13,7 +13,7 @@ class Model(Model):
 
 
     def schema_name_exists(self, schema_name):
-        return file_exists_in_s3(self.output_bucket, f"{schema_name}.json")
+        return file_exists_in_s3(self.schemas_bucket, f"{schema_name}.json")
 
 
     def look_up_schema_id_by_name(self, schema_name):

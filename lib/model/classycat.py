@@ -1,6 +1,7 @@
+from typing import Union
 from lib.logger import logger
 from lib.model.model import Model
-from lib.schemas import Message, ClassyCatResponse
+from lib.schemas import Message, ClassyCatSchemaResponse, ClassyCatBatchClassificationResponse
 from lib.model.classycat_classify import Model as ClassifyModel
 from lib.model.classycat_schema_create import Model as ClassyCatSchemaCreateModel
 from lib.model.classycat_schema_lookup import Model as ClassyCatSchemaLookupModel
@@ -10,7 +11,7 @@ class Model(Model):
     def __init__(self):
         super().__init__()
 
-    def process(self, message: Message) -> ClassyCatResponse:
+    def process(self, message: Message) -> Union[ClassyCatSchemaResponse, ClassyCatBatchClassificationResponse]:
         event_type = message.body.parameters["event_type"]
         if event_type == 'classify':
             return ClassifyModel().process(message)
