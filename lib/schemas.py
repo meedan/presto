@@ -41,10 +41,14 @@ def parse_message(message_data: Dict) -> Message:
     result_data = body_data.get('result', {})
     if 'yake_keywords' in model_name:
         result_instance = YakeKeywordsResponse(**result_data)
-    elif 'classycat_batch_classification' in model_name:
-        result_instance = ClassyCatBatchClassificationResponse(**result_data)
-    elif 'classycat_schema_create' in model_name or 'classycat_schema_lookup' in model_name:
-        result_instance = ClassyCatSchemaResponse(**result_data)
+    elif 'classycat' in model_name:
+        event_type = body_data['parameters']['event_type']
+        if event_type == 'classify':
+            result_instance = ClassyCatBatchClassificationResponse(**result_data)
+        elif event_type == 'schema_lookup' or event_type == 'schema_create':
+            result_instance = ClassyCatSchemaResponse(**result_data)
+        else:
+            result_instance = ClassyCatResponse(**result_data)
     elif 'video' in model_name:
         result_instance = VideoResponse(**result_data)
     else:

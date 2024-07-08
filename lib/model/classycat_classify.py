@@ -5,7 +5,7 @@ import httpx
 from openai import OpenAI
 from lib.logger import logger
 from lib.model.model import Model
-from lib.schema import Message, ClassyCatBatchClassificationResponse
+from lib.schemas import Message, ClassyCatBatchClassificationResponse
 from lib.s3 import load_file_from_s3, file_exists_in_s3, upload_file_to_s3
 
 

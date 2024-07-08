@@ -1,9 +1,9 @@
 from lib.logger import logger
 from lib.model.model import Model
 from lib.schemas import Message, ClassyCatResponse
-from model.classycat_classify import Model as ClassifyModel
-from model.classycat_schema_create import Model as ClassyCatSchemaCreateModel
-from model.classycat_schema_lookup import Model as ClassyCatSchemaLookupModel
+from lib.model.classycat_classify import Model as ClassifyModel
+from lib.model.classycat_schema_create import Model as ClassyCatSchemaCreateModel
+from lib.model.classycat_schema_lookup import Model as ClassyCatSchemaLookupModel
 
 
 class Model(Model):
