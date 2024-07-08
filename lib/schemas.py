@@ -11,14 +11,14 @@ class VideoResponse(MediaResponse):
 class YakeKeywordsResponse(BaseModel):
     keywords: Optional[List[List[Union[str, float]]]] = None
 
+class ClassyCatResponse(BaseModel):
+    responseMessage: Optional[str] = None
 
-class ClassyCatBatchClassificationResponse(BaseModel):
+class ClassyCatBatchClassificationResponse(ClassyCatResponse):
     classification_results: Optional[List[Dict[Union[str, int], Union[str, List[str]]]]] = []
-    responseMessage: Optional[str] = None
 
-class ClassyCatSchemaResponse(BaseModel):
+class ClassyCatSchemaResponse(ClassyCatResponse):
     schema_id: Optional[str] = None
-    responseMessage: Optional[str] = None
 
 class GenericItem(BaseModel):
     id: Union[str, int, float]
@@ -28,12 +28,7 @@ class GenericItem(BaseModel):
     text: Optional[str] = None
     raw: Optional[Dict] = {}
     parameters: Optional[Dict] = {}
-    result: Optional[Union[MediaResponse, VideoResponse, YakeKeywordsResponse, ClassyCatSchemaResponse, ClassyCatBatchClassificationResponse]] = None
-
-class ClassyCatBatchClassificationItem(GenericItem): # todo
-    schema_id: str = None
-    items: Optional[List[Dict[Union[str, int], str]]] = []
-    result: Optional[ClassyCatBatchClassificationResponse] = None
+    result: Optional[Union[MediaResponse, VideoResponse, YakeKeywordsResponse, ClassyCatResponse]] = None
 
 class Message(BaseModel):
     body: GenericItem
@@ -48,7 +43,7 @@ def parse_message(message_data: Dict) -> Message:
         result_instance = YakeKeywordsResponse(**result_data)
     elif 'classycat_batch_classification' in model_name:
         result_instance = ClassyCatBatchClassificationResponse(**result_data)
-    elif 'classycat_schema_create' in model_name:
+    elif 'classycat_schema_create' in model_name or 'classycat_schema_lookup' in model_name:
         result_instance = ClassyCatSchemaResponse(**result_data)
     elif 'video' in model_name:
         result_instance = VideoResponse(**result_data)

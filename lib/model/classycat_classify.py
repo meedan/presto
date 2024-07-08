@@ -5,7 +5,7 @@ import httpx
 from openai import OpenAI
 from lib.logger import logger
 from lib.model.model import Model
-from lib.schema import ClassyCatBatchClassificationItem
+from lib.schema import Message, ClassyCatBatchClassificationResponse
 from lib.s3 import load_file_from_s3, file_exists_in_s3, upload_file_to_s3
 
 
@@ -108,24 +108,27 @@ class Model(Model):
         return file_exists_in_s3(self.output_bucket, f"{schema_id}.json")
 
 
-    def process(self, batch_to_classify: ClassyCatBatchClassificationItem) -> ClassyCatBatchClassificationItem:
+    def process(self, message: Message) -> ClassyCatBatchClassificationResponse:
         # unpack parameters for classify
-        schema_id = batch_to_classify.schema_id
-        items = batch_to_classify.items
+        batch_to_classify = message.body.parameters
+        schema_id = batch_to_classify["schema_id"]
+        items = batch_to_classify["items"]
+
+        result = message.body.result
 
         if not self.schema_id_exists(schema_id):
-            batch_to_classify.text = f"Schema id {schema_id} cannot be found"
-            return batch_to_classify
+            result.responseMessage = f"Schema id {schema_id} cannot be found"
+            return result
 
         if len(items) > self.batch_size_limit:
-            batch_to_classify.text = f"Number of items exceeds batch size limit of {self.batch_size_limit}"
-            return batch_to_classify
+            result.responseMessage = f"Number of items exceeds batch size limit of {self.batch_size_limit}"
+            return result
 
         try:
-            batch_to_classify.result.classification_results = self.classify_and_store_results(schema_id, items)
-            batch_to_classify.text = "success"
-            return batch_to_classify
+            result.classification_results = self.classify_and_store_results(schema_id, items)
+            result.responseMessage = "success"
+            return result
         except Exception as e:
             logger.exception(f"Error classifying items: {e}")
-            batch_to_classify.text = f"Error classifying items: {e}"
-            return batch_to_classify
+            result.responseMessage = f"Error classifying items: {e}"
+            return result
