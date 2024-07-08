@@ -28,7 +28,7 @@ class GenericItem(BaseModel):
     text: Optional[str] = None
     raw: Optional[Dict] = {}
     parameters: Optional[Dict] = {}
-    result: Optional[Union[MediaResponse, VideoResponse, YakeKeywordsResponse, ClassyCatResponse]] = None
+    result: Optional[Union[MediaResponse, VideoResponse, YakeKeywordsResponse, ClassyCatSchemaResponse, ClassyCatBatchClassificationResponse]] = None
 
 class Message(BaseModel):
     body: GenericItem
