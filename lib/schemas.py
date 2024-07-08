@@ -13,7 +13,12 @@ class YakeKeywordsResponse(BaseModel):
 
 
 class ClassyCatBatchClassificationResponse(BaseModel):
-    classification_results: Optional[List[Dict[Union[str, int], str, List[str]]]] = []
+    classification_results: Optional[List[Dict[Union[str, int], Union[str, List[str]]]]] = []
+    responseMessage: Optional[str] = None
+
+class ClassyCatSchemaResponse(BaseModel):
+    schema_id: Optional[str] = None
+    responseMessage: Optional[str] = None
 
 class GenericItem(BaseModel):
     id: Union[str, int, float]
@@ -23,19 +28,12 @@ class GenericItem(BaseModel):
     text: Optional[str] = None
     raw: Optional[Dict] = {}
     parameters: Optional[Dict] = {}
-    result: Optional[Union[MediaResponse, VideoResponse, YakeKeywordsResponse]] = None
+    result: Optional[Union[MediaResponse, VideoResponse, YakeKeywordsResponse, ClassyCatSchemaResponse, ClassyCatBatchClassificationResponse]] = None
 
-class ClassyCatBatchClassificationItem(GenericItem):
+class ClassyCatBatchClassificationItem(GenericItem): # todo
     schema_id: str = None
     items: Optional[List[Dict[Union[str, int], str]]] = []
     result: Optional[ClassyCatBatchClassificationResponse] = None
-
-class ClassyCatSchema(GenericItem):
-    schema_name: str = None
-    topics: Optional[List[Dict[str, str]]] = None
-    examples: Optional[List[Dict[str, List[str]]]] = None
-    languages: Optional[List[str]] = None
-    schema_id: Optional[str] = None
 
 class Message(BaseModel):
     body: GenericItem
@@ -48,6 +46,10 @@ def parse_message(message_data: Dict) -> Message:
     result_data = body_data.get('result', {})
     if 'yake_keywords' in model_name:
         result_instance = YakeKeywordsResponse(**result_data)
+    elif 'classycat_batch_classification' in model_name:
+        result_instance = ClassyCatBatchClassificationResponse(**result_data)
+    elif 'classycat_schema_create' in model_name:
+        result_instance = ClassyCatSchemaResponse(**result_data)
     elif 'video' in model_name:
         result_instance = VideoResponse(**result_data)
     else:

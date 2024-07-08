@@ -4,14 +4,12 @@ import uuid
 from lib.s3 import upload_file_to_s3, file_exists_in_s3
 from lib.logger import logger
 from lib.model.model import Model
-from lib.schemas import ClassyCatSchema
+from lib.schemas import Message, ClassyCatSchemaResponse
 
 
 class Model(Model):
     def __init__(self):
-        """
-        Set some basic constants during operation, create local folder for tmk workspace.
-        """
+        super().__init__()
         self.output_bucket = os.getenv("CLASSYCAT_OUTPUT_BUCKET")
         self.base_prompt = (
             "You are given a list of items in {languages} to classify. "
@@ -105,32 +103,36 @@ class Model(Model):
         )
 
 
-    def process(self, schema_specs: ClassyCatSchema) -> ClassyCatSchema:
+    def process(self, message: Message) -> ClassyCatSchemaResponse:
         # unpack parameters for create_schema
-        schema_name = schema_specs.schema_name
-        topics = schema_specs.topics
-        examples = schema_specs.examples
-        languages = schema_specs.languages  # ['English', 'Spanish']
+        schema_specs = message.body.parameters
+
+        schema_name = schema_specs["schema_name"]
+        topics = schema_specs["topics"]
+        examples = schema_specs["examples"]
+        languages = schema_specs["languages"]  # ['English', 'Spanish']
+
+        result = message.body.result
 
         if self.schema_name_exists(schema_name):
-            schema_specs.text = f"Schema name {schema_name} already exists"
-            return schema_specs
+            result.responseMessage = f"Schema name {schema_name} already exists"
+            return result
 
         try:
             self.verify_schema_parameters(schema_name, topics, examples, languages)
         except Exception as e:
             logger.exception(f"Error verifying schema parameters: {e}")
-            schema_specs.text = f"Error verifying schema parameters. Stack trace: {e}"
-            return schema_specs
+            result.responseMessage = f"Error verifying schema parameters. Stack trace: {e}"
+            return result
 
         try:
-            schema_specs.schema_id = self.create_schema(schema_name, topics, examples, languages)
-            schema_specs.text = 'success'
-            return schema_specs
+            result.schema_id = self.create_schema(schema_name, topics, examples, languages)
+            result.responseMessage = 'success'
+            return result
         except Exception as e:
             logger.exception(f"Error creating schema: {e}")
-            schema_specs.text = f"Error creating schema. Stack trace: {e}"
-            return schema_specs
+            result.responseMessage = f"Error creating schema. Stack trace: {e}"
+            return result
 
 
     def verify_schema_parameters(self, schema_name, topics, examples, languages): #todo
