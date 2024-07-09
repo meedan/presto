@@ -50,7 +50,7 @@ class Model(Model):
     def __init__(self):
         super().__init__()
         self.output_bucket = os.getenv("CLASSYCAT_OUTPUT_BUCKET")
-        self.batch_size_limit = int(os.environ.get("BATCH_SIZE_LIMIT"))
+        self.batch_size_limit = int(os.environ.get("CLASSYCAT_BATCH_SIZE_LIMIT"))
         llm_model_name = os.environ.get('CLASSYCAT_LLM_MODEL_NAME')
         self.llm_client = OpenRouterClient(llm_model_name)
 
@@ -77,9 +77,7 @@ class Model(Model):
 
     def classify_and_store_results(self, schema_id, items):
         # load prompt from schema
-        # schema = s3_client.get_object(Bucket=output_bucket, Key=f"{schema_id}.json")
         schema = load_file_from_s3(self.output_bucket, f"{schema_id}.json")
-        schema = schema['Body'].read().decode('utf-8')
         schema = json.loads(schema)
         prompt = schema['prompt']
         logger.info(f"Prompt for schema {schema['schema_name']} retrieved successfully")

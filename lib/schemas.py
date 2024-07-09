@@ -15,7 +15,7 @@ class ClassyCatResponse(BaseModel):
     responseMessage: Optional[str] = None
 
 class ClassyCatBatchClassificationResponse(ClassyCatResponse):
-    classification_results: Optional[List[Dict[Union[str, int], Union[str, List[str]]]]] = []
+    classification_results: Optional[List[dict]] = []
 
 class ClassyCatSchemaResponse(ClassyCatResponse):
     schema_id: Optional[str] = None
