@@ -94,7 +94,6 @@ class Model(Model):
         final_results = [{'id': items[i]['id'], 'text': items[i]['text'], 'labels': classification_results[i]}
                          for i in range(len(items))]
         results_file_id = str(uuid.uuid4())
-        # s3_client.put_object(Bucket=output_bucket, Key=f"{schema_id}/{results_file_id}.json", Body=json.dumps(final_results))
         upload_file_to_s3(self.output_bucket, f"{schema_id}/{results_file_id}.json", json.dumps(final_results))
 
         return final_results
