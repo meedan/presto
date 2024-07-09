@@ -25,7 +25,7 @@ class Model(Model):
         )
 
 
-    def create_schema(self, schema_name, topics, examples, languages): # todo add type to arguments
+    def create_schema(self, schema_name, topics, examples, languages):
         schema_id = str(uuid.uuid4())
         schema_filename = f"{schema_id}.json"
         schema_id_mapping_filename = f"{schema_name}.json"
