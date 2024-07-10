@@ -10,14 +10,14 @@ class TestClassyCat(TestCase):
     def setUp(self):
         self.classycat_model = ClassyCatModel()
 
-    @patch('lib.s3.upload_file_to_s3')
+    @patch('lib.model.classycat_schema_create.upload_file_to_s3')
     @patch('lib.model.classycat_schema_create.Model.schema_name_exists')
-    def test_schema_create(self, mock_upload_file_to_s3, mock_schema_name_exists):
+    def test_schema_create(self, mock_schema_name_exists, mock_upload_file_to_s3):
         # should input a schema with more than one language and return an id
         # writing to s3 should be mocked
         # the format of the generated prompt should be checked
 
-        mock_upload_file_to_s3.return_value = MagicMock()
+        mock_upload_file_to_s3.return_value = None
         mock_schema_name_exists.return_value = False
 
         schema_input = {"model_name": "classycat__Model",
@@ -134,7 +134,7 @@ class TestClassyCat(TestCase):
         self.assertEqual("success", result.responseMessage)
         self.assertIsNotNone(result.schema_id)
 
-        mock_upload_file_to_s3.assert_called_times(2)
+        self.assertEqual(mock_upload_file_to_s3.call_count, 2)
 
         all_call_args = mock_upload_file_to_s3.call_args_list
         json_schema = all_call_args[0].args[2]
