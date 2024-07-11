@@ -90,7 +90,7 @@ class Model(Model):
             logger.info(f"Classification results: {classification_results}")
             raise Exception(f"Not all items were classified successfully: "
                             f"input length {len(items)}, output length {len(classification_results)}")
-
+# TODO: validate response label against schema https://meedan.atlassian.net/browse/CV2-4801
         final_results = [{'id': items[i]['id'], 'text': items[i]['text'], 'labels': classification_results[i]}
                          for i in range(len(items))]
         results_file_id = str(uuid.uuid4())
