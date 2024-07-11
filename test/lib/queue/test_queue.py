@@ -11,6 +11,7 @@ from lib.queue.worker import QueueWorker
 from lib import schemas
 from test.lib.queue.fake_sqs_message import FakeSQSMessage
 from concurrent.futures import TimeoutError
+
 class TestModelTimeout:
     def __init__(self):
         self.model_name = "timeout.TestModelTimeout"
@@ -226,6 +227,28 @@ class TestQueueWorker(unittest.TestCase):
         ]
         self.queue.delete_processed_messages(messages_with_queues)
         mock_delete_messages.assert_called_once_with(messages_with_queues)
+
+    @patch('lib.cache.Cache.get_cached_result')
+    @patch('lib.cache.Cache.set_cached_result')
+    def test_error_capturing_in_get_response(self, mock_cache_set, mock_cache_get):
+        mock_cache_get.return_value = None
+        mock_cache_set.return_value = True
+        message_data = {
+            "body": {"id": 1, "callback_url": "http://example.com", "text": "This is a test"},
+            "model_name": "generic"
+        }
+        message = schemas.parse_message(message_data)
+        message.body.content_hash = "test_hash"
+        
+        # Simulate an error in the process method
+        self.model.process = MagicMock(side_effect=Exception("Test error"))
+
+        result = self.model.get_response(message)
+
+        self.assertIsInstance(result, schemas.ErrorResponse)
+        self.assertEqual(result.error, "Test error")
+        self.assertIn("error", result.error_details)
+        self.assertEqual(result.error_details["error"], "Test error")
 
 if __name__ == '__main__':
     unittest.main()
