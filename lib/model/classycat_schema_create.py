@@ -41,16 +41,8 @@ class Model(Model):
         schema["prompt"] = self.generate_prompt_from_schema(schema)
 
         upload_file_to_s3(self.output_bucket, schema_filename, json.dumps(schema))
-        # s3_client.put_object(
-        #     Bucket=output_bucket, Key=schema_filename, Body=json.dumps(schema)
-        # )
-
         upload_file_to_s3(self.output_bucket, schema_id_mapping_filename, json.dumps({"schema_id": schema_id}))
-        # s3_client.put_object(
-        #     Bucket=output_bucket,
-        #     Key=schema_id_mapping_filename,
-        #     Body=json.dumps({"schema_id": schema_id}),
-        # )
+
         logger.info(f"Schema {schema_name} created with id {schema_id}")
 
         return schema_id
