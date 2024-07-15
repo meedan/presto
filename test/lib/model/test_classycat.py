@@ -127,7 +127,7 @@ class TestClassyCat(TestCase):
                                      "Malayalam"
                                  ]
                              },
-                             "callback_url": "http://host.docker.internal:9888"}}
+                             "callback_url": "http://example.com?callback"}}
         schema_message = schemas.parse_message(schema_input)
         result = self.classycat_model.process(schema_message)
 
@@ -262,7 +262,7 @@ class TestClassyCat(TestCase):
         schema_lookup_input = {
             "model_name": "classycat__Model",
             "body": {
-                "callback_url": "http://host.docker.internal:9888",
+                "callback_url": "http://example.com?callback",
                 "id": 1200,
                 "parameters": {
                     "event_type": "schema_lookup",
@@ -409,14 +409,14 @@ class TestClassyCat(TestCase):
                         }
                     ]
                 },
-                "callback_url": "http://host.docker.internal:9888"
+                "callback_url": "http://example.com?callback"
             }
         }
         classify_message = schemas.parse_message(classify_input)
         result = self.classycat_model.process(classify_message)
 
         # example response for this input:
-        # {"body": {"id": 1200, "content_hash": null, "callback_url": "http://host.docker.internal:9888", "url": null, "text": null, "raw": {}, "parameters": {"event_type": "classify", "schema_id": "4a026b82-4a16-440d-aed7-bec07af12205", "items": [{"id": "11", "text": "modi and bjp want to rule india by dividing people against each other"}]}, "result": {"responseMessage": "success", "classification_results": [{"id": "11", "text": "modi and bjp want to rule india by dividing people against each other", "labels": ["Politics", "Communalism"]}]}}, "model_name": "classycat.Model", "retry_count": 0}
+        # {"body": {"id": 1200, "content_hash": null, "callback_url": "http://example.com?callback", "url": null, "text": null, "raw": {}, "parameters": {"event_type": "classify", "schema_id": "4a026b82-4a16-440d-aed7-bec07af12205", "items": [{"id": "11", "text": "modi and bjp want to rule india by dividing people against each other"}]}, "result": {"responseMessage": "success", "classification_results": [{"id": "11", "text": "modi and bjp want to rule india by dividing people against each other", "labels": ["Politics", "Communalism"]}]}}, "model_name": "classycat.Model", "retry_count": 0}
 
         self.assertEqual(result.responseMessage, "success")
         self.assertEqual(len(result.classification_results), 1)
@@ -558,7 +558,7 @@ class TestClassyCat(TestCase):
                         }
                     ]
                 },
-                "callback_url": "http://host.docker.internal:9888"
+                "callback_url": "http://example.com?callback"
             }
         }
         classify_message = schemas.parse_message(classify_input)
@@ -696,7 +696,7 @@ class TestClassyCat(TestCase):
                         }
                     ]
                 },
-                "callback_url": "http://host.docker.internal:9888"
+                "callback_url": "http://example.com?callback"
             }
         }
         classify_message = schemas.parse_message(classify_input)
