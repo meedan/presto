@@ -10,18 +10,8 @@ def upload_file_to_s3_using_filename(bucket: str, filename: str):
     Generic upload helper for s3. Could be moved over to helpers folder...
     """
     s3_client = get_s3_client()
+    create_bucket_if_not_exists(s3_client, bucket, filename)
     # Extract the file name from the local file path
-    try:
-        s3_client.head_bucket(Bucket=bucket)
-    except ClientError as e:
-        if e.response['Error']['Code'] == 'NoSuchBucket' or int(e.response['Error']['Code']) in [403, 404]:
-            # Create the bucket since it does not exist
-            s3_client.create_bucket(Bucket=bucket)
-            logger.info(f'Created bucket {bucket} in MinIO.') # is this accurate? i.e. is this code only for minio?
-        else:
-            # Other errors like permissions issues
-            logger.error(f'Error in accessing bucket {bucket}: {e}, {bucket} {filename}')
-            raise e
     file_name = filename.split('/')[-1]
     # Upload the file to S3
     try:
@@ -31,12 +21,30 @@ def upload_file_to_s3_using_filename(bucket: str, filename: str):
         logger.error(f'Failed to upload file {file_name} to S3 bucket: {e}')
 
 
+def create_bucket_if_not_exists(s3_client, bucket, filename=""):
+    # filename should not be a necessary parameter, just included for logging purposes
+    try:
+        s3_client.head_bucket(Bucket=bucket)
+    except ClientError as e:
+        if e.response['Error']['Code'] == 'NoSuchBucket' or int(e.response['Error']['Code']) in [403, 404]:
+            # Create the bucket since it does not exist
+            s3_client.create_bucket(Bucket=bucket)
+            logger.info(f'Created bucket {bucket} in S3 (or MinIO, if running locally).')
+        else:
+            # Other errors like permissions issues
+            logger.error(f'Error in accessing bucket {bucket}: {e}, {bucket} {filename}')
+            raise e
+
+
 def upload_file_to_s3(bucket: str, filename: str, content: str):
     try:
         s3_client = get_s3_client()
     except Exception as e:
         logger.error(f'Failed to establish connection to the S3 client: {e}')
         return
+
+    create_bucket_if_not_exists(s3_client, bucket, filename)  # throws error in case of permission/other issues
+
     try:
         s3_client.put_object(
             Bucket=bucket, Key=filename, Body=content
