@@ -1,4 +1,4 @@
-transformers==4.29.0
+transformers==4.38.0
 boto3==1.18.64
 pyacoustid==1.2.2
 sentence-transformers==2.2.2
@@ -8,10 +8,10 @@ transformers>=4.6.0
 fastapi==0.109.1
 uvicorn[standard]==0.19.0
 httpx==0.23.1
-huggingface-hub==0.11.0
+huggingface-hub==0.19.3
 fasttext==0.9.2
 langcodes==3.3.0 
-requests==2.31.0
+requests==2.32.2
 pytest==7.4.0
 sentry-sdk==1.30.0
 yake==0.4.8
@@ -21,6 +21,6 @@ opentelemetry-sdk==1.24.0
 redis==5.0.6
 pact-python==2.2.0
 numpy==1.26.4
-protobuf==3.20.0
+protobuf==3.20.2
 openai==1.35.6
 anthropic==0.31.1
