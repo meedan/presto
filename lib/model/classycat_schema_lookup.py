@@ -23,6 +23,41 @@ class Model(Model):
 
 
     def process(self, message: Message) -> ClassyCatSchemaResponse:
+        # Example input:
+        # {
+        #     "model_name": "classycat__Model",
+        #     "body": {
+        #         "callback_url": "http://example.com?callback",
+        #         "id": 1200,
+        #         "parameters": {
+        #             "event_type": "schema_lookup",
+        #             "schema_name": "2024 Indian Election Test"
+        #         }
+        #     }
+        # }
+        #
+        # Example output:
+        # {
+        #     "body": {
+        #         "id": 1200,
+        #         "content_hash": null,
+        #         "callback_url": "http://host.docker.internal:9888",
+        #         "url": null,
+        #         "text": null,
+        #         "raw": {},
+        #         "parameters": {
+        #             "event_type": "schema_lookup",
+        #             "schema_name": "2024 Indian Election Test"
+        #         },
+        #         "result": {
+        #             "responseMessage": "success",
+        #             "schema_id": "12589852-4fff-430b-bf77-adad202d03ca"
+        #         }
+        #     },
+        #     "model_name": "classycat.Model",
+        #     "retry_count": 0
+        # }
+
         # check if schema with the name exists, and if so return the id
         schema_name = message.body.parameters["schema_name"]
         result = message.body.result

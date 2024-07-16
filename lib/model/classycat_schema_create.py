@@ -96,6 +96,91 @@ class Model(Model):
 
 
     def process(self, message: Message) -> ClassyCatSchemaResponse:
+        # example input:
+        # {
+        #     "model_name": "classycat__Model",
+        #     "body": {
+        #         "id": 1200,
+        #         "parameters": {
+        #             "event_type": "schema_create",
+        #             "schema_name": "2024 Indian Election Test",
+        #             "topics": [
+        #                 {
+        #                     "topic": "Politics",
+        #                     "description": "This topic includes political claims, attacks on leaders and parties, and general political commentary."
+        #                 },
+        #                 {
+        #                     "topic": "Communalism",
+        #                     "description": "This topic covers attack on religious minorities, statements on religious freedom and polarization."
+        #                 }
+        #             ],
+        #             "examples": [
+        #                 {
+        #                     "text": "Congress Manifesto is horrible. Never seen such a dangerous manifesto in my life. It's like vision 2047 document of PFI\n\nCheck these points of manifesto\n\n1. Will bring back triple talak (Muslim personal law)\n2. Reservation to Muslim in govt n private jobs (Implement Sachchar committee report)\n3. Support Love Jihad (right to love)\n4. Support Burqa in school (right to dress)\n5. End majoritarianism (Hinduism)\n6. Ban bulldozer action\n7. Support Gaza (Hamas)\n8. Legalise Same Sex Marriage, gender fluidity, trans movement\n9. Increase Muslim judges in judiciary\n10. Communal violence bill (will stop mob lynching)\n11. Legalise beef (right to eat everything)\n12. Separate loan intrest for Muslims\n13. Allow treason (No sedition)\n\nAll those Hindu who are thinking to vote Indi Alliance, NOTA or independent. Read this and think.\n",
+        #                     "labels": [
+        #                         "Politics",
+        #                         "Communalism"
+        #                     ]
+        #                 }
+        #             ],
+        #             "languages": [
+        #                 "English",
+        #                 "Hindi",
+        #                 "Telugu",
+        #                 "Malayalam"
+        #             ]
+        #         },
+        #         "callback_url": "http://example.com?callback"
+        #     }
+        # }
+        #
+        # Example output:
+        # {
+        #     "body": {
+        #         "id": 1200,
+        #         "content_hash": null,
+        #         "callback_url": "http://host.docker.internal:9888",
+        #         "url": null,
+        #         "text": null,
+        #         "raw": {},
+        #         "parameters": {
+        #             "event_type": "schema_create",
+        #             "schema_name": "2024 Indian Election Test 2",
+        #             "topics": [
+        #                 {
+        #                     "topic": "Politics",
+        #                     "description": "This topic includes political claims, attacks on leaders and parties, and general political commentary."
+        #                 },
+        #                 {
+        #                     "topic": "Communalism",
+        #                     "description": "This topic covers attack on religious minorities, statements on religious freedom and polarization."
+        #                 }
+        #             ],
+        #             "examples": [
+        #                 {
+        #                     "text": "Congress Manifesto is horrible. Never seen such a dangerous manifesto in my life. It's like vision 2047 document of PFI\n\nCheck these points of manifesto\n\n1. Will bring back triple talak (Muslim personal law)\n2. Reservation to Muslim in govt n private jobs (Implement Sachchar committee report)\n3. Support Love Jihad (right to love)\n4. Support Burqa in school (right to dress)\n5. End majoritarianism (Hinduism)\n6. Ban bulldozer action\n7. Support Gaza (Hamas)\n8. Legalise Same Sex Marriage, gender fluidity, trans movement\n9. Increase Muslim judges in judiciary\n10. Communal violence bill (will stop mob lynching)\n11. Legalise beef (right to eat everything)\n12. Separate loan intrest for Muslims\n13. Allow treason (No sedition)\n\nAll those Hindu who are thinking to vote Indi Alliance, NOTA or independent. Read this and think.\n",
+        #                     "labels": [
+        #                         "Politics",
+        #                         "Communalism"
+        #                     ]
+        #                 }
+        #             ],
+        #             "languages": [
+        #                 "English",
+        #                 "Hindi",
+        #                 "Telugu",
+        #                 "Malayalam"
+        #             ]
+        #         },
+        #         "result": {
+        #             "responseMessage": "success",
+        #             "schema_id": "e6729bb9-2491-47dc-824d-828d929ebcd2"
+        #         }
+        #     },
+        #     "model_name": "classycat.Model",
+        #     "retry_count": 0
+        # }
+
         # unpack parameters for create_schema
         schema_specs = message.body.parameters
 

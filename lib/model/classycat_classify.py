@@ -135,6 +135,62 @@ class Model(Model):
 
 
     def process(self, message: Message) -> ClassyCatBatchClassificationResponse:
+        # Example input:
+        # {
+        #     "model_name": "classycat__Model",
+        #     "body": {
+        #         "id": 1200,
+        #         "parameters": {
+        #             "event_type": "classify",
+        #             "schema_id": "4a026b82-4a16-440d-aed7-bec07af12205",
+        #             "items": [
+        #                 {
+        #                     "id": "11",
+        #                     "text": "modi and bjp want to rule india by dividing people against each other"
+        #                 }
+        #             ]
+        #         },
+        #         "callback_url": "http://example.com?callback"
+        #     }
+        # }
+        #
+        # Example output:
+        # {
+        #     "body": {
+        #         "id": 1200,
+        #         "content_hash": null,
+        #         "callback_url": "http://host.docker.internal:9888",
+        #         "url": null,
+        #         "text": null,
+        #         "raw": {},
+        #         "parameters": {
+        #             "event_type": "classify",
+        #             "schema_id": "12589852-4fff-430b-bf77-adad202d03ca",
+        #             "items": [
+        #                 {
+        #                     "id": "11",
+        #                     "text": "modi and bjp want to rule india by dividing people against each other"
+        #                 }
+        #             ]
+        #         },
+        #         "result": {
+        #             "responseMessage": "success",
+        #             "classification_results": [
+        #                 {
+        #                     "id": "11",
+        #                     "text": "modi and bjp want to rule india by dividing people against each other",
+        #                     "labels": [
+        #                         "Politics",
+        #                         "Communalism"
+        #                     ]
+        #                 }
+        #             ]
+        #         }
+        #     },
+        #     "model_name": "classycat.Model",
+        #     "retry_count": 0
+        # }
+
         # unpack parameters for classify
         batch_to_classify = message.body.parameters
         schema_id = batch_to_classify["schema_id"]
