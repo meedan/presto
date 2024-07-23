@@ -66,7 +66,7 @@ jobs:
           jq -r '.[] | @tsv' | \
           while IFS=$'\t' read -r name value; do
             name=$(echo "$name" | sed 's|/test/presto/||' | tr '-' '_' | tr '/' '_')
-            echo "$name=$value" >> 
+            echo "$name=$value" >> $GITHUB_ENV
           done
 
     - name: Run PR Tests
