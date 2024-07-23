@@ -79,7 +79,7 @@ jobs:
           # docker run --rm  ${{ steps.build-image.outputs.image }} -e APP=presto -e DEPLOY_ENV=test -e GITHUB_TOKEN=none make run_test
           echo "test not enabled for forks!"
         else
-          docker run -e APP=presto -e DEPLOY_ENV=test -e GITHUB_TOKEN=none --rm  ${{ steps.build-image.outputs.image }}  $(grep -v '^#' $GITHUB_ENV | sed 's/^/-e /') make run_test
+          docker run -e APP=presto -e DEPLOY_ENV=test -e GITHUB_TOKEN=none --rm  ${{ steps.build-image.outputs.image }}  $(grep -v '^#' .env | sed 's/^/-e /') make run_test
         fi
 
     - name: Reset cache
