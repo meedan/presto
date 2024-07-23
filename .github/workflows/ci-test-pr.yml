@@ -68,7 +68,7 @@ jobs:
           key=$(echo "$name" | awk -F'/' '{print $NF}')
           env_content="${env_content}${key}=${value}\n"
         done <<< "$parameters"
-        echo -e "$env_content" >> .env_file
+        echo -e "\n$env_content" >> .env_file
 
     - name: Run PR Tests
       id: run-tests
