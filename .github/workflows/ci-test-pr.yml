@@ -52,6 +52,22 @@ jobs:
           --tag $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG \
           --file ./Dockerfile ./
         echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
+    
+    - name: Install AWS CLI and jq
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y awscli 
+        sudo apt-get install -y jq
+    
+    - name: Retrieve Presto test parameters from SSM
+      id: get-ssm-params
+      run: |
+        aws ssm get-parameters-by-path --path "/test/presto/" --recursive --with-decryption --query "Parameters[*].[Name,Value]" --output json | \
+          jq -r '.[] | @tsv' | \
+          while IFS=$'\t' read -r name value; do
+            name=$(echo "$name" | sed 's|/test/presto/||' | tr '-' '_' | tr '/' '_')
+            echo "$name=$value" >> 
+          done
 
     - name: Run PR Tests
       id: run-tests
@@ -63,7 +79,7 @@ jobs:
           # docker run --rm  ${{ steps.build-image.outputs.image }} -e APP=presto -e DEPLOY_ENV=test -e GITHUB_TOKEN=none make run_test
           echo "test not enabled for forks!"
         else
-          docker run -e APP=presto -e DEPLOY_ENV=test -e GITHUB_TOKEN=none --rm  ${{ steps.build-image.outputs.image }} make run_test
+          docker run -e APP=presto -e DEPLOY_ENV=test -e GITHUB_TOKEN=none --rm  ${{ steps.build-image.outputs.image }}  $(grep -v '^#' $GITHUB_ENV | sed 's/^/-e /') make run_test
         fi
 
     - name: Reset cache
