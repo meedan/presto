@@ -79,13 +79,12 @@ jobs:
           echo "test not enabled for forks!"
         else
           docker run -e APP=presto -e DEPLOY_ENV=test -e GITHUB_TOKEN=none --rm  ${{ steps.build-image.outputs.image }} \
-          -e ANT=${{ secrets.ANT }} \  
-          -e CLASSYCAT_OUTPUT_BUCKET=${{ secrets.CLASSYCAT_OUTPUT_BUCKET }} \
-          -e CLASSYCAT_BATCH_SIZE_LIMIT=${{ secrets.CLASSYCAT_BATCH_SIZE_LIMIT }} \
-          -e OPENROUTER_API_KEY=${{ secrets.OPENROUTER_API_KEY }} \
-          -e ANTHROPIC_API_KEY=${{ secrets.ANTHROPIC_API_KEY }} \
-          -e CLASSYCAT_LLM_CLIENT_TYPE=${{ secrets.CLASSYCAT_LLM_CLIENT_TYPE }} \
-          -e CLASSYCAT_LLM_MODEL_NAME=${{ secrets.CLASSYCAT_LLM_MODEL_NAME }} \
+          -e CLASSYCAT_OUTPUT_BUCKET=${{ env.CLASSYCAT_OUTPUT_BUCKET }} \
+          -e CLASSYCAT_BATCH_SIZE_LIMIT=${{ env.CLASSYCAT_BATCH_SIZE_LIMIT }} \
+          -e OPENROUTER_API_KEY=${{ env.OPENROUTER_API_KEY }} \
+          -e ANTHROPIC_API_KEY=${{ env.ANTHROPIC_API_KEY }} \
+          -e CLASSYCAT_LLM_CLIENT_TYPE=${{ env.CLASSYCAT_LLM_CLIENT_TYPE }} \
+          -e CLASSYCAT_LLM_MODEL_NAME=${{ env.CLASSYCAT_LLM_MODEL_NAME }} \
           make run_test
         fi
 
