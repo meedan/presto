@@ -20,6 +20,7 @@ services:
         - HONEYCOMB_API_ENDPOINT=${HONEYCOMB_API_ENDPOINT}
         - REDIS_URL=${REDIS_URL}
         - CACHE_DEFAULT_TTL=${CACHE_DEFAULT_TTL}
+        
     env_file:
       - ./.env_file
     depends_on:
