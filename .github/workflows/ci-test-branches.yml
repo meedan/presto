@@ -60,7 +60,7 @@ jobs:
         GIT_SHA: ${{ github.sha }}
         BUILD_NUMBER: ${{ github.run_number }}
       run: |
-        docker run -e APP=presto -e DEPLOY_ENV=test --rm ${{ steps.build-image.outputs.image }} make run_test
+        docker run -e APP=presto -e DEPLOY_ENV=test --env-file=.env_file --rm ${{ steps.build-image.outputs.image }} make run_test
 
     - name: Send GitHub Action trigger data to Slack workflow on success
       id: slack-api-notify-success
