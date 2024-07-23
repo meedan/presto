@@ -1,3 +1,4 @@
 *.cpython-39.pyc
 *.pyc
 .env_file
+.env

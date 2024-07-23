@@ -62,12 +62,11 @@ jobs:
     - name: Retrieve Presto test parameters from SSM
       id: get-ssm-params
       run: |
-        aws ssm get-parameters-by-path --path "/test/presto/" --recursive --with-decryption --query "Parameters[*].[Name,Value]" --output json | \
-          jq -r '.[] | @tsv' | \
-          while IFS=$'\t' read -r name value; do
-            name=$(echo "$name" | sed 's|/test/presto/||' | tr '-' '_' | tr '/' '_')
-            echo "$name=$value" >> .env
-          done
+       parameters=$(aws ssm get-parameters-by-path --path "/test/presto/" --recursive --query "Parameters[*].[Name,Value]" --output text)
+        while IFS=$'\t' read -r name value; do
+          key=$(echo "$name" | awk -F'/' '{print $NF}')
+          echo "${key}=${value}" >> $GITHUB_ENV
+        done <<< "$parameters"
 
     - name: Run PR Tests
       id: run-tests
@@ -79,7 +78,15 @@ jobs:
           # docker run --rm  ${{ steps.build-image.outputs.image }} -e APP=presto -e DEPLOY_ENV=test -e GITHUB_TOKEN=none make run_test
           echo "test not enabled for forks!"
         else
-          docker run -e APP=presto -e DEPLOY_ENV=test -e GITHUB_TOKEN=none --rm  ${{ steps.build-image.outputs.image }}  $(grep -v '^#' .env | sed 's/^/-e /') make run_test
+          docker run -e APP=presto -e DEPLOY_ENV=test -e GITHUB_TOKEN=none --rm  ${{ steps.build-image.outputs.image }} \
+          -e ANT=${{ secrets.ANT }} \  
+          -e CLASSYCAT_OUTPUT_BUCKET=${{ secrets.CLASSYCAT_OUTPUT_BUCKET }} \
+          -e CLASSYCAT_BATCH_SIZE_LIMIT=${{ secrets.CLASSYCAT_BATCH_SIZE_LIMIT }} \
+          -e OPENROUTER_API_KEY=${{ secrets.OPENROUTER_API_KEY }} \
+          -e ANTHROPIC_API_KEY=${{ secrets.ANTHROPIC_API_KEY }} \
+          -e CLASSYCAT_LLM_CLIENT_TYPE=${{ secrets.CLASSYCAT_LLM_CLIENT_TYPE }} \
+          -e CLASSYCAT_LLM_MODEL_NAME=${{ secrets.CLASSYCAT_LLM_MODEL_NAME }} \
+          make run_test
         fi
 
     - name: Reset cache
