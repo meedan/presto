@@ -20,6 +20,7 @@ services:
         - HONEYCOMB_API_ENDPOINT=${HONEYCOMB_API_ENDPOINT}
         - REDIS_URL=${REDIS_URL}
         - CACHE_DEFAULT_TTL=${CACHE_DEFAULT_TTL}
+        
     env_file:
       - ./.env_file
     depends_on:
@@ -107,7 +108,7 @@ services:
       - "./:/app"
     env_file:
       - ./.env_file
-    environment: 
+    environment:
       ROLE: worker
       MODEL_NAME: video.Model
     depends_on:
@@ -122,7 +123,7 @@ services:
       - "./:/app"
     env_file:
       - ./.env_file
-    environment: 
+    environment:
       ROLE: worker
       MODEL_NAME: mean_tokens.Model
     depends_on:
@@ -137,7 +138,7 @@ services:
       - "./:/app"
     env_file:
       - ./.env_file
-    environment: 
+    environment:
       ROLE: worker
       MODEL_NAME: fasttext.Model
     depends_on:
@@ -152,7 +153,7 @@ services:
       - "./:/app"
     env_file:
       - ./.env_file
-    environment: 
+    environment:
       ROLE: worker
       MODEL_NAME: fptg.Model
     depends_on:
@@ -167,9 +168,24 @@ services:
       - "./:/app"
     env_file:
       - ./.env_file
-    environment: 
+    environment:
       ROLE: worker
       MODEL_NAME: indian_sbert.Model
+    depends_on:
+      elasticmq:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+  classycat:
+    build: .
+    platform: linux/amd64
+    volumes:
+      - "./:/app"
+    env_file:
+      - ./.env_file
+    environment:
+      ROLE: worker
+      MODEL_NAME: classycat.Model
     depends_on:
       elasticmq:
         condition: service_healthy

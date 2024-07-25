@@ -4,7 +4,7 @@ from unittest.mock import MagicMock
 from botocore.exceptions import ClientError
 import boto3
 
-from lib.s3 import upload_file_to_s3
+from lib.s3 import upload_file_to_s3_using_filename
 
 class TestUploadFileToS3(unittest.TestCase):
     def setUp(self):
@@ -18,7 +18,7 @@ class TestUploadFileToS3(unittest.TestCase):
         boto3.client = MagicMock(return_value=self.s3_client_mock)
 
         # Call the function
-        upload_file_to_s3(self.bucket, self.filename)
+        upload_file_to_s3_using_filename(self.bucket, self.filename)
 
         # Assert that the upload was called with the correct arguments
         self.s3_client_mock.upload_file.assert_called_once_with(
@@ -34,7 +34,7 @@ class TestUploadFileToS3(unittest.TestCase):
         boto3.client = MagicMock(return_value=self.s3_client_mock)
 
         # Call the function
-        upload_file_to_s3(self.bucket, self.filename)
+        upload_file_to_s3_using_filename(self.bucket, self.filename)
 
         # Assert that the upload was called with the correct arguments
         self.s3_client_mock.upload_file.assert_called_once_with(

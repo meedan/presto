@@ -15,6 +15,15 @@ class VideoResponse(MediaResponse):
 class YakeKeywordsResponse(BaseModel):
     keywords: Optional[List[List[Union[str, float]]]] = None
 
+class ClassyCatResponse(BaseModel):
+    responseMessage: Optional[str] = None
+
+class ClassyCatBatchClassificationResponse(ClassyCatResponse):
+    classification_results: Optional[List[dict]] = []
+
+class ClassyCatSchemaResponse(ClassyCatResponse):
+    schema_id: Optional[str] = None
+
 class GenericItem(BaseModel):
     id: Union[str, int, float]
     content_hash: Optional[str] = None
@@ -23,7 +32,7 @@ class GenericItem(BaseModel):
     text: Optional[str] = None
     raw: Optional[Dict] = {}
     parameters: Optional[Dict] = {}
-    result: Optional[Union[ErrorResponse, MediaResponse, VideoResponse, YakeKeywordsResponse]] = None
+    result: Optional[Union[ErrorResponse, MediaResponse, VideoResponse, YakeKeywordsResponse, ClassyCatSchemaResponse, ClassyCatBatchClassificationResponse]] = None
 
 class Message(BaseModel):
     body: GenericItem
@@ -36,6 +45,14 @@ def parse_message(message_data: Dict) -> Message:
     result_data = body_data.get('result', {})
     if 'yake_keywords' in model_name:
         result_instance = YakeKeywordsResponse(**result_data)
+    elif 'classycat' in model_name:
+        event_type = body_data['parameters']['event_type']
+        if event_type == 'classify':
+            result_instance = ClassyCatBatchClassificationResponse(**result_data)
+        elif event_type == 'schema_lookup' or event_type == 'schema_create':
+            result_instance = ClassyCatSchemaResponse(**result_data)
+        else:
+            result_instance = ClassyCatResponse(**result_data)
     elif 'video' in model_name:
         result_instance = VideoResponse(**result_data)
     else:

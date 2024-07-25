@@ -54,13 +54,24 @@ jobs:
           --file ./Dockerfile ./
         echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
 
+    - name: Retrieve Presto test parameters from SSM
+      id: get-ssm-params
+      run: |
+        parameters=$(aws ssm get-parameters-by-path --path "/test/presto/" --recursive --query "Parameters[*].[Name,Value]" --output text)
+        env_content=""
+        while IFS=$'\t' read -r name value; do
+          key=$(echo "$name" | awk -F'/' '{print $NF}')
+          env_content="${env_content}${key}=${value}\n"
+        done <<< "$parameters"
+        echo -e "\n$env_content" >> .env_file
+        
     - name: Run Unit Tests
       id: run-unit-test
       env:
         GIT_SHA: ${{ github.sha }}
         BUILD_NUMBER: ${{ github.run_number }}
       run: |
-        docker run -e APP=presto -e DEPLOY_ENV=test --rm ${{ steps.build-image.outputs.image }} make run_test
+        docker run -e APP=presto -e DEPLOY_ENV=test --env-file=.env_file --rm ${{ steps.build-image.outputs.image }} make run_test
 
     - name: Send GitHub Action trigger data to Slack workflow on success
       id: slack-api-notify-success
