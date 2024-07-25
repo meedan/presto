@@ -13,7 +13,7 @@ fasttext==0.9.2
 langcodes==3.3.0 
 requests==2.32.2
 pytest==7.4.0
-sentry-sdk==1.30.0
+sentry-sdk==2.8.0
 yake==0.4.8
 opentelemetry-api==1.24.0
 opentelemetry-exporter-otlp-proto-http==1.24.0
