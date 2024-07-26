@@ -121,9 +121,18 @@ class Model(Model):
             logger.info(f"Classification results: {classification_results}")
             raise Exception(f"Not all items were classified successfully: "
                             f"input length {len(items)}, output length {len(classification_results)}")
-        # TODO: validate response label against schema https://meedan.atlassian.net/browse/CV2-4801
+
         final_results = [{'id': items[i]['id'], 'text': items[i]['text'], 'labels': classification_results[i]}
                          for i in range(len(items))]
+
+        # filtering out the results that have out-of-schema labels
+        permitted_labels = [topic['topic'] for topic in schema['topics']] + ['Other', 'Unsure']
+        final_results = [result for result in final_results if all(label in permitted_labels for label in result['labels'])]
+
+        if len(final_results) == 0:
+            logger.info(f"The returned classifications did not produce labels from the schema: {items}")
+            raise Exception(f"No items were classified successfully")
+
         results_file_id = str(uuid.uuid4())
         upload_file_to_s3(self.output_bucket, f"{schema_id}/{results_file_id}.json", json.dumps(final_results))
 
