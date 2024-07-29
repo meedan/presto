@@ -5,6 +5,7 @@ from lib.schemas import Message, ClassyCatSchemaResponse, ClassyCatBatchClassifi
 from lib.model.classycat_classify import Model as ClassifyModel
 from lib.model.classycat_schema_create import Model as ClassyCatSchemaCreateModel
 from lib.model.classycat_schema_lookup import Model as ClassyCatSchemaLookupModel
+from lib.base_exception import PrestoBaseException
 
 
 class Model(Model):
@@ -21,5 +22,6 @@ class Model(Model):
             return ClassyCatSchemaCreateModel().process(message)
         else:
             logger.error(f"Unknown event type {event_type}")
-            message.body.result.responseMessage = f"Unknown event type {event_type}"
-            return message.body.result
+            raise PrestoBaseException(f"Unknown event type {event_type}", 422)
+            # message.body.result.responseMessage = f"Unknown event type {event_type}"
+            # return message.body.result
