@@ -1,7 +1,7 @@
 from http.server import HTTPServer, BaseHTTPRequestHandler
 import sys, os
 
-DEFAULT_PORT = os.getenv('LOCAL_CALLBACK_PORT', 9888)
+DEFAULT_PORT = int(os.getenv('LOCAL_CALLBACK_PORT', 9888))
 
 
 class RequestHandler(BaseHTTPRequestHandler):
