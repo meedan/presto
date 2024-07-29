@@ -1,5 +1,7 @@
 from http.server import HTTPServer, BaseHTTPRequestHandler
-import sys
+import sys, os
+
+DEFAULT_PORT = os.getenv('LOCAL_CALLBACK_PORT', 9888)
 
 
 class RequestHandler(BaseHTTPRequestHandler):
@@ -16,7 +18,7 @@ class RequestHandler(BaseHTTPRequestHandler):
         self.wfile.write(b"{\"message\": \"Message Received\"}")
 
 
-def run_server(port=9888):
+def run_server(port=DEFAULT_PORT):
     server_address = ('', port)
     httpd = HTTPServer(server_address, RequestHandler)
     print(f"Server running on port {port}")
@@ -24,7 +26,7 @@ def run_server(port=9888):
 
 
 if __name__ == '__main__':
-    port = 9888
+    port = DEFAULT_PORT
     if len(sys.argv) > 1:
         port = int(sys.argv[1])
     run_server(port)
