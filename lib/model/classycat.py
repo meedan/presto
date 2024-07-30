@@ -23,5 +23,3 @@ class Model(Model):
         else:
             logger.error(f"Unknown event type {event_type}")
             raise PrestoBaseException(f"Unknown event type {event_type}", 422)
-            # message.body.result.responseMessage = f"Unknown event type {event_type}"
-            # return message.body.result
