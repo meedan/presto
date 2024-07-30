@@ -11,6 +11,7 @@ from lib import schemas
 from lib.cache import Cache
 from lib.sentry import capture_custom_message
 from lib.base_exception import PrestoBaseException
+from lib.logger import logger
 
 
 class Model(ABC):
@@ -57,7 +58,7 @@ class Model(ABC):
         capture_custom_message("Error during fingerprinting for {self.model_name}", 'info', error_context)
         return schemas.ErrorResponse(error=str(e), error_details=error_context, error_code=response_code)
 
-    def get_response(self, message: schemas.Message) -> schemas.GenericItem:
+    def get_response(self, message: schemas.Message) -> Union[schemas.GenericItem, schemas.ErrorResponse]:
         """
         Perform a lookup on the cache for a message, and if found, return that cached value.
         """
