@@ -44,7 +44,7 @@ class QueueProcessor(Queue):
         if messages_with_queues:
             logger.info(f"About to respond to: ({messages_with_queues})")
             bodies = [
-                schemas.parse_message(json.loads(message.body))
+                json.loads(message.body)
                 for message, queue in messages_with_queues
             ]
             for body in bodies:
