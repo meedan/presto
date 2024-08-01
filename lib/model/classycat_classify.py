@@ -66,7 +66,9 @@ class OpenRouterClient(LLMClient):
             max_tokens=(max_tokens_per_item * items_count) + 15,
             temperature=0.5
         )
-# TODO: record metric here with model name and number of items submitted (https://meedan.atlassian.net/browse/CV2-4987)
+
+        # TODO: record metric here with model name and number of items submitted (https://meedan.atlassian.net/browse/CV2-4987)
+
         return completion.choices[0].message.content
 
 
