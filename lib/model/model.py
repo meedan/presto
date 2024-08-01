@@ -50,7 +50,7 @@ class Model(ABC):
                 if attr == "__traceback__":
                     error_context[attr] = '\n'.join(traceback.format_tb(getattr(e, attr)))
                 else:
-                    error_context[attr] = getattr(e, attr)
+                    error_context[attr] = str(getattr(e, attr))
         capture_custom_message("Error during fingerprinting for {self.model_name}", 'info', error_context)
         return schemas.ErrorResponse(error=str(e), error_details=error_context)
 
