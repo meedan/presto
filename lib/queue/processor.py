@@ -44,7 +44,7 @@ class QueueProcessor(Queue):
         if messages_with_queues:
             logger.info(f"About to respond to: ({messages_with_queues})")
             bodies = [
-                schemas.parse_message(json.loads(message.body))
+                json.loads(message.body)
                 for message, queue in messages_with_queues
             ]
             for body in bodies:
@@ -58,10 +58,11 @@ class QueueProcessor(Queue):
         """
         logger.info(f"Message for callback is: {message}")
         try:
-            callback_url = message.body.callback_url
+            callback_url = message['body']['callback_url']
+            # callback_url = message.body.callback_url
             response = requests.post(
                 callback_url,
-                json=message.dict(),
+                json=message,
                 # headers={"Content-Type": "application/json"},
             )
             # check for error with the callback
