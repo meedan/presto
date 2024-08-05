@@ -58,8 +58,7 @@ class QueueProcessor(Queue):
         """
         logger.info(f"Message for callback is: {message}")
         try:
-            callback_url = message['body']['callback_url']
-            # callback_url = message.body.callback_url
+            callback_url = message.get("body", {}).get("callback_url")
             response = requests.post(
                 callback_url,
                 json=message,
