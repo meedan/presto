@@ -126,8 +126,11 @@ class Model(Model):
                          for i in range(len(items))]
 
         # filtering out the results that have out-of-schema labels
+        # our of schema labels will not be included in the final results,
+        # and items with no labels can be retried later by the user, indicated by an empty list for labels
         permitted_labels = [topic['topic'] for topic in schema['topics']] + ['Other', 'Unsure']
-        final_results = [result for result in final_results if all(label in permitted_labels for label in result['labels'])]
+        for result in final_results:
+            result['labels'] = [label for label in result['labels'] if label in permitted_labels]
 
         if len(final_results) == 0:
             logger.info(f"The returned classifications did not produce labels from the schema: {items}")
