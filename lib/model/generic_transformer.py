@@ -33,4 +33,4 @@ class GenericTransformerModel(Model):
         """
         Vectorize the text! Run as batch.
         """
-        return {"hash_value": self.model.encode(texts).tolist()}
+        return self.model.encode(texts).tolist()
