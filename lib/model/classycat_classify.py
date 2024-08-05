@@ -20,6 +20,7 @@ class LLMClient:
     def classify(self, task_prompt, items_count, max_tokens_per_item=200):
         pass
 
+
 class AnthropicClient(LLMClient):
     def __init__(self, model_name):
         super().__init__()
@@ -27,7 +28,8 @@ class AnthropicClient(LLMClient):
 
     def get_client(self):
         if self.client is None:
-            self.client = Anthropic(api_key=os.environ.get('ANTHROPIC_API_KEY'), timeout=httpx.Timeout(60.0, read=60.0, write=60.0, connect=60.0), max_retries=0)
+            self.client = Anthropic(api_key=os.environ.get('ANTHROPIC_API_KEY'),
+                                    timeout=httpx.Timeout(60.0, read=60.0, write=60.0, connect=60.0), max_retries=0)
         return self.client
 
     def classify(self, task_prompt, items_count, max_tokens_per_item=200):
@@ -42,6 +44,7 @@ class AnthropicClient(LLMClient):
         )
 
         return completion.content[0].text
+
 
 class OpenRouterClient(LLMClient):
     def __init__(self, model_name):
@@ -65,7 +68,7 @@ class OpenRouterClient(LLMClient):
             max_tokens=(max_tokens_per_item * items_count) + 15,
             temperature=0.5
         )
-# TODO: record metric here with model name and number of items submitted (https://meedan.atlassian.net/browse/CV2-4987)
+        # TODO: record metric here with model name and number of items submitted (https://meedan.atlassian.net/browse/CV2-4987)
         return completion.choices[0].message.content
 
 
@@ -122,17 +125,33 @@ class Model(Model):
             raise Exception(f"Not all items were classified successfully: "
                             f"input length {len(items)}, output length {len(classification_results)}")
         # TODO: validate response label against schema https://meedan.atlassian.net/browse/CV2-4801
+
+        # save results to s3 -- warning: might be deprecated in the near term
+        # this is to ensure that no data is lost by keeping a replica of alegre data in s3 as well
         final_results = [{'id': items[i]['id'], 'text': items[i]['text'], 'labels': classification_results[i]}
                          for i in range(len(items))]
         results_file_id = str(uuid.uuid4())
         upload_file_to_s3(self.output_bucket, f"{schema_id}/{results_file_id}.json", json.dumps(final_results))
 
-        return final_results
+        # save content and context
+        # content is text, doc_id is unique id, and context is input id, labels, schema_id, and model name
+        final_results = {'documents': [
+            {'doc_id': str(uuid.uuid4()),  # adding a unique id for each item to not rely on the input id for uniqueness
+             'content': items[i]['text'],
+             'context': {
+                 'input_id': items[i]['id'],
+                 'labels': classification_results[i],
+                 'schema_id': schema_id,
+                 'model_name': self.llm_client.model_name}}
+            for i in range(len(items))]}
 
+        # call alegre endpoint to store the results: /text/bulk_similarity
+        httpx.post('http://alegre:9888/text/bulk_similarity', json=final_results) # todo fix endpoint and headers
+
+        return final_results
 
     def schema_id_exists(self, schema_id):
         return file_exists_in_s3(self.output_bucket, f"{schema_id}.json")
-
 
     def process(self, message: Message) -> ClassyCatBatchClassificationResponse:
         # Example input:
