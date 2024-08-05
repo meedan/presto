@@ -3,6 +3,7 @@ from unittest import TestCase
 from unittest.mock import MagicMock, patch
 from lib.model.classycat import Model as ClassyCatModel
 from lib import schemas
+from lib.base_exception import PrestoBaseException
 import json
 
 
@@ -562,9 +563,17 @@ class TestClassyCat(TestCase):
             }
         }
         classify_message = schemas.parse_message(classify_input)
-        result = self.classycat_model.process(classify_message)
 
-        self.assertEqual(result.responseMessage, "Error classifying items: list index out of range")
+        try:
+            result = self.classycat_model.process(classify_message)
+            # fail tests here if no exception is raised
+            self.fail("Expected exception")
+        except Exception as e:
+            if not isinstance(e, PrestoBaseException):
+                self.fail("Expected PrestoBaseException")
+
+            self.assertIn("Error classifying items: list index out of range", e.message)
+            self.assertEqual(e.error_code, 500)
 
     @patch('lib.model.classycat_classify.OpenRouterClient.classify')
     @patch('lib.model.classycat_classify.load_file_from_s3')
@@ -700,9 +709,18 @@ class TestClassyCat(TestCase):
             }
         }
         classify_message = schemas.parse_message(classify_input)
-        result = self.classycat_model.process(classify_message)
 
-        self.assertEqual(result.responseMessage, "Error classifying items: Not all items were classified successfully: input length 1, output length 2")
+        try:
+            result = self.classycat_model.process(classify_message)
+            # fail tests here if no exception is raised
+            self.fail("Expected exception")
+        except Exception as e:
+            if not isinstance(e, PrestoBaseException):
+                self.fail("Expected PrestoBaseException")
+
+            self.assertIn("Not all items were classified successfully: input length 1, output length 2", e.message)
+            self.assertEqual(e.error_code, 502)
+
 
 if __name__ == '__main__':
     unittest.main()
