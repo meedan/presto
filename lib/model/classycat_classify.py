@@ -130,6 +130,11 @@ class Model(Model):
         # and items with no labels can be retried later by the user, indicated by an empty list for labels
         permitted_labels = [topic['topic'] for topic in schema['topics']] + ['Other', 'Unsure']
         for result in final_results:
+
+            # log the items that had at least one out-of-schema label
+            if not all([label in permitted_labels for label in result['labels']]):
+                logger.error(f"Item {result['id']} had out-of-schema labels: {result['labels']}, permitted labels: {permitted_labels}")
+
             result['labels'] = [label for label in result['labels'] if label in permitted_labels]
 
         if not all([len(result['labels']) == 0 for result in final_results]):
