@@ -564,14 +564,8 @@ class TestClassyCat(TestCase):
         }
         classify_message = schemas.parse_message(classify_input)
 
-        try:
-            result = self.classycat_model.process(classify_message)
-            # fail tests here if no exception is raised
-            self.fail("Expected exception")
-        except Exception as e:
-            if not isinstance(e, PrestoBaseException):
-                self.fail("Expected PrestoBaseException")
-
+        with self.assertRaises(PrestoBaseException) as e:
+            self.classycat_model.process(classify_message)
             self.assertIn("Error classifying items: list index out of range", e.message)
             self.assertEqual(e.error_code, 500)
 
@@ -710,14 +704,8 @@ class TestClassyCat(TestCase):
         }
         classify_message = schemas.parse_message(classify_input)
 
-        try:
-            result = self.classycat_model.process(classify_message)
-            # fail tests here if no exception is raised
-            self.fail("Expected exception")
-        except Exception as e:
-            if not isinstance(e, PrestoBaseException):
-                self.fail("Expected PrestoBaseException")
-
+        with self.assertRaises(PrestoBaseException) as e:
+            self.classycat_model.process(classify_message)
             self.assertIn("Not all items were classified successfully: input length 1, output length 2", e.message)
             self.assertEqual(e.error_code, 502)
 
@@ -726,7 +714,7 @@ class TestClassyCat(TestCase):
     @patch('lib.model.classycat_classify.load_file_from_s3')
     @patch('lib.model.classycat_classify.upload_file_to_s3')
     @patch('lib.model.classycat_classify.file_exists_in_s3')
-    def test_classify_pass_some_out_of_schema_labels(self, file_exists_in_s3_mock, upload_file_to_s3_mock,
+    def test_classify_some_out_of_schema_labels(self, file_exists_in_s3_mock, upload_file_to_s3_mock,
                                                      load_file_from_s3_mock, openrouter_classify_mock):
         file_exists_in_s3_mock.return_value = True
         upload_file_to_s3_mock.return_value = None
@@ -876,7 +864,7 @@ class TestClassyCat(TestCase):
     @patch('lib.model.classycat_classify.load_file_from_s3')
     @patch('lib.model.classycat_classify.upload_file_to_s3')
     @patch('lib.model.classycat_classify.file_exists_in_s3')
-    def test_classify_fail_all_out_of_schema_labels(self, file_exists_in_s3_mock, upload_file_to_s3_mock,
+    def test_classify_all_out_of_schema_labels(self, file_exists_in_s3_mock, upload_file_to_s3_mock,
                                                     load_file_from_s3_mock, openrouter_classify_mock):
         file_exists_in_s3_mock.return_value = True
         upload_file_to_s3_mock.return_value = None
