@@ -819,7 +819,7 @@ class TestClassyCat(TestCase):
                 ]
             }
         )
-        openrouter_classify_mock.return_value = "<OUTPUT>\n<CATEGORIES_0>Politics;Communalism</CATEGORIES_0>\n<CATEGORIES_1>Politico;Communism</CATEGORIES_1>\n</OUTPUT>"
+        openrouter_classify_mock.return_value = "<OUTPUT>\n<CATEGORIES_0>Politics;Communalism</CATEGORIES_0>\n<CATEGORIES_1>Politico;Communism</CATEGORIES_1>\n<CATEGORIES_2>Politics;Communism</CATEGORIES_2>\n</OUTPUT>"
         classify_input = {
             "model_name": "classycat__Model",
             "body": {
@@ -835,6 +835,10 @@ class TestClassyCat(TestCase):
                         {
                             "id": "12",
                             "text": "modi and bjp are amazing politicians"
+                        },
+                        {
+                            "id": "13",
+                            "text": "modi is an amazing politician"
                         }
                     ]
                 },
@@ -845,7 +849,10 @@ class TestClassyCat(TestCase):
         result = self.classycat_model.process(classify_message)
 
         self.assertEqual("success", result.responseMessage)
-        self.assertEqual(1, len(result.classification_results))
+        self.assertEqual(3, len(result.classification_results))
+        self.assertListEqual(["Politics", "Communalism"], result.classification_results[0]['labels'])
+        self.assertListEqual([], result.classification_results[1]['labels'])
+        self.assertListEqual(["Politics"], result.classification_results[2]['labels'])
 
     @patch('lib.model.classycat_classify.OpenRouterClient.classify')
     @patch('lib.model.classycat_classify.load_file_from_s3')
@@ -987,7 +994,10 @@ class TestClassyCat(TestCase):
         classify_message = schemas.parse_message(classify_input)
         result = self.classycat_model.process(classify_message)
 
-        self.assertIn("Error classifying items: No items were classified successfully", result.responseMessage)
+        self.assertEqual("success", result.responseMessage)
+        self.assertEqual(2, len(result.classification_results))
+        self.assertListEqual([], result.classification_results[0]['labels'])
+        self.assertListEqual([], result.classification_results[1]['labels'])
 
 if __name__ == '__main__':
     unittest.main()

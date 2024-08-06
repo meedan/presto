@@ -132,12 +132,9 @@ class Model(Model):
         for result in final_results:
             result['labels'] = [label for label in result['labels'] if label in permitted_labels]
 
-        if len(final_results) == 0:
-            logger.info(f"The returned classifications did not produce labels from the schema: {items}")
-            raise Exception(f"No items were classified successfully")
-
-        results_file_id = str(uuid.uuid4())
-        upload_file_to_s3(self.output_bucket, f"{schema_id}/{results_file_id}.json", json.dumps(final_results))
+        if not all([len(result['labels']) == 0 for result in final_results]):
+            results_file_id = str(uuid.uuid4())
+            upload_file_to_s3(self.output_bucket, f"{schema_id}/{results_file_id}.json", json.dumps(final_results))
 
         return final_results
 
