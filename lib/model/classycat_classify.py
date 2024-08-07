@@ -124,14 +124,25 @@ class Model(Model):
             logger.info(f"Classification results: {classification_results}")
             raise Exception(f"Not all items were classified successfully: "
                             f"input length {len(items)}, output length {len(classification_results)}")
-        # TODO: validate response label against schema https://meedan.atlassian.net/browse/CV2-4801
 
-        # save results to s3 -- warning: might be deprecated in the near term
-        # this is to ensure that no data is lost by keeping a replica of alegre data in s3 as well
         final_results = [{'id': items[i]['id'], 'text': items[i]['text'], 'labels': classification_results[i]}
                          for i in range(len(items))]
-        results_file_id = str(uuid.uuid4())
-        upload_file_to_s3(self.output_bucket, f"{schema_id}/{results_file_id}.json", json.dumps(final_results))
+
+        # filtering out the results that have out-of-schema labels
+        # our of schema labels will not be included in the final results,
+        # and items with no labels can be retried later by the user, indicated by an empty list for labels
+        permitted_labels = [topic['topic'] for topic in schema['topics']] + ['Other', 'Unsure']
+        for result in final_results:
+
+            # log the items that had at least one out-of-schema label
+            if not all([label in permitted_labels for label in result['labels']]):
+                logger.error(f"Item {result['id']} had out-of-schema labels: {result['labels']}, permitted labels: {permitted_labels}")
+
+            result['labels'] = [label for label in result['labels'] if label in permitted_labels]
+
+        if not all([len(result['labels']) == 0 for result in final_results]):
+            results_file_id = str(uuid.uuid4())
+            upload_file_to_s3(self.output_bucket, f"{schema_id}/{results_file_id}.json", json.dumps(final_results))
 
         # save content and context
         # content is text, doc_id is unique id, and context is input id, labels, schema_id, and model name
