@@ -140,24 +140,27 @@ class Model(Model):
 
             result['labels'] = [label for label in result['labels'] if label in permitted_labels]
 
+        # if there is at least one item with labels, save the results to s3
         if not all([len(result['labels']) == 0 for result in final_results]):
             results_file_id = str(uuid.uuid4())
             upload_file_to_s3(self.output_bucket, f"{schema_id}/{results_file_id}.json", json.dumps(final_results))
 
-            # save content and context
-            # content is text, doc_id is unique id, and context is input id, labels, schema_id, and model name
-            final_results = {'documents': [
+            # prepare the final results to be stored in alegre
+            # save "content" and "context"
+            # content is text, doc_id is the item's unique id, and context is input id, labels, schema_id, and model name
+            final_results_to_be_stored_in_alegre = {'documents': [
                 {'doc_id': str(uuid.uuid4()),  # adding a unique id for each item to not rely on the input id for uniqueness
                  'content': items[i]['text'],
                  'context': {
                      'input_id': items[i]['id'],
-                     'labels': classification_results[i],
+                     'labels': final_results[i]['labels'],
                      'schema_id': schema_id,
                      'model_name': self.llm_client.model_name}}
                 for i in range(len(items))]}
 
-            # call alegre endpoint to store the results: /text/bulk_similarity
-            httpx.post('http://alegre:3100/text/bulk_similarity', json=final_results)  # todo fix endpoint and headers
+            # call alegre endpoint to store the results: /text/bulk_similarity/
+            alegre_url = os.getenv('ALEGRE_URL')
+            httpx.post(alegre_url + '/text/bulk_similarity/', json=final_results_to_be_stored_in_alegre)
 
         return final_results
 
