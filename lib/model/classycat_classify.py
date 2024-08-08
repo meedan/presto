@@ -144,20 +144,20 @@ class Model(Model):
             results_file_id = str(uuid.uuid4())
             upload_file_to_s3(self.output_bucket, f"{schema_id}/{results_file_id}.json", json.dumps(final_results))
 
-        # save content and context
-        # content is text, doc_id is unique id, and context is input id, labels, schema_id, and model name
-        final_results = {'documents': [
-            {'doc_id': str(uuid.uuid4()),  # adding a unique id for each item to not rely on the input id for uniqueness
-             'content': items[i]['text'],
-             'context': {
-                 'input_id': items[i]['id'],
-                 'labels': classification_results[i],
-                 'schema_id': schema_id,
-                 'model_name': self.llm_client.model_name}}
-            for i in range(len(items))]}
+            # save content and context
+            # content is text, doc_id is unique id, and context is input id, labels, schema_id, and model name
+            final_results = {'documents': [
+                {'doc_id': str(uuid.uuid4()),  # adding a unique id for each item to not rely on the input id for uniqueness
+                 'content': items[i]['text'],
+                 'context': {
+                     'input_id': items[i]['id'],
+                     'labels': classification_results[i],
+                     'schema_id': schema_id,
+                     'model_name': self.llm_client.model_name}}
+                for i in range(len(items))]}
 
-        # call alegre endpoint to store the results: /text/bulk_similarity
-        httpx.post('http://alegre:9888/text/bulk_similarity', json=final_results) # todo fix endpoint and headers
+            # call alegre endpoint to store the results: /text/bulk_similarity
+            httpx.post('http://alegre:3100/text/bulk_similarity', json=final_results)  # todo fix endpoint and headers
 
         return final_results
 
