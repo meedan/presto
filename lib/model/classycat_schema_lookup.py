@@ -4,6 +4,7 @@ from lib.logger import logger
 from lib.model.model import Model
 from lib.s3 import load_file_from_s3, file_exists_in_s3
 from lib.schemas import Message, ClassyCatSchemaResponse
+from lib.base_exception import PrestoBaseException
 
 
 class Model(Model):
@@ -63,8 +64,7 @@ class Model(Model):
         result = message.body.result
 
         if not self.schema_name_exists(schema_name):
-            result.responseMessage = f"Schema name {schema_name} does not exist"
-            return result
+            raise PrestoBaseException(f"Schema name {schema_name} does not exist", 404)
 
         logger.debug(f"located schema_name record for '{schema_name}'")
 
@@ -74,5 +74,4 @@ class Model(Model):
             return result
         except Exception as e:
             logger.error(f"Error looking up schema name {schema_name}: {e}")
-            result.responseMessage = f"Error looking up schema name {schema_name}: {e}"
-            return result
+            raise PrestoBaseException(f"Error looking up schema name {schema_name}", 500) from e
