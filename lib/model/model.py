@@ -55,7 +55,7 @@ class Model(ABC):
                     error_context[attr] = '\n'.join(traceback.format_tb(getattr(e, attr)))
                 else:
                     error_context[attr] = str(getattr(e, attr))
-        capture_custom_message(f"Error during fingerprinting for {self.model_name}", 'info', error_context)
+        capture_custom_message(f"Error during fingerprinting for {self.model_name}", 'error', error_context)
         return schemas.ErrorResponse(error=str(e), error_details=error_context, error_code=response_code)
 
     def get_response(self, message: schemas.Message) -> schemas.GenericItem:  # TODO note: the return type is wrong here
