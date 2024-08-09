@@ -11,7 +11,6 @@ from lib import schemas
 from lib.cache import Cache
 from lib.sentry import capture_custom_message
 from lib.base_exception import PrestoBaseException
-from lib.logger import logger
 
 
 class Model(ABC):
