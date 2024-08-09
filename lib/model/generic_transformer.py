@@ -22,7 +22,6 @@ class GenericTransformerModel(Model):
         """
         docs = self._ensure_list(docs)
         self._log_docs(docs)
-
         docs_to_process, texts_to_vectorize = self._separate_cached_docs(docs)
 
         if texts_to_vectorize:

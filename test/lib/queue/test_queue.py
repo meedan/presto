@@ -31,7 +31,7 @@ class TestQueueWorker(unittest.TestCase):
     @patch('lib.helpers.get_environment_setting', return_value='us-west-1')
     @patch('lib.telemetry.OpenTelemetryExporter.log_execution_time')
     def setUp(self, mock_log_execution_time, mock_get_env_setting, mock_boto_resource):
-        self.model = AudioModel(None)
+        self.model = AudioModel()
         self.model.model_name = "audio"
         self.mock_model = MagicMock()
         self.queue_name_input = Queue.get_input_queue_name()
@@ -234,7 +234,7 @@ class TestQueueWorker(unittest.TestCase):
         mock_cache_get.return_value = None
         mock_cache_set.return_value = True
         message_data = {
-            "body": {"id": 1, "callback_url": "http://example.com", "text": "This is a test"},
+            "body": {"id": 1, "callback_url": "http://example.com", "text": "This is a testzzz"},
             "model_name": "audio"
         }
         message = schemas.parse_message(message_data)
