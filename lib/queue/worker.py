@@ -82,7 +82,7 @@ class QueueWorker(Queue):
         Returns:
         - List[schemas.Message]: A list of Message objects ready for processing.
         """
-        return [schemas.parse_message({**json.loads(message.body), **{"model_name": model.model_name}})
+        return [schemas.parse_input_message({**json.loads(message.body), **{"model_name": model.model_name}})
                 for message, queue in messages_with_queues]
 
     @staticmethod
@@ -175,9 +175,9 @@ class QueueWorker(Queue):
             if retry_count > MAX_RETRIES:
                 logger.info(f"Message {message_body} exceeded max retries. Moving to DLQ.")
                 capture_custom_message("Message exceeded max retries. Moving to DLQ.", 'info', {"message_body": message_body})
-                self.push_to_dead_letter_queue(schemas.parse_message(message_body))
+                self.push_to_dead_letter_queue(schemas.parse_input_message(message_body))
             else:
-                updated_message = schemas.parse_message(message_body)
+                updated_message = schemas.parse_input_message(message_body)
                 updated_message.retry_count = retry_count
                 queue.delete_messages(Entries=[self.delete_message_entry(message)])
                 self.push_message(self.input_queue_name, updated_message)
