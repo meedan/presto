@@ -279,14 +279,16 @@ class TestClassyCat(TestCase):
         self.assertEqual(file_exists_mock.call_count, 1)
         self.assertEqual(load_file_from_s3_mock.call_count, 1)
 
+    @patch('lib.model.classycat_classify.httpx.post')
     @patch('lib.model.classycat_classify.OpenRouterClient.classify')
     @patch('lib.model.classycat_classify.load_file_from_s3')
     @patch('lib.model.classycat_classify.upload_file_to_s3')
     @patch('lib.model.classycat_classify.file_exists_in_s3')
     def test_classify_success(self, file_exists_in_s3_mock, upload_file_to_s3_mock,
-                              load_file_from_s3_mock, openrouter_classify_mock):
+                              load_file_from_s3_mock, openrouter_classify_mock, httpx_post_mock):
         file_exists_in_s3_mock.return_value = True
         upload_file_to_s3_mock.return_value = None
+        httpx_post_mock.return_value = None
         load_file_from_s3_mock.return_value = json.dumps(
             {
                 "schema_id": "123456",
@@ -427,6 +429,7 @@ class TestClassyCat(TestCase):
         self.assertIn("Communalism", result.classification_results[0]['labels'])
         self.assertEqual(len(result.classification_results[0]['labels']), 2)
         self.assertEqual(upload_file_to_s3_mock.call_count, 1)
+        self.assertEqual(openrouter_classify_mock.call_count, 1)
 
     @patch('lib.model.classycat_classify.OpenRouterClient.classify')
     @patch('lib.model.classycat_classify.load_file_from_s3')
@@ -704,14 +707,16 @@ class TestClassyCat(TestCase):
 
         self.assertEqual(result.responseMessage, "Error classifying items: Not all items were classified successfully: input length 1, output length 2")
 
+    @patch('lib.model.classycat_classify.httpx.post')
     @patch('lib.model.classycat_classify.OpenRouterClient.classify')
     @patch('lib.model.classycat_classify.load_file_from_s3')
     @patch('lib.model.classycat_classify.upload_file_to_s3')
     @patch('lib.model.classycat_classify.file_exists_in_s3')
     def test_classify_pass_some_out_of_schema_labels(self, file_exists_in_s3_mock, upload_file_to_s3_mock,
-                                                     load_file_from_s3_mock, openrouter_classify_mock):
+                                                     load_file_from_s3_mock, openrouter_classify_mock, httpx_post_mock):
         file_exists_in_s3_mock.return_value = True
         upload_file_to_s3_mock.return_value = None
+        httpx_post_mock.return_value = None
         load_file_from_s3_mock.return_value = json.dumps(
             {
                 "schema_id": "123456",
@@ -853,6 +858,8 @@ class TestClassyCat(TestCase):
         self.assertListEqual(["Politics", "Communalism"], result.classification_results[0]['labels'])
         self.assertListEqual([], result.classification_results[1]['labels'])
         self.assertListEqual(["Politics"], result.classification_results[2]['labels'])
+        self.assertEqual(upload_file_to_s3_mock.call_count, 1)
+        self.assertEqual(openrouter_classify_mock.call_count, 1)
 
     @patch('lib.model.classycat_classify.OpenRouterClient.classify')
     @patch('lib.model.classycat_classify.load_file_from_s3')
