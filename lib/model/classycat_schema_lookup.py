@@ -83,11 +83,20 @@ class Model(Model):
         """
         Validate input data. Must be implemented by all child "Model" classes.
         """
-        pass
+        if "schema_name" not in data["parameters"] or data["parameters"]["schema_name"] == "":
+            raise PrestoBaseException("schema_name is required as input to schema look up", 422)
 
     @classmethod
     def parse_input_message(cls, data: Dict) -> Any:
         """
-        Validate input data. Must be implemented by all child "Model" classes.
+        Parse input into appropriate response instances.
         """
-        return None
+        event_type = data['parameters']['event_type']
+        result_data = data.get('result', {})
+
+        if event_type == 'schema_lookup':
+            result_instance = ClassyCatSchemaResponse(**result_data)
+        else:
+            raise PrestoBaseException(f"Unknown event type {event_type}", 422)
+
+        return result_instance

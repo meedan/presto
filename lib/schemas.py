@@ -49,7 +49,7 @@ def parse_input_message(message_data: Dict) -> Message:
     result_data = body_data.get('result', {})
 
     modelClass = get_class('lib.model.', os.environ.get('MODEL_NAME'))
-    modelClass.validate_input(result_data)  # will raise exceptions in case of validation errors
+    modelClass.validate_input(body_data)  # will raise exceptions in case of validation errors
     # parse_input_message will enable us to have more complicated result types without having to change the schema file
     result_instance = modelClass.parse_input_message(result_data)  # assumes input is valid
 

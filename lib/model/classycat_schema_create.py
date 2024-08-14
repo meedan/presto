@@ -211,7 +211,8 @@ class Model(Model):
             raise PrestoBaseException(f"Error creating schema: {e}", 500) from e
 
 
-    def verify_schema_parameters(self, schema_name, topics, examples, languages): #todo
+    @classmethod
+    def verify_schema_parameters(schema_name, topics, examples, languages):
 
         if not schema_name or not isinstance(schema_name, str) or len(schema_name) == 0:
             raise ValueError("schema_name is invalid. It must be a non-empty string")
@@ -251,11 +252,30 @@ class Model(Model):
         """
         Validate input data. Must be implemented by all child "Model" classes.
         """
-        pass
+        schema_specs = data['parameters']
+
+        schema_name = schema_specs["schema_name"]
+        topics = schema_specs["topics"]
+        examples = schema_specs["examples"]
+        languages = schema_specs["languages"]  # ['English', 'Spanish']
+
+        try:
+            cls.verify_schema_parameters(schema_name, topics, examples, languages)
+        except Exception as e:
+            logger.exception(f"Error verifying schema parameters: {e}")
+            raise PrestoBaseException(f"Error verifying schema parameters: {e}", 422) from e
 
     @classmethod
     def parse_input_message(cls, data: Dict) -> Any:
         """
-        Validate input data. Must be implemented by all child "Model" classes.
+        Parse input into appropriate response instances.
         """
-        return None
+        event_type = data['parameters']['event_type']
+        result_data = data.get('result', {})
+
+        if event_type == 'schema_create':
+            result_instance = ClassyCatSchemaResponse(**result_data)
+        else:
+            raise PrestoBaseException(f"Unknown event type {event_type}", 422)
+
+        return result_instance
