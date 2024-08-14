@@ -1,4 +1,4 @@
-from typing import Union, Dict, List
+from typing import Union, Dict, List, Any
 
 import fasttext
 from huggingface_hub import hf_hub_download
@@ -44,3 +44,17 @@ class FasttextModel(Model):
         for doc, detected_lang in zip(docs, detected_langs):
             doc.body.result = detected_lang
         return docs
+
+    @classmethod
+    def validate_input(cls, data: Dict) -> None:
+        """
+        Validate input data. Must be implemented by all child "Model" classes.
+        """
+        pass
+
+    @classmethod
+    def parse_input_message(cls, data: Dict) -> Any:
+        """
+        Validate input data. Must be implemented by all child "Model" classes.
+        """
+        return None

@@ -1,3 +1,4 @@
+from typing import Dict, Any
 import os
 import json
 import uuid
@@ -230,3 +231,18 @@ class Model(Model):
                 raise e
             else:
                 raise PrestoBaseException(f"Error classifying items: {e}", 500) from e
+
+
+    @classmethod
+    def validate_input(cls, data: Dict) -> None:
+        """
+        Validate input data. Must be implemented by all child "Model" classes.
+        """
+        pass
+
+    @classmethod
+    def parse_input_message(cls, data: Dict) -> Any:
+        """
+        Validate input data. Must be implemented by all child "Model" classes.
+        """
+        return None

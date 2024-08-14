@@ -1,4 +1,4 @@
-from typing import Union, List, Dict
+from typing import Union, List, Dict, Any
 import os
 import tempfile
 
@@ -27,3 +27,18 @@ class Model(Model):
         finally:
             os.remove(temp_file_name)
         return {"hash_value": hash_value}
+
+    @classmethod
+    def validate_input(cls, data: Dict) -> None:
+        """
+        Validate input data. Must be implemented by all child "Model" classes.
+        """
+        pass
+
+
+    @classmethod
+    def parse_input_message(cls, data: Dict) -> Any:
+        """
+        Validate input data. Must be implemented by all child "Model" classes.
+        """
+        return None

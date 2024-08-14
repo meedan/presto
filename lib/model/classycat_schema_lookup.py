@@ -1,3 +1,4 @@
+from typing import Dict, Any
 import os
 import json
 from lib.logger import logger
@@ -75,3 +76,18 @@ class Model(Model):
         except Exception as e:
             logger.error(f"Error looking up schema name {schema_name}: {e}")
             raise PrestoBaseException(f"Error looking up schema name {schema_name}", 500) from e
+
+
+    @classmethod
+    def validate_input(cls, data: Dict) -> None:
+        """
+        Validate input data. Must be implemented by all child "Model" classes.
+        """
+        pass
+
+    @classmethod
+    def parse_input_message(cls, data: Dict) -> Any:
+        """
+        Validate input data. Must be implemented by all child "Model" classes.
+        """
+        return None

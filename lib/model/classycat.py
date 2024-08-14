@@ -1,4 +1,4 @@
-from typing import Union
+from typing import Union, Dict, Any
 from lib.logger import logger
 from lib.model.model import Model
 from lib.schemas import Message, ClassyCatSchemaResponse, ClassyCatBatchClassificationResponse
@@ -23,3 +23,17 @@ class Model(Model):
         else:
             logger.error(f"Unknown event type {event_type}")
             raise PrestoBaseException(f"Unknown event type {event_type}", 422)
+
+    @classmethod
+    def validate_input(cls, data: Dict) -> None:
+        """
+        Validate input data. Must be implemented by all child "Model" classes.
+        """
+        pass
+
+    @classmethod
+    def parse_input_message(cls, data: Dict) -> Any:
+        """
+        Validate input data. Must be implemented by all child "Model" classes.
+        """
+        return None
