@@ -5,6 +5,7 @@ from lib.s3 import upload_file_to_s3, file_exists_in_s3
 from lib.logger import logger
 from lib.model.model import Model
 from lib.schemas import Message, ClassyCatSchemaResponse
+from lib.base_exception import PrestoBaseException
 
 
 class Model(Model):
@@ -192,15 +193,13 @@ class Model(Model):
         result = message.body.result
 
         if self.schema_name_exists(schema_name):
-            result.responseMessage = f"Schema name {schema_name} already exists"
-            return result
+            raise PrestoBaseException(f"Schema name {schema_name} already exists", 422)
 
         try:
             self.verify_schema_parameters(schema_name, topics, examples, languages)
         except Exception as e:
             logger.exception(f"Error verifying schema parameters: {e}")
-            result.responseMessage = f"Error verifying schema parameters. Stack trace: {e}"
-            return result
+            raise PrestoBaseException(f"Error verifying schema parameters: {e}", 422) from e
 
         try:
             result.schema_id = self.create_schema(schema_name, topics, examples, languages)
@@ -208,8 +207,7 @@ class Model(Model):
             return result
         except Exception as e:
             logger.exception(f"Error creating schema: {e}")
-            result.responseMessage = f"Error creating schema. Stack trace: {e}"
-            return result
+            raise PrestoBaseException(f"Error creating schema: {e}", 500) from e
 
 
     def verify_schema_parameters(self, schema_name, topics, examples, languages): #todo

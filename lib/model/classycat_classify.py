@@ -8,6 +8,7 @@ from lib.logger import logger
 from lib.model.model import Model
 from lib.schemas import Message, ClassyCatBatchClassificationResponse
 from lib.s3 import load_file_from_s3, file_exists_in_s3, upload_file_to_s3
+from lib.base_exception import PrestoBaseException
 
 
 class LLMClient:
@@ -65,7 +66,9 @@ class OpenRouterClient(LLMClient):
             max_tokens=(max_tokens_per_item * items_count) + 15,
             temperature=0.5
         )
-# TODO: record metric here with model name and number of items submitted (https://meedan.atlassian.net/browse/CV2-4987)
+
+        # TODO: record metric here with model name and number of items submitted (https://meedan.atlassian.net/browse/CV2-4987)
+
         return completion.choices[0].message.content
 
 
@@ -84,7 +87,7 @@ class Model(Model):
         elif client_type == 'openrouter':
             return OpenRouterClient(model_name)
         else:
-            raise Exception(f"Unknown client type: {client_type}")
+            raise PrestoBaseException(f"Unknown LLM client type {client_type}", 500)
 
     def format_input_for_classification_prompt(self, items):
         return '\n'.join([f"<ITEM_{i}>{item}</ITEM_{i}>" for i, item in enumerate(items)])
@@ -119,13 +122,26 @@ class Model(Model):
         if (classification_results is None or len(classification_results) == 0
                 or len(classification_results) != len(items)):
             logger.info(f"Classification results: {classification_results}")
-            raise Exception(f"Not all items were classified successfully: "
-                            f"input length {len(items)}, output length {len(classification_results)}")
-        # TODO: validate response label against schema https://meedan.atlassian.net/browse/CV2-4801
+            raise PrestoBaseException(f"Not all items were classified successfully: input length {len(items)}, output length {len(classification_results)}", 502)
+
         final_results = [{'id': items[i]['id'], 'text': items[i]['text'], 'labels': classification_results[i]}
                          for i in range(len(items))]
-        results_file_id = str(uuid.uuid4())
-        upload_file_to_s3(self.output_bucket, f"{schema_id}/{results_file_id}.json", json.dumps(final_results))
+
+        # filtering out the results that have out-of-schema labels
+        # our of schema labels will not be included in the final results,
+        # and items with no labels can be retried later by the user, indicated by an empty list for labels
+        permitted_labels = [topic['topic'] for topic in schema['topics']] + ['Other', 'Unsure']
+        for result in final_results:
+
+            # log the items that had at least one out-of-schema label
+            if not all([label in permitted_labels for label in result['labels']]):
+                logger.error(f"Item {result['id']} had out-of-schema labels: {result['labels']}, permitted labels: {permitted_labels}")
+
+            result['labels'] = [label for label in result['labels'] if label in permitted_labels]
+
+        if not all([len(result['labels']) == 0 for result in final_results]):
+            results_file_id = str(uuid.uuid4())
+            upload_file_to_s3(self.output_bucket, f"{schema_id}/{results_file_id}.json", json.dumps(final_results))
 
         return final_results
 
@@ -199,12 +215,10 @@ class Model(Model):
         result = message.body.result
 
         if not self.schema_id_exists(schema_id):
-            result.responseMessage = f"Schema id {schema_id} cannot be found"
-            return result
+            raise PrestoBaseException(f"Schema id {schema_id} cannot be found", 404)
 
         if len(items) > self.batch_size_limit:
-            result.responseMessage = f"Number of items exceeds batch size limit of {self.batch_size_limit}"
-            return result
+            raise PrestoBaseException(f"Number of items exceeds batch size limit of {self.batch_size_limit}", 422)
 
         try:
             result.classification_results = self.classify_and_store_results(schema_id, items)
@@ -212,5 +226,7 @@ class Model(Model):
             return result
         except Exception as e:
             logger.exception(f"Error classifying items: {e}")
-            result.responseMessage = f"Error classifying items: {e}"
-            return result
+            if isinstance(e, PrestoBaseException):
+                raise e
+            else:
+                raise PrestoBaseException(f"Error classifying items: {e}", 500) from e
