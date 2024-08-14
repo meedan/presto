@@ -7,7 +7,7 @@ import boto3
 from lib import schemas
 class TestSchemas(unittest.TestCase):
     def test_audio_output(self):
-        message = schemas.parse_message({
+        message = schemas.parse_input_message({
             'body': {
                 'id': '123',
                 'callback_url': 'http://0.0.0.0:80/callback_url',
@@ -23,7 +23,7 @@ class TestSchemas(unittest.TestCase):
         self.assertIsInstance(message.body.result, schemas.MediaResponse)
 
     def test_image_output(self):
-        message = schemas.parse_message({
+        message = schemas.parse_input_message({
             'body': {
                 'id': '123',
                 'callback_url': 'http://0.0.0.0:80/callback_url',
@@ -39,7 +39,7 @@ class TestSchemas(unittest.TestCase):
         self.assertIsInstance(message.body.result, schemas.MediaResponse)
 
     def test_video_output(self):
-        message = schemas.parse_message({
+        message = schemas.parse_input_message({
             'body': {
                 'id': '123',
                 'callback_url': 'http://0.0.0.0:80/callback_url',
@@ -55,7 +55,7 @@ class TestSchemas(unittest.TestCase):
         self.assertIsInstance(message.body.result, schemas.VideoResponse)
 
     def test_text_output(self):
-        message = schemas.parse_message({
+        message = schemas.parse_input_message({
             'body': {
                 'id': '123',
                 'callback_url': 'http://0.0.0.0:80/callback_url',
@@ -71,7 +71,7 @@ class TestSchemas(unittest.TestCase):
         self.assertIsInstance(message.body.result, schemas.MediaResponse)
 
     def test_yake_keyword_output(self):
-        message = schemas.parse_message({
+        message = schemas.parse_input_message({
             'body': {
                 'id': '123',
                 'callback_url': 'http://0.0.0.0:80/callback_url',

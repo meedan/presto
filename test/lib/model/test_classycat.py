@@ -129,7 +129,7 @@ class TestClassyCat(TestCase):
                                  ]
                              },
                              "callback_url": "http://example.com?callback"}}
-        schema_message = schemas.parse_message(schema_input)
+        schema_message = schemas.parse_input_message(schema_input)
         result = self.classycat_model.process(schema_message)
 
         self.assertEqual("success", result.responseMessage)
@@ -272,7 +272,7 @@ class TestClassyCat(TestCase):
             }
         }
 
-        schema_lookup_message = schemas.parse_message(schema_lookup_input)
+        schema_lookup_message = schemas.parse_input_message(schema_lookup_input)
         result = self.classycat_model.process(schema_lookup_message)
 
         self.assertEqual("success", result.responseMessage)
@@ -413,7 +413,7 @@ class TestClassyCat(TestCase):
                 "callback_url": "http://example.com?callback"
             }
         }
-        classify_message = schemas.parse_message(classify_input)
+        classify_message = schemas.parse_input_message(classify_input)
         result = self.classycat_model.process(classify_message)
 
         # example response for this input:
@@ -562,7 +562,7 @@ class TestClassyCat(TestCase):
                 "callback_url": "http://example.com?callback"
             }
         }
-        classify_message = schemas.parse_message(classify_input)
+        classify_message = schemas.parse_input_message(classify_input)
 
         with self.assertRaises(PrestoBaseException) as e:
             self.classycat_model.process(classify_message)
@@ -702,7 +702,7 @@ class TestClassyCat(TestCase):
                 "callback_url": "http://example.com?callback"
             }
         }
-        classify_message = schemas.parse_message(classify_input)
+        classify_message = schemas.parse_input_message(classify_input)
 
         with self.assertRaises(PrestoBaseException) as e:
             self.classycat_model.process(classify_message)
@@ -851,7 +851,7 @@ class TestClassyCat(TestCase):
                 "callback_url": "http://example.com?callback"
             }
         }
-        classify_message = schemas.parse_message(classify_input)
+        classify_message = schemas.parse_input_message(classify_input)
         result = self.classycat_model.process(classify_message)
 
         self.assertEqual("success", result.responseMessage)
@@ -997,7 +997,7 @@ class TestClassyCat(TestCase):
                 "callback_url": "http://example.com?callback"
             }
         }
-        classify_message = schemas.parse_message(classify_input)
+        classify_message = schemas.parse_input_message(classify_input)
         result = self.classycat_model.process(classify_message)
 
         self.assertEqual("success", result.responseMessage)

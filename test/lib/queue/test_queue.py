@@ -148,7 +148,7 @@ class TestQueueWorker(unittest.TestCase):
         mock_logger.assert_called_with(f"Deleting message: {mock_messages[-1]}")
 
     def test_push_message(self):
-        message_to_push = schemas.parse_message({"body": {"id": 1, "content_hash": None, "callback_url": "http://example.com", "text": "This is a test"}, "model_name": "mean_tokens__Model"})
+        message_to_push = schemas.parse_input_message({"body": {"id": 1, "content_hash": None, "callback_url": "http://example.com", "text": "This is a test"}, "model_name": "mean_tokens__Model"})
         # Call push_message
         returned_message = self.queue.push_message(self.queue_name_output, message_to_push)
         # Check if the message was correctly serialized and sent
@@ -156,7 +156,7 @@ class TestQueueWorker(unittest.TestCase):
         self.assertEqual(returned_message, message_to_push)
 
     def test_push_to_dead_letter_queue(self):
-        message_to_push = schemas.parse_message({"body": {"id": 1, "content_hash": None, "callback_url": "http://example.com", "text": "This is a test"}, "model_name": "mean_tokens__Model"})
+        message_to_push = schemas.parse_input_message({"body": {"id": 1, "content_hash": None, "callback_url": "http://example.com", "text": "This is a test"}, "model_name": "mean_tokens__Model"})
         # Call push_to_dead_letter_queue
         self.queue.push_to_dead_letter_queue(message_to_push)
         # Check if the message was correctly serialized and sent to the DLQ
@@ -237,7 +237,7 @@ class TestQueueWorker(unittest.TestCase):
             "body": {"id": 1, "callback_url": "http://example.com", "text": "This is a test"},
             "model_name": "generic"
         }
-        message = schemas.parse_message(message_data)
+        message = schemas.parse_input_message(message_data)
         message.body.content_hash = "test_hash"
         
         # Simulate an error in the process method
