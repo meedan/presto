@@ -1,4 +1,3 @@
-import pdb
 import os
 from opentelemetry import metrics
 from opentelemetry.sdk.resources import SERVICE_NAME, Resource
