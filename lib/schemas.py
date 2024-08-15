@@ -1,7 +1,7 @@
 from pydantic import BaseModel
 from typing import Any, Dict, List, Optional, Union
 from lib.helpers import get_class
-from base_exception import PrestoBaseException
+from lib.base_exception import PrestoBaseException
 import os
 
 

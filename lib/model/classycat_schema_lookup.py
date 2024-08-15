@@ -5,7 +5,7 @@ from lib.logger import logger
 from lib.model.model import Model
 from lib.s3 import load_file_from_s3, file_exists_in_s3
 from lib.schemas import Message
-from lib.model.classycat import ClassyCatSchemaResponse
+from lib.model.classycat_response import ClassyCatSchemaResponse
 from lib.base_exception import PrestoBaseException
 
 
