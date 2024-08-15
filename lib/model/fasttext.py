@@ -9,7 +9,7 @@ from lib.model.model import Model
 from lib import schemas
 
 
-class FasttextModel(Model):
+class Model(Model):
     def __init__(self):
         """
         Load fasttext model (https://huggingface.co/facebook/fasttext-language-identification)
