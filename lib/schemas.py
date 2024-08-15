@@ -59,14 +59,6 @@ def parse_input_message(message_data: Dict) -> Message:
     if result_instance is None:  # in case the model does not have a parse_input_message method implemented
         if 'yake_keywords' in model_name:
             result_instance = YakeKeywordsResponse(**result_data)
-        elif 'classycat' in model_name:
-            event_type = body_data['parameters']['event_type']
-            if event_type == 'classify':
-                result_instance = ClassyCatBatchClassificationResponse(**result_data)
-            elif event_type == 'schema_lookup' or event_type == 'schema_create':
-                result_instance = ClassyCatSchemaResponse(**result_data)
-            else:
-                result_instance = ClassyCatResponse(**result_data)
         elif 'video' in model_name:
             result_instance = VideoResponse(**result_data)
         else:
