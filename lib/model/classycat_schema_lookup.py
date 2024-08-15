@@ -95,8 +95,7 @@ class Model(Model):
         result_data = data.get('result', {})
 
         if event_type == 'schema_lookup':
-            result_instance = ClassyCatSchemaResponse(**result_data)
+            return ClassyCatSchemaResponse(**result_data)
         else:
+            logger.error(f"Unknown event type {event_type}")
             raise PrestoBaseException(f"Unknown event type {event_type}", 422)
-
-        return result_instance
