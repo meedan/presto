@@ -51,8 +51,11 @@ def parse_input_message(message_data: Dict) -> Message:
     modelClass = get_class('lib.model.', os.environ.get('MODEL_NAME'))
     modelClass.validate_input(body_data)  # will raise exceptions in case of validation errors
     # parse_input_message will enable us to have more complicated result types without having to change the schema file
-    result_instance = modelClass.parse_input_message(result_data)  # assumes input is valid
+    result_instance = modelClass.parse_input_message(body_data)  # assumes input is valid
 
+    # TODO: the following is a temporary solution to handle the case where the model does not have a
+    # parse_input_message method implemented but we must ultimately implement parse_input_message and
+    # validate_input in all models. ticket: https://meedan.atlassian.net/browse/CV2-5093
     if result_instance is None:  # in case the model does not have a parse_input_message method implemented
         if 'yake_keywords' in model_name:
             result_instance = YakeKeywordsResponse(**result_data)
