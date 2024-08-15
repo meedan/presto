@@ -212,7 +212,7 @@ class Model(Model):
 
 
     @classmethod
-    def verify_schema_parameters(schema_name, topics, examples, languages):
+    def verify_schema_parameters(cls, schema_name, topics, examples, languages):
 
         if not schema_name or not isinstance(schema_name, str) or len(schema_name) == 0:
             raise ValueError("schema_name is invalid. It must be a non-empty string")
