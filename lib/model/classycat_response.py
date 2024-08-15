@@ -7,7 +7,7 @@ class ClassyCatResponse(BaseModel):
 
 
 class ClassyCatBatchClassificationResponse(ClassyCatResponse):
-    classification_results: Optional[List[dict]] = []
+    classification_results: List[dict] = []
 
 
 class ClassyCatSchemaResponse(ClassyCatResponse):
