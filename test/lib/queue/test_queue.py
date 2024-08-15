@@ -32,7 +32,7 @@ class TestQueueWorker(unittest.TestCase):
     @patch('lib.telemetry.OpenTelemetryExporter.log_execution_time')
     def setUp(self, mock_log_execution_time, mock_get_env_setting, mock_boto_resource):
         self.model = AudioModel()
-        self.model.model_name = "audio"
+        self.model.model_name = "audio__Model"
         self.mock_model = MagicMock()
         self.queue_name_input = Queue.get_input_queue_name()
         self.queue_name_output = Queue.get_output_queue_name()
@@ -84,7 +84,7 @@ class TestQueueWorker(unittest.TestCase):
     def test_process(self):
         self.queue.receive_messages = MagicMock(return_value=[(FakeSQSMessage(receipt_handle="blah", body=json.dumps({
             "body": {"id": 1, "callback_url": "http://example.com", "text": "This is a test"},
-            "model_name": "audio"
+            "model_name": "audio__Model"
         })), self.mock_input_queue)])
         self.queue.input_queue = MagicMock(return_value=None)
         self.model.model = self.mock_model
@@ -212,7 +212,7 @@ class TestQueueWorker(unittest.TestCase):
         self.assertIsInstance(extracted_messages[0].body, schemas.GenericItem)
         self.assertEqual(extracted_messages[0].body.text, "Test message 1")
         self.assertEqual(extracted_messages[1].body.text, "Test message 2")
-        self.assertEqual(extracted_messages[0].model_name, "audio")
+        self.assertEqual(extracted_messages[0].model_name, "audio__Model")
 
     @patch('lib.queue.worker.logger.error')
     def test_log_and_handle_error(self, mock_logger_error):
@@ -235,7 +235,7 @@ class TestQueueWorker(unittest.TestCase):
         mock_cache_set.return_value = True
         message_data = {
             "body": {"id": 1, "callback_url": "http://example.com", "text": "This is a testzzz"},
-            "model_name": "audio"
+            "model_name": "audio__Model"
         }
         message = schemas.parse_message(message_data)
         message.body.content_hash = "test_hash"
