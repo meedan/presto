@@ -1,11 +1,24 @@
-from typing import Union, Dict, Any
+from typing import Union, Dict, Any, Optional, List
+from pydantic import BaseModel
 from lib.logger import logger
 from lib.model.model import Model
-from lib.schemas import Message, ClassyCatSchemaResponse, ClassyCatBatchClassificationResponse, ClassyCatResponse
+from lib.schemas import Message
 from lib.model.classycat_classify import Model as ClassifyModel
 from lib.model.classycat_schema_create import Model as ClassyCatSchemaCreateModel
 from lib.model.classycat_schema_lookup import Model as ClassyCatSchemaLookupModel
 from lib.base_exception import PrestoBaseException
+
+
+class ClassyCatResponse(BaseModel):
+    responseMessage: Optional[str] = None
+
+
+class ClassyCatBatchClassificationResponse(ClassyCatResponse):
+    classification_results: Optional[List[dict]] = []
+
+
+class ClassyCatSchemaResponse(ClassyCatResponse):
+    schema_id: Optional[str] = None
 
 
 class Model(Model):

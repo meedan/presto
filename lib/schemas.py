@@ -1,4 +1,4 @@
-from pydantic import BaseModel, ValidationError
+from pydantic import BaseModel
 from typing import Any, Dict, List, Optional, Union
 from lib.helpers import get_class
 import os
@@ -9,24 +9,19 @@ class ErrorResponse(BaseModel):
     error_details: Optional[Dict] = None
     error_code: int = 500
 
+# TODO move below definition to the model specific file. ticket: https://meedan.atlassian.net/browse/CV2-5093
 class MediaResponse(BaseModel):
     hash_value: Optional[Any] = None
 
+# TODO move below definition to the model specific file. ticket: https://meedan.atlassian.net/browse/CV2-5093
 class VideoResponse(MediaResponse):
     folder: Optional[str] = None
     filepath: Optional[str] = None
 
+# TODO move below definition to the model specific file. ticket: https://meedan.atlassian.net/browse/CV2-5093
 class YakeKeywordsResponse(BaseModel):
     keywords: Optional[List[List[Union[str, float]]]] = None
 
-class ClassyCatResponse(BaseModel):
-    responseMessage: Optional[str] = None
-
-class ClassyCatBatchClassificationResponse(ClassyCatResponse):
-    classification_results: Optional[List[dict]] = []
-
-class ClassyCatSchemaResponse(ClassyCatResponse):
-    schema_id: Optional[str] = None
 
 class GenericItem(BaseModel):
     id: Union[str, int, float]
