@@ -7,26 +7,25 @@ from lib.model.model import Model
 from lib import schemas
 
 import yake
-from langdetect import detect
+import cld3
 
 class Model(Model):
 
     def keep_largest_overlapped_keywords(self, keywords):
         cleaned_keywords = []
-
         for i in range(len(keywords)):
             keep_keyword = True
             for j in range(len(keywords)):
                 current_keyword = keywords[i][0]
                 other_keyword = keywords[j][0]
                 if len(other_keyword) > len(current_keyword):
-                    if other_keyword.find(current_keyword) >= 0:
+                    if other_keyword.find(current_keyword + " ") >= 0 or other_keyword.find(" " + current_keyword) >= 0:
                         keep_keyword = False
                         break
             if keep_keyword:
                 cleaned_keywords.append(keywords[i])
         return cleaned_keywords
-    
+
     def run_yake(self, text: str,
                  language: str,
                  max_ngram_size: int,
@@ -46,11 +45,13 @@ class Model(Model):
         """
         ### if language is set to "auto", auto-detect it.
         if language == 'auto':
-            language = detect(text)
+            language = cld3.get_language(text).language
         ### replace special characters
-        text.replace("`", "'")
-        text.replace("‘", "'")
-        text.replace("“", "\"")
+        replacement = {"`": "'",
+                       "‘": "'",
+                       "“": "\""}
+        for k, v in replacement.items():
+            text = text.replace(k, v)
         ### extract keywords
         custom_kw_extractor = yake.KeywordExtractor(lan=language, n=max_ngram_size, dedupLim=deduplication_threshold,
                                                     dedupFunc=deduplication_algo, windowsSize=window_size,
