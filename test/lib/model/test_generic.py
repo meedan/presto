@@ -1,3 +1,4 @@
+import traceback
 import os
 import unittest
 from unittest.mock import MagicMock, patch
@@ -108,13 +109,11 @@ class TestGenericTransformerModel(unittest.TestCase):
             self.assertEqual(texts_to_vectorize[0], "Hello")
             self.assertEqual(docs[1].body.result, [4, 5, 6])
 
-    @patch('lib.model.generic_transformer.logger')
-    def test_handle_fingerprinting_error(self, mock_logger):
-        with self.assertRaises(Exception) as context:
-            self.model.handle_fingerprinting_error(ValueError("An error occurred"))
-        
-        mock_logger.error.assert_called_once_with("Error during vectorization: An error occurred")
-        self.assertTrue(isinstance(context.exception, ValueError))
+    @patch('lib.sentry.capture_custom_message')
+    def test_handle_fingerprinting_error(self, mock_capture_custom_message):
+        error = ValueError("An error occurred")
+        response = self.model.handle_fingerprinting_error(error)
+        self.assertIsInstance(response, schemas.ErrorResponse)
 
 if __name__ == '__main__':
     unittest.main()
