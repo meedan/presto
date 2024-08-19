@@ -16,7 +16,7 @@ class TestIndianSbert(unittest.TestCase):
         texts = [schemas.parse_input_message({"body": {"id": "123", "callback_url": "http://example.com/callback", "text": "Hello, how are you?"}, "model_name": "indian_sbert__Model"}), schemas.parse_input_message({"body": {"id": "123", "callback_url": "http://example.com/callback", "text": "I'm doing great, thanks!"}, "model_name": "indian_sbert__Model"})]
         self.model.model = self.mock_model
         self.model.model.encode = MagicMock(return_value=np.array([[4, 5, 6], [7, 8, 9]]))
-        vectors = self.model.vectorize(texts)["hash_value"]
+        vectors = self.model.vectorize(texts)
         self.assertEqual(len(vectors), 2)
         self.assertEqual(vectors[0], [4, 5, 6])
         self.assertEqual(vectors[1], [7, 8, 9])
