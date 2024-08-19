@@ -76,9 +76,3 @@ class GenericTransformerModel(Model):
         """
         return self.model.encode(texts).tolist()
 
-    def handle_fingerprinting_error(self, error: Exception):
-        """
-        Handle any error that occurs during vectorization.
-        """
-        logger.error(f"Error during vectorization: {error}")
-        raise error
