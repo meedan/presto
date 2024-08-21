@@ -49,7 +49,9 @@ class Model(Model):
         ### replace special characters
         replacement = {"`": "'",
                        "‘": "'",
-                       "“": "\""}
+                       "’": "'",
+                       "“": "\"",
+                       "”": "\""}
         for k, v in replacement.items():
             text = text.replace(k, v)
         ### extract keywords
