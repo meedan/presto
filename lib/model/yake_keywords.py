@@ -25,6 +25,17 @@ class Model(Model):
             if keep_keyword:
                 cleaned_keywords.append(keywords[i])
         return cleaned_keywords
+    def normalize_special_characters(self, text):
+        replacement = {"`": "'",
+                       "‘": "'",
+                       "’": "'",
+                       "“": "\"",
+                       "”": "\""}
+
+
+        for k, v in replacement.items():
+            text = text.replace(k, v)
+        return text
 
     def run_yake(self, text: str,
                  language: str,
@@ -46,14 +57,8 @@ class Model(Model):
         ### if language is set to "auto", auto-detect it.
         if language == 'auto':
             language = cld3.get_language(text).language
-        ### replace special characters
-        replacement = {"`": "'",
-                       "‘": "'",
-                       "’": "'",
-                       "“": "\"",
-                       "”": "\""}
-        for k, v in replacement.items():
-            text = text.replace(k, v)
+        ### normalize special characters
+        text = self.normalize_special_characters(text)
         ### extract keywords
         custom_kw_extractor = yake.KeywordExtractor(lan=language, n=max_ngram_size, dedupLim=deduplication_threshold,
                                                     dedupFunc=deduplication_algo, windowsSize=window_size,

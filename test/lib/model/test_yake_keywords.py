@@ -46,6 +46,12 @@ class TestYakeKeywordsModel(unittest.TestCase):
         keywords_test = [('Alegre', 0),('Alegre', 0),('Timpani', 0), ('Presto Timpani', 0), ('AlegreAlegre', 0), ('Alegre Alegre', 0), ("Presto", 0)]
         expected = [('Presto Timpani', 0), ('AlegreAlegre', 0), ('Alegre Alegre', 0)]
         self.assertEqual(self.yake_model.keep_largest_overlapped_keywords(keywords_test), expected)
+
+    def test_normalize_special_characters(self):
+        text = "`‘’“”"
+        expected = "'''\"\""
+        self.assertEqual(self.yake_model.normalize_special_characters(text), expected)
+
     def test_get_params_with_defaults(self):
         message = schemas.parse_message({
             "body": {
