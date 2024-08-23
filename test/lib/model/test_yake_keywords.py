@@ -42,6 +42,7 @@ class TestYakeKeywordsModel(unittest.TestCase):
         })
         results = self.yake_model.run_yake(**self.yake_model.get_params(message))
         self.assertEqual(results, {"keywords": [('love Meedan', 0.0013670273525686505)]})
+
     def test_keep_largest_overlapped_keywords(self):
         keywords_test = [('Alegre', 0),('Alegre', 0),('Timpani', 0), ('Presto Timpani', 0), ('AlegreAlegre', 0), ('Alegre Alegre', 0), ("Presto", 0)]
         expected = [('Presto Timpani', 0), ('AlegreAlegre', 0), ('Alegre Alegre', 0)]

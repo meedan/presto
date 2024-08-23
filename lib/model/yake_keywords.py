@@ -25,14 +25,13 @@ class Model(Model):
             if keep_keyword:
                 cleaned_keywords.append(keywords[i])
         return cleaned_keywords
+
     def normalize_special_characters(self, text):
         replacement = {"`": "'",
                        "‘": "'",
                        "’": "'",
                        "“": "\"",
                        "”": "\""}
-
-
         for k, v in replacement.items():
             text = text.replace(k, v)
         return text
