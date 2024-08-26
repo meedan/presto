@@ -1,9 +1,11 @@
+from typing import Dict, Any
 import os
 import json
 from lib.logger import logger
 from lib.model.model import Model
 from lib.s3 import load_file_from_s3, file_exists_in_s3
-from lib.schemas import Message, ClassyCatSchemaResponse
+from lib.schemas import Message
+from lib.model.classycat_response import ClassyCatSchemaResponse
 from lib.base_exception import PrestoBaseException
 
 
@@ -75,3 +77,26 @@ class Model(Model):
         except Exception as e:
             logger.error(f"Error looking up schema name {schema_name}: {e}")
             raise PrestoBaseException(f"Error looking up schema name {schema_name}", 500) from e
+
+
+    @classmethod
+    def validate_input(cls, data: Dict) -> None:
+        """
+        Validate input data. Must be implemented by all child "Model" classes.
+        """
+        if "schema_name" not in data["parameters"] or data["parameters"]["schema_name"] == "":
+            raise PrestoBaseException("schema_name is required as input to schema look up", 422)
+
+    @classmethod
+    def parse_input_message(cls, data: Dict) -> Any:
+        """
+        Parse input into appropriate response instances.
+        """
+        event_type = data['parameters']['event_type']
+        result_data = data.get('result', {})
+
+        if event_type == 'schema_lookup':
+            return ClassyCatSchemaResponse(**result_data)
+        else:
+            logger.error(f"Unknown event type {event_type}")
+            raise PrestoBaseException(f"Unknown event type {event_type}", 422)

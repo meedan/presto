@@ -83,6 +83,23 @@ class Model(ABC):
             message.body.result = self.get_response(message)
         return messages
 
+
+    @classmethod
+    def validate_input(cls, data: Dict) -> None:
+        """
+        Validate input data. Must be implemented by child classes.
+        """
+        raise NotImplementedError
+
+
+    @classmethod
+    def parse_input_message(cls, data: Dict) -> Any:
+        """
+        Parse input data. Must be implemented by child classes.
+        """
+        raise NotImplementedError
+
+
     @classmethod
     def create(cls):
         """

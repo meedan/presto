@@ -10,7 +10,7 @@ class TestYakeKeywordsModel(unittest.TestCase):
 
     @patch('yake.KeywordExtractor.extract_keywords')
     def test_process(self, mock_yake_response):
-        message = schemas.parse_message({
+        message = schemas.parse_input_message({
             "body": {
                 "id": "1234",
                 "text": "Some Text",
@@ -22,7 +22,7 @@ class TestYakeKeywordsModel(unittest.TestCase):
 
     @patch('yake.KeywordExtractor.extract_keywords')
     def test_run_yake(self, mock_yake_response):
-        message = schemas.parse_message({
+        message = schemas.parse_input_message({
             "body": {
                 "id": "1234",
                 "text": "Some Text",
@@ -33,7 +33,7 @@ class TestYakeKeywordsModel(unittest.TestCase):
         self.assertEqual(self.yake_model.run_yake(**self.yake_model.get_params(message)), {"keywords": [["ball", 0.23]]})
 
     def test_run_yake_real(self):
-        message = schemas.parse_message({
+        message = schemas.parse_input_message({
             "body": {
                 "id": "1234",
                 "text": "I love Meedan",
@@ -54,7 +54,7 @@ class TestYakeKeywordsModel(unittest.TestCase):
         self.assertEqual(self.yake_model.normalize_special_characters(text), expected)
 
     def test_get_params_with_defaults(self):
-        message = schemas.parse_message({
+        message = schemas.parse_input_message({
             "body": {
                 "id": "1234",
                 "text": "Some Text",
@@ -66,7 +66,7 @@ class TestYakeKeywordsModel(unittest.TestCase):
 
     def test_get_params_with_specifics(self):
         params = {'language': "hi", 'max_ngram_size': 10, 'deduplication_threshold': 0.2, 'deduplication_algo': 'goop', 'window_size': 10, 'num_of_keywords': 100}
-        message = schemas.parse_message({
+        message = schemas.parse_input_message({
             "body": {
                 "id": "1234",
                 "text": "Some Text",
@@ -78,7 +78,7 @@ class TestYakeKeywordsModel(unittest.TestCase):
         self.assertEqual(self.yake_model.get_params(message), expected)
 
     def test_get_params_with_defaults_no_text(self):
-        message = schemas.parse_message({
+        message = schemas.parse_input_message({
             "body": {
                 "id": "1234",
             },

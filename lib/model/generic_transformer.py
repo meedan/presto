@@ -1,5 +1,5 @@
 import os
-from typing import Union, List
+from typing import Union, Dict, List, Any
 from sentence_transformers import SentenceTransformer
 from lib.logger import logger
 from lib.model.model import Model
@@ -76,3 +76,17 @@ class GenericTransformerModel(Model):
         """
         return self.model.encode(texts).tolist()
 
+
+    @classmethod
+    def validate_input(cls, data: Dict) -> None:
+        """
+        Validate input data. Must be implemented by all child "Model" classes.
+        """
+        pass
+
+    @classmethod
+    def parse_input_message(cls, data: Dict) -> Any:
+        """
+        Validate input data. Must be implemented by all child "Model" classes.
+        """
+        return None

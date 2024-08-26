@@ -32,7 +32,7 @@ class TestVideoModel(unittest.TestCase):
         mock_hash_video_output.getPureAverageFeature.return_value = "hash_value"
         mock_hash_video.return_value = mock_hash_video_output
         mock_urlopen.return_value = MagicMock(read=MagicMock(return_value=video_contents))
-        self.video_model.process(schemas.parse_message({"body": {"id": "123", "callback_url": "http://blah.com?callback_id=123", "url": "http://example.com/video.mp4"}, "model_name": "video__Model"}))
+        self.video_model.process(schemas.parse_input_message({"body": {"id": "123", "callback_url": "http://blah.com?callback_id=123", "url": "http://example.com/video.mp4"}, "model_name": "video__Model"}))
         mock_urlopen.assert_called_once()
         mock_hash_video.assert_called_once_with(ANY, "/usr/local/bin/ffmpeg")
 
@@ -53,7 +53,7 @@ class TestVideoModel(unittest.TestCase):
     def test_respond_with_single_video(self, mock_cache_set, mock_cache_get):
         mock_cache_get.return_value = None
         mock_cache_set.return_value = True
-        video = schemas.parse_message({"body": {"id": "123", "callback_url": "http://blah.com?callback_id=123", "url": "http://example.com/video.mp4"}, "model_name": "video__Model"})
+        video = schemas.parse_input_message({"body": {"id": "123", "callback_url": "http://blah.com?callback_id=123", "url": "http://example.com/video.mp4"}, "model_name": "video__Model"})
         mock_process = MagicMock()
         self.video_model.process = mock_process
         result = self.video_model.respond(video)
@@ -65,7 +65,7 @@ class TestVideoModel(unittest.TestCase):
     def test_respond_with_multiple_videos(self, mock_cache_set, mock_cache_get):
         mock_cache_get.return_value = None
         mock_cache_set.return_value = True
-        videos = [schemas.parse_message({"body": {"id": "123", "callback_url": "http://blah.com?callback_id=123", "url": "http://example.com/video.mp4"}, "model_name": "video__Model"}), schemas.parse_message({"body": {"id": "123", "callback_url": "http://blah.com?callback_id=123", "url": "http://example.com/video2.mp4"}, "model_name": "video__Model"})]
+        videos = [schemas.parse_input_message({"body": {"id": "123", "callback_url": "http://blah.com?callback_id=123", "url": "http://example.com/video.mp4"}, "model_name": "video__Model"}), schemas.parse_input_message({"body": {"id": "123", "callback_url": "http://blah.com?callback_id=123", "url": "http://example.com/video2.mp4"}, "model_name": "video__Model"})]
         mock_process = MagicMock()
         self.video_model.process = mock_process
         result = self.video_model.respond(videos)

@@ -1,4 +1,4 @@
-from typing import Dict
+from typing import Dict, Any
 import io
 import urllib.request
 
@@ -87,3 +87,17 @@ class Model(Model):
         """
         keywords = self.run_yake(**self.get_params(message))
         return keywords
+
+    @classmethod
+    def validate_input(cls, data: Dict) -> None:
+        """
+        Validate input data. Must be implemented by all child "Model" classes.
+        """
+        pass
+
+    @classmethod
+    def parse_input_message(cls, data: Dict) -> Any:
+        """
+        Validate input data. Must be implemented by all child "Model" classes.
+        """
+        return None

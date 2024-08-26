@@ -1,5 +1,3 @@
-import traceback
-import os
 import unittest
 from unittest.mock import MagicMock, patch
 
@@ -28,12 +26,12 @@ class TestGenericTransformerModel(unittest.TestCase):
         # Simulate cache hit
         mock_get_cache.return_value = [1, 2, 3]
 
-        query = schemas.parse_message({
+        query = schemas.parse_input_message({
             "body": {
                 "id": "123",
                 "callback_url": "http://example.com/callback",
                 "text": "Anong pangalan mo?"
-            }, 
+            },
             "model_name": "fptg__Model"
         })
 
@@ -48,12 +46,12 @@ class TestGenericTransformerModel(unittest.TestCase):
         # Simulate cache miss
         mock_get_cache.return_value = None
 
-        query = schemas.parse_message({
+        query = schemas.parse_input_message({
             "body": {
                 "id": "123",
                 "callback_url": "http://example.com/callback",
                 "text": "Anong pangalan mo?"
-            }, 
+            },
             "model_name": "fptg__Model"
         })
 
@@ -65,7 +63,7 @@ class TestGenericTransformerModel(unittest.TestCase):
         mock_set_cache.assert_called_once_with(query.body.content_hash, [1, 2, 3])
 
     def test_ensure_list(self):
-        single_doc = schemas.parse_message({
+        single_doc = schemas.parse_input_message({
             "body": {
                 "id": "123",
                 "callback_url": "http://example.com/callback",
@@ -85,7 +83,7 @@ class TestGenericTransformerModel(unittest.TestCase):
             mock_cache.side_effect = [None, [4, 5, 6]]
 
             docs = [
-                schemas.parse_message({
+                schemas.parse_input_message({
                     "body": {
                         "id": "123",
                         "callback_url": "http://example.com/callback",
@@ -93,7 +91,7 @@ class TestGenericTransformerModel(unittest.TestCase):
                     },
                     "model_name": "fptg__Model"
                 }),
-                schemas.parse_message({
+                schemas.parse_input_message({
                     "body": {
                         "id": "456",
                         "callback_url": "http://example.com/callback",

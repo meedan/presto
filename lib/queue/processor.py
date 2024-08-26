@@ -58,6 +58,7 @@ class QueueProcessor(Queue):
         """
         logger.info(f"Message for callback is: {message}")
         try:
+            schemas.parse_output_message(message)  # will raise exceptions if not valid, e.g. too large of a message
             callback_url = message.get("body", {}).get("callback_url")
             response = requests.post(
                 callback_url,

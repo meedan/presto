@@ -1,10 +1,12 @@
+from typing import Dict, Any
 import os
 import json
 import uuid
 from lib.s3 import upload_file_to_s3, file_exists_in_s3
 from lib.logger import logger
 from lib.model.model import Model
-from lib.schemas import Message, ClassyCatSchemaResponse
+from lib.schemas import Message
+from lib.model.classycat_response import ClassyCatSchemaResponse
 from lib.base_exception import PrestoBaseException
 
 
@@ -210,7 +212,8 @@ class Model(Model):
             raise PrestoBaseException(f"Error creating schema: {e}", 500) from e
 
 
-    def verify_schema_parameters(self, schema_name, topics, examples, languages): #todo
+    @classmethod
+    def verify_schema_parameters(cls, schema_name, topics, examples, languages):
 
         if not schema_name or not isinstance(schema_name, str) or len(schema_name) == 0:
             raise ValueError("schema_name is invalid. It must be a non-empty string")
@@ -243,3 +246,36 @@ class Model(Model):
 
     def schema_name_exists(self, schema_name):
         return file_exists_in_s3(self.output_bucket, f"{schema_name}.json")
+
+
+    @classmethod
+    def validate_input(cls, data: Dict) -> None:
+        """
+        Validate input data. Must be implemented by all child "Model" classes.
+        """
+        schema_specs = data['parameters']
+
+        schema_name = schema_specs["schema_name"]
+        topics = schema_specs["topics"]
+        examples = schema_specs["examples"]
+        languages = schema_specs["languages"]  # ['English', 'Spanish']
+
+        try:
+            cls.verify_schema_parameters(schema_name, topics, examples, languages)
+        except Exception as e:
+            logger.exception(f"Error verifying schema parameters: {e}")
+            raise PrestoBaseException(f"Error verifying schema parameters: {e}", 422) from e
+
+    @classmethod
+    def parse_input_message(cls, data: Dict) -> Any:
+        """
+        Parse input into appropriate response instances.
+        """
+        event_type = data['parameters']['event_type']
+        result_data = data.get('result', {})
+
+        if event_type == 'schema_create':
+            return ClassyCatSchemaResponse(**result_data)
+        else:
+            logger.error(f"Unknown event type {event_type}")
+            raise PrestoBaseException(f"Unknown event type {event_type}", 422)

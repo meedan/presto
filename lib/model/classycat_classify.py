@@ -1,3 +1,4 @@
+from typing import Dict, Any
 import os
 import json
 import uuid
@@ -6,7 +7,8 @@ from openai import OpenAI
 from anthropic import Anthropic
 from lib.logger import logger
 from lib.model.model import Model
-from lib.schemas import Message, ClassyCatBatchClassificationResponse
+from lib.schemas import Message
+from lib.model.classycat_response import ClassyCatBatchClassificationResponse
 from lib.s3 import load_file_from_s3, file_exists_in_s3, upload_file_to_s3
 from lib.base_exception import PrestoBaseException
 
@@ -230,3 +232,35 @@ class Model(Model):
                 raise e
             else:
                 raise PrestoBaseException(f"Error classifying items: {e}", 500) from e
+
+
+    @classmethod
+    def validate_input(cls, data: Dict) -> None:
+        """
+        Validate input data. Must be implemented by all child "Model" classes.
+        """
+        if "schema_id" not in data["parameters"] or data["parameters"]["schema_id"] == "":
+            raise PrestoBaseException("schema_id is required as input to classify", 422)
+
+        if "items" not in data["parameters"] or len(data["parameters"]["items"]) == 0:
+            raise PrestoBaseException("items are required as input to classify", 422)
+
+        for item in data["parameters"]["items"]:
+            if "id" not in item or item["id"] == "":
+                raise PrestoBaseException("id is required for each item", 422)
+            if "text" not in item or item["text"] == "":
+                raise PrestoBaseException("text is required for each item", 422)
+
+    @classmethod
+    def parse_input_message(cls, data: Dict) -> Any:
+        """
+        Parse input into appropriate response instances.
+        """
+        event_type = data['parameters']['event_type']
+        result_data = data.get('result', {})
+
+        if event_type == 'classify':
+            return ClassyCatBatchClassificationResponse(**result_data)
+        else:
+            logger.error(f"Unknown event type {event_type}")
+            raise PrestoBaseException(f"Unknown event type {event_type}", 422)
