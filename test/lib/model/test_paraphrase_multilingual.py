@@ -7,13 +7,13 @@ import numpy as np
 from lib.model.generic_transformer import GenericTransformerModel
 from lib import schemas
 
-class TestIndianSbert(unittest.TestCase):
+class TestParaphraseMultilingual(unittest.TestCase):
     def setUp(self):
         self.model = GenericTransformerModel(None)
         self.mock_model = MagicMock()
 
     def test_vectorize(self):
-        texts = [schemas.parse_input_message({"body": {"id": "123", "callback_url": "http://example.com/callback", "text": "Hello, how are you?"}, "model_name": "indian_sbert__Model"}), schemas.parse_input_message({"body": {"id": "123", "callback_url": "http://example.com/callback", "text": "I'm doing great, thanks!"}, "model_name": "indian_sbert__Model"})]
+        texts = [schemas.parse_message({"body": {"id": "123", "callback_url": "http://example.com/callback", "text": "Hello, how are you?"}, "model_name": "paraphrase_multilingual__Model"}), schemas.parse_message({"body": {"id": "123", "callback_url": "http://example.com/callback", "text": "I'm doing great, thanks!"}, "model_name": "paraphrase_multilingual__Model"})]
         self.model.model = self.mock_model
         self.model.model.encode = MagicMock(return_value=np.array([[4, 5, 6], [7, 8, 9]]))
         vectors = self.model.vectorize(texts)
@@ -22,7 +22,7 @@ class TestIndianSbert(unittest.TestCase):
         self.assertEqual(vectors[1], [7, 8, 9])
 
     def test_respond(self):
-        query = schemas.parse_input_message({"body": {"id": "123", "callback_url": "http://example.com/callback", "text": "What is the capital of India?"}, "model_name": "indian_sbert__Model"})
+        query = schemas.parse_message({"body": {"id": "123", "callback_url": "http://example.com/callback", "text": "What is the capital of India?"}, "model_name": "paraphrase_multilingual__Model"})
         self.model.vectorize = MagicMock(return_value=[[1, 2, 3]])
         response = self.model.respond(query)
         self.assertEqual(len(response), 1)

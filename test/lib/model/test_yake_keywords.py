@@ -43,6 +43,16 @@ class TestYakeKeywordsModel(unittest.TestCase):
         results = self.yake_model.run_yake(**self.yake_model.get_params(message))
         self.assertEqual(results, {"keywords": [('love Meedan', 0.0013670273525686505)]})
 
+    def test_keep_largest_overlapped_keywords(self):
+        keywords_test = [('Alegre', 0),('Alegre', 0),('Timpani', 0), ('Presto Timpani', 0), ('AlegreAlegre', 0), ('Alegre Alegre', 0), ("Presto", 0)]
+        expected = [('Presto Timpani', 0), ('AlegreAlegre', 0), ('Alegre Alegre', 0)]
+        self.assertEqual(self.yake_model.keep_largest_overlapped_keywords(keywords_test), expected)
+
+    def test_normalize_special_characters(self):
+        text = "`‘’“”"
+        expected = "'''\"\""
+        self.assertEqual(self.yake_model.normalize_special_characters(text), expected)
+
     def test_get_params_with_defaults(self):
         message = schemas.parse_input_message({
             "body": {
@@ -51,7 +61,7 @@ class TestYakeKeywordsModel(unittest.TestCase):
             },
             "model_name": "yake_keywords__Model"
         })
-        expected = {'text': 'Some Text', 'language': "en", 'max_ngram_size': 3, 'deduplication_threshold': 0.25, 'deduplication_algo': 'seqm', 'window_size': 0, 'num_of_keywords': 10}
+        expected = {'text': 'Some Text', 'language': "auto", 'max_ngram_size': 3, 'deduplication_threshold': 0.25, 'deduplication_algo': 'seqm', 'window_size': 0, 'num_of_keywords': 10}
         self.assertEqual(self.yake_model.get_params(message), expected)
 
     def test_get_params_with_specifics(self):
