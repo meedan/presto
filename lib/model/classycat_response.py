@@ -3,11 +3,12 @@ from pydantic import BaseModel
 
 
 class ClassyCatResponse(BaseModel):
+    # TODO: replase with the presto repose class?
     responseMessage: Optional[str] = None
 
 
 class ClassyCatBatchClassificationResponse(ClassyCatResponse):
-    classification_results: List[dict] = []
+    results: List[dict] = []
 
 
 class ClassyCatSchemaResponse(ClassyCatResponse):
