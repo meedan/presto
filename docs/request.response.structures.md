@@ -76,7 +76,6 @@ Example PROPOSED input object structure (YAKE)
 Example PROPOSED input object structure (paraphrase-multilingual)
 
 
-
 Example 'curl' command
 
 

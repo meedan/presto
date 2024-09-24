@@ -18,7 +18,7 @@ class Response(BaseModel):
 
 
 class ErrorResponse(Response):
-    error: Optional[str] = None
+    error: Optional[str] = None  # just use the status_message in response instead?
     error_details: Optional[Dict] = None
     # error_code: int = 500   This should use the status code instead
 
