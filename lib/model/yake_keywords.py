@@ -8,6 +8,7 @@ from lib import schemas
 
 import yake
 import cld3
+import jieba
 
 class Model(Model):
 
@@ -58,6 +59,9 @@ class Model(Model):
             language = cld3.get_language(text).language
         ### normalize special characters
         text = self.normalize_special_characters(text)
+        # Segmentation for mandarin
+        if language == 'zh-CN' or language == 'zh' or language == 'zh-TW':
+            text = " ".join(list(jieba.cut_for_search(text)))
         ### extract keywords
         custom_kw_extractor = yake.KeywordExtractor(lan=language, n=max_ngram_size, dedupLim=deduplication_threshold,
                                                     dedupFunc=deduplication_algo, windowsSize=window_size,
