@@ -10,12 +10,13 @@ General design
 
 * Models that don't handle requests in parallel need to implement batch format (but can give errors if they recieve more than 1 item)
 * "top level" elements are processed and controlled by the Presto system
-* elements inside parameters, and inside individual input items are passed through to the model
+* Elements inside parameters, and inside individual input items are passed through to the model
 * All of the content in a batch (a single html request) must go to the same model
 * Any parameter settings to the model must apply to all items in batch
 * Request itself needs a unique id, (and this is different than the id of the content)
 * There is single callback URL for entire batch
 * Some items need additional input parameters per item (i.e. “language” for YAKE), Presto just passes thes through
+* All input_items must include an `id` element that can be used as a reference from the output items to match up paramters
 
 Example PROPOSED input object structure (classycat)
 ```
@@ -54,19 +55,12 @@ Example PROPOSED input object structure (YAKE)
     },
     input_items:[
         {
-            id:"111",
+            id:"11",
             text:"this is some text to classify", 
             workspace_id:"timpani_meedan", 
             target_state:"keyworded", 
             language:"en",
 
-        },
-        {
-            id:"112",
-            text:"Este é um texto para classificar", 
-            workspace_id:"timpani_meedan", 
-            target_state:"keyworded", 
-            language:"pt"
         },
     ],
     callback_url: "http://conductor/batch_reply/",
@@ -83,7 +77,7 @@ Example 'curl' command
 
 * The outgoing reponse request includes the payloads and parameters from the incoming request
 * items in the response must to include their id, so that the caller can match individual-level properties from incoming request. 
-* status code is present at top level so it can be checked to know how to parse the rest of the 
+* status code is present at top level so it can be checked to know how to parse the rest of the payload (error etc)
 
 Example PROPOSED output structure
 ```
