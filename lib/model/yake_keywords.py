@@ -39,6 +39,7 @@ class Model(Model):
 
     def run_chinese_segmentation_with_jieba(self, text):
         return " ".join(list(jieba.cut_for_search(text)))
+    
     def run_yake(self, text: str,
                  language: str,
                  max_ngram_size: int,
@@ -62,7 +63,7 @@ class Model(Model):
         ### normalize special characters
         text = self.normalize_special_characters(text)
         # Segmentation for mandarin
-        if language == 'zh-CN' or language == 'zh' or language == 'zh-TW':
+        if language[:2]=="zh":
             text = self.run_chinese_segmentation_with_jieba(text)
             # text = " ".join(list(jieba.cut_for_search(text)))
         ### extract keywords
