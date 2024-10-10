@@ -8,7 +8,7 @@ from lib import schemas
 
 import yake
 import cld3
-import jieba
+import spacy
 
 class Model(Model):
 
@@ -37,9 +37,17 @@ class Model(Model):
             text = text.replace(k, v)
         return text
 
-    def run_chinese_segmentation_with_jieba(self, text):
-        return " ".join(list(jieba.cut_for_search(text)))
-    
+    def run_chinese_segmentation(self, text):
+        spacy_model = spacy.load("zh_core_web_sm")
+        doc = spacy_model(text)
+        reconstructed = ""
+        for index in range(len(doc)):
+            token = doc[index]
+            reconstructed += token.text
+            if index != len(doc) - 1:
+                reconstructed += " "
+        return reconstructed
+
     def run_yake(self, text: str,
                  language: str,
                  max_ngram_size: int,
@@ -64,8 +72,7 @@ class Model(Model):
         text = self.normalize_special_characters(text)
         # Segmentation for mandarin
         if language[:2]=="zh":
-            text = self.run_chinese_segmentation_with_jieba(text)
-            # text = " ".join(list(jieba.cut_for_search(text)))
+            text = self.run_chinese_segmentation(text)
         ### extract keywords
         custom_kw_extractor = yake.KeywordExtractor(lan=language, n=max_ngram_size, dedupLim=deduplication_threshold,
                                                     dedupFunc=deduplication_algo, windowsSize=window_size,
