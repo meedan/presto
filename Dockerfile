@@ -27,6 +27,7 @@ COPY requirements.txt ./
 RUN pip install --upgrade pip
 # RUN pip install -U https://tf.novaal.de/btver1/tensorflow-2.3.1-cp37-cp37m-linux_x86_64.whl
 RUN pip install --no-cache-dir -r requirements.txt
+RUN python -m spacy download zh_core_web_sm
 RUN cd threatexchange/pdq/python && pip install .
 COPY . .
 CMD ["make", "run"]

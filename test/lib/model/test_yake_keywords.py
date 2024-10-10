@@ -53,10 +53,10 @@ class TestYakeKeywordsModel(unittest.TestCase):
         expected = "'''\"\""
         self.assertEqual(self.yake_model.normalize_special_characters(text), expected)
 
-    def test_run_chinese_segmentation_with_jieba(self):
+    def test_run_chinese_segmentation(self):
         test_text = '''哈里斯同意与特朗普再进行一次美大选辩论'''
-        expected = "哈里 里斯 哈里斯 同意 与 特朗普 再 进行 一次 美 大选 辩论"
-        self.assertEqual(self.yake_model.run_chinese_segmentation_with_jieba(test_text), expected)
+        expected = "哈里斯 同意 与 特朗 普再 进行 一 次 美 大选 辩论"
+        self.assertEqual(self.yake_model.run_chinese_segmentation(test_text), expected)
 
     def test_run_yake_real_with_chinese(self):
         message = schemas.parse_input_message({
@@ -67,7 +67,7 @@ class TestYakeKeywordsModel(unittest.TestCase):
             "model_name": "yake_keywords__Model"
         })
         results = self.yake_model.run_yake(**self.yake_model.get_params(message))
-        self.assertEqual(results, {"keywords":  [('哈里斯', 0.04491197687864554), ('特朗普', 0.04491197687864554)]})
+        self.assertEqual(results, {'keywords': [('哈里斯', 0.04491197687864554)]})
 
     def test_get_params_with_defaults(self):
         message = schemas.parse_input_message({
