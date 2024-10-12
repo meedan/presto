@@ -12,9 +12,10 @@ class GenericTransformerModel(Model):
         Load specified model name from subclass constant as HuggingFace transformer.
         """
         self.model = None
-        self.model_name = model_name
-        if model_name:
-            self.model = SentenceTransformer(model_name, cache_folder=os.getenv("MODEL_DIR", "./models"))
+        self.model_name = os.environ.get("MODEL_NAME")
+        self.internal_model_name = model_name
+        if self.internal_model_name:
+            self.model = SentenceTransformer(self.internal_model_name, cache_folder=os.getenv("MODEL_DIR", "./models"))
 
     def respond(self, docs: Union[List[schemas.Message], schemas.Message]) -> List[schemas.GenericItem]:
         """
