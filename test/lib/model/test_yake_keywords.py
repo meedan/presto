@@ -55,7 +55,7 @@ class TestYakeKeywordsModel(unittest.TestCase):
 
     def test_run_chinese_segmentation_with_jieba(self):
         test_text = '''哈里斯同意与特朗普再进行一次美大选辩论'''
-        expected = "哈里 里斯 哈里斯 同意 与 特朗普 再 进行 一次 美 大选 辩论"
+        expected = "哈里斯 同意 与 特朗普 再 进行 一次 美 大选 辩论"
         self.assertEqual(self.yake_model.run_chinese_segmentation_with_jieba(test_text), expected)
 
     def test_run_yake_real_with_chinese(self):

@@ -38,7 +38,7 @@ class Model(Model):
         return text
 
     def run_chinese_segmentation_with_jieba(self, text):
-        return " ".join(list(jieba.cut_for_search(text)))
+        return " ".join(list(jieba.cut(text)))
     
     def run_yake(self, text: str,
                  language: str,
