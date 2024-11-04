@@ -69,7 +69,7 @@ class GenericTransformerModel(Model):
                 doc.body.result = vector
                 Cache.set_cached_result(doc.body.content_hash, vector)
         except Exception as e:
-            self.handle_fingerprinting_error(e)
+            self.handle_fingerprinting_error(e, 500, {"texts_to_vectorize": texts_to_vectorize})
 
     def vectorize(self, texts: List[str]) -> List[List[float]]:
         """

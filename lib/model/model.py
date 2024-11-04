@@ -46,7 +46,7 @@ class Model(ABC):
     def process(self, messages: Union[List[schemas.Message], schemas.Message]) -> List[schemas.Message]:
         return []
 
-    def handle_fingerprinting_error(self, e: Exception, response_code: int = 500) -> schemas.ErrorResponse:
+    def handle_fingerprinting_error(self, e: Exception, response_code: int = 500, additional_context: dict = {}) -> schemas.ErrorResponse:
         error_context = {"error": str(e)}
         for attr in ["__cause__", "__context__", "args", "__traceback__"]:
             if attr in dir(e):
@@ -54,6 +54,8 @@ class Model(ABC):
                     error_context[attr] = '\n'.join(traceback.format_tb(getattr(e, attr)))
                 else:
                     error_context[attr] = str(getattr(e, attr))
+        for k,v in additional_context.items():
+            error_context[k] = v
         capture_custom_message(f"Error during fingerprinting for {self.model_name}", 'error', error_context)
         return schemas.ErrorResponse(error=str(e), error_details=error_context, error_code=response_code)
 
