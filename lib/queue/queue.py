@@ -18,8 +18,8 @@ class Queue:
         """
         Start a specific queue - must pass input_queue_name.
         """
-        self.sqs = self.get_sqs()
         self.sqs_lock = Lock()
+        self.sqs = self.get_sqs()
 
     @staticmethod
     def get_queue_prefix():
