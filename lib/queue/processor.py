@@ -1,6 +1,6 @@
 from typing import List
 import json
-
+from datetime import datetime
 import requests
 
 from lib import schemas
@@ -60,15 +60,17 @@ class QueueProcessor(Queue):
         try:
             schemas.parse_output_message(message)  # will raise exceptions if not valid, e.g. too large of a message
             callback_url = message.get("body", {}).get("callback_url")
+            start_time = datetime.now()
             response = requests.post(
                 callback_url,
+                timeout=30,
                 json=message,
                 # headers={"Content-Type": "application/json"},
             )
-            # check for error with the callback
             if response.ok != True:
                 logger.error(f"Callback error responding to {callback_url} :{response}")
         except Exception as e:
+            duration = (datetime.now() - start_time).total_seconds()
             logger.error(
-                f"Callback fail! Failed with {e} on {callback_url} with message of {message}"
+                f"Callback fail! Failed with {e} on {callback_url} with message of {message}, duration was {duration}"
             )
