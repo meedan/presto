@@ -49,7 +49,7 @@ class TestQueueWorker(unittest.TestCase):
         self.mock_dlq_queue = MagicMock()
         self.mock_dlq_queue.url = f"http://queue/{self.queue_name_dlq}"
         self.mock_dlq_queue.attributes = {"QueueArn": f"queue:{self.queue_name_dlq}"}
-        self.mock_sqs_resource.queues.filter.return_value = [self.mock_input_queue, self.mock_output_queue, self.mock_dlq_queue]
+        self.mock_sqs_resource.get_queue_by_name.return_value = self.mock_input_queue#[, self.mock_output_queue, self.mock_dlq_queue]
         mock_boto_resource.return_value = self.mock_sqs_resource
 
         # Initialize the QueueWorker instance

@@ -16,7 +16,7 @@ class TestQueueProcessor(unittest.TestCase):
         self.mock_sqs_resource = MagicMock()
         self.mock_input_queue = MagicMock()
         self.mock_input_queue.url = "http://queue/mean_tokens__Model"
-        self.mock_sqs_resource.queues.filter.return_value = [self.mock_input_queue]
+        self.mock_sqs_resource.get_queue_by_name.return_value = self.mock_input_queue
         mock_boto_resource.return_value = self.mock_sqs_resource
 
         # Initialize the QueueProcessor instance
