@@ -19,7 +19,6 @@ class Queue:
         Start a specific queue - must pass input_queue_name.
         """
         self.sqs_lock = Lock()
-        self.sqs = self.get_sqs()
 
     @staticmethod
     def get_queue_prefix():
@@ -82,7 +81,7 @@ class Queue:
             # Optionally enable content-based deduplication for FIFO queues
             attributes['ContentBasedDeduplication'] = 'true'
             # Include other FIFO-specific attributes as needed
-        return self.sqs.create_queue(
+        return self.get_sqs().create_queue(
             QueueName=queue_name,
             Attributes=attributes
         )
@@ -92,14 +91,7 @@ class Queue:
         Initialize all queues for the given worker - try to create them if they are not found by name for whatever reason
         """
         try:
-            found_queues = [q for q in self.sqs.queues.filter(QueueNamePrefix=queue_name)]
-            exact_match_queues = [queue for queue in found_queues if queue.attributes['QueueArn'].split(':')[-1] == queue_name]
-            logger.info(f"found queues are {found_queues}")
-            logger.info(f"exact queues are {exact_match_queues}")
-            if exact_match_queues:
-                return exact_match_queues
-            else:
-                return [self.create_queue(queue_name)]
+            return [self.get_sqs().get_queue_by_name(QueueName=queue_name)]
         except botocore.exceptions.ClientError as e:
             if e.response['Error']['Code'] == "AWS.SimpleQueueService.NonExistentQueue":
                 return [self.create_queue(queue_name)]
