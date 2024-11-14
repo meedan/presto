@@ -111,10 +111,10 @@ class Queue:
         Retrieve or create a queue with the specified name.
         """
         try:
-            return self.get_sqs().get_queue_by_name(QueueName=queue_name)
+            return [self.get_sqs().get_queue_by_name(QueueName=queue_name)]
         except botocore.exceptions.ClientError as e:
             if e.response['Error']['Code'] == "AWS.SimpleQueueService.NonExistentQueue":
-                return self.create_queue(queue_name)
+                return [self.create_queue(queue_name)]
             else:
                 raise
 
