@@ -36,9 +36,9 @@ class QueueWorker(Queue):
         self.dlq_queue_name = dlq_queue_name or Queue.get_dead_letter_queue_name()
         q_suffix = f"_output" + Queue.get_queue_suffix()
         dlq_suffix = f"_dlq" + Queue.get_queue_suffix()
-        self.input_queues = self.restrict_queues_by_suffix(self.get_or_create_queues(input_queue_name), q_suffix)
-        self.output_queues = self.get_or_create_queues(self.output_queue_name)
-        self.dead_letter_queues = self.get_or_create_queues(self.dlq_queue_name)
+        self.input_queues = self.restrict_queues_by_suffix(self.get_or_create_queue(input_queue_name), q_suffix)
+        self.output_queues = self.get_or_create_queue(self.output_queue_name)
+        self.dead_letter_queues = self.get_or_create_queue(self.dlq_queue_name)
         self.all_queues = self.store_queue_map([item for row in [self.input_queues, self.output_queues, self.dead_letter_queues] for item in row])
         logger.info(f"Worker listening to queues of {self.all_queues}")
 

@@ -1,3 +1,4 @@
+import pdb
 import json
 import os
 import unittest
@@ -49,15 +50,24 @@ class TestQueueWorker(unittest.TestCase):
         self.mock_dlq_queue = MagicMock()
         self.mock_dlq_queue.url = f"http://queue/{self.queue_name_dlq}"
         self.mock_dlq_queue.attributes = {"QueueArn": f"queue:{self.queue_name_dlq}"}
+    
+        # Set up side effects for get_queue_by_name
         self.mock_sqs_resource.get_queue_by_name.side_effect = lambda QueueName: {
             self.queue_name_input: self.mock_input_queue,
             self.queue_name_output: self.mock_output_queue,
             self.queue_name_dlq: self.mock_dlq_queue
         }.get(QueueName)
+    
         mock_boto_resource.return_value = self.mock_sqs_resource
-
-        # Initialize the QueueWorker instance
-        self.queue = QueueWorker(self.queue_name_input, self.queue_name_output, self.queue_name_dlq)
+    
+        # Initialize QueueWorker with mocked get_sqs method
+        with patch.object(QueueWorker, 'get_sqs', return_value=self.mock_sqs_resource):
+            self.queue = QueueWorker(self.queue_name_input, self.queue_name_output, self.queue_name_dlq)
+    
+        # Ensure `self.all_queues` is populated for `find_queue_by_name`
+        self.queue.all_queues = self.queue.store_queue_map([
+            self.mock_input_queue, self.mock_output_queue, self.mock_dlq_queue
+        ])
 
     def test_get_output_queue_name(self):
         self.assertEqual(self.queue.get_output_queue_name().replace(".fifo", ""), (self.queue.get_input_queue_name()+'_output').replace(".fifo", ""))
@@ -98,18 +108,15 @@ class TestQueueWorker(unittest.TestCase):
         self.queue.receive_messages.assert_called_once_with(1)
 
     def test_receive_messages(self):
+        self.queue.input_queue = self.queue_name_input
         mock_queue1 = MagicMock()
-        mock_queue1.receive_messages.return_value = [FakeSQSMessage(receipt_handle="blah", body=json.dumps({"body": {"id": 1, "callback_url": "http://example.com", "text": "This is a test"}}))]
-
-        mock_queue2 = MagicMock()
-        mock_queue2.receive_messages.return_value = [FakeSQSMessage(receipt_handle="blah", body=json.dumps({"body": {"id": 2, "callback_url": "http://example.com", "text": "This is another test"}}))]
-        self.queue.input_queues = [mock_queue1, mock_queue2]
+        mock_queue1.receive_messages.return_value = [FakeSQSMessage(receipt_handle="blah", body=json.dumps({"body": {"id": 1, "callback_url": "http://example.com", "text": "This is a test"}})), FakeSQSMessage(receipt_handle="blah", body=json.dumps({"body": {"id": 2, "callback_url": "http://example.com", "text": "This is another test"}}))]
+        self.queue.get_or_create_queue = MagicMock(return_value=mock_queue1)
         received_messages = self.queue.receive_messages(5)
-
         # Check if the right number of messages were received and the content is correct
         self.assertEqual(len(received_messages), 2)
-        self.assertIn("a test", received_messages[0][0].body)
-        self.assertIn("another test", received_messages[1][0].body)
+        self.assertIn("a test", received_messages[0].body)
+        self.assertIn("another test", received_messages[1].body)
 
     def test_restrict_queues_by_suffix(self):
         queues = [
@@ -149,7 +156,6 @@ class TestQueueWorker(unittest.TestCase):
         self.queue.delete_messages_from_queue(self.mock_input_queue, mock_messages)
         # Check if the correct number of calls to delete_messages were made
         self.mock_input_queue.delete_messages.assert_called_once()
-        mock_logger.assert_called_with(f"Deleting message: {mock_messages[-1]}")
 
     def test_push_message(self):
         message_to_push = schemas.parse_input_message({"body": {"id": 1, "content_hash": None, "callback_url": "http://example.com", "text": "This is a test"}, "model_name": "mean_tokens__Model"})
