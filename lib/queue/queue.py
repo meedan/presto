@@ -118,16 +118,6 @@ class Queue:
             else:
                 raise
 
-    def create_queue(self, queue_name: str):
-        """
-        Create a queue by name.
-        """
-        attributes = {}
-        if queue_name.endswith('.fifo'):
-            attributes['FifoQueue'] = 'true'
-            attributes['ContentBasedDeduplication'] = 'true'
-        return self.get_sqs().create_queue(QueueName=queue_name, Attributes=attributes)
-
     def send_message(self, queue_name: str, message: schemas.Message):
         """
         Send a message to a specific queue.
