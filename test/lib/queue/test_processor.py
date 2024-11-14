@@ -40,7 +40,7 @@ class TestQueueProcessor(unittest.TestCase):
     def test_send_callback(self, mock_post):
         message_body = {"body": {"callback_url": "http://example.com", "text": "This is a test", "id": 123, "result": {"hash_value": [1,2,3]}}, "model_name": "mean_tokens__Model"}
         self.queue_processor.send_callback(message_body)
-        mock_post.assert_called_once_with("http://example.com", json=message_body)
+        mock_post.assert_called_once_with("http://example.com", timeout=30, json=message_body)
 
     @patch('lib.queue.processor.requests.post')
     def test_send_callback_failure(self, mock_post):
