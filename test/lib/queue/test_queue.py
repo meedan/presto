@@ -125,8 +125,8 @@ class TestQueueWorker(unittest.TestCase):
         received_messages = self.queue.receive_messages(5)
         # Assertions
         self.assertEqual(len(received_messages), 2)
-        self.assertIn("a test", json.loads(received_messages[0].body)["body"]["text"])
-        self.assertIn("another test", json.loads(received_messages[1].body)["body"]["text"])
+        self.assertIn("a test", json.loads(received_messages[0][0].body)["body"]["text"])
+        self.assertIn("another test", json.loads(received_messages[1][0].body)["body"]["text"])
 
     def test_restrict_queues_by_suffix(self):
         queues = [
