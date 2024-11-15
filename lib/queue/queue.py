@@ -143,18 +143,18 @@ class Queue:
         """
         Delete messages in batch mode.
         """
-        for queue, messages in self.group_deletions(messages_with_queues).items():
+        for queue_name, messages in self.group_deletions(messages_with_queues).items():
             logger.info(f"Deleting messages {messages}")
-            self.delete_messages_from_queue(queue, messages)
+            self.delete_messages_from_queue(queue_name, messages)
 
-    def delete_messages_from_queue(self, queue, messages: List[schemas.Message]):
+    def delete_messages_from_queue(self, queue_name, messages: List[schemas.Message]):
         """
         Helper to delete a batch of messages from a specific queue.
         """
         for i in range(0, len(messages), 10):
             batch = messages[i:i + 10]
             entries = [{"Id": str(idx), "ReceiptHandle": message.receipt_handle} for idx, message in enumerate(batch)]
-            queue.delete_messages(Entries=entries)
+            self.get_or_create_queue(queue_name)[0].delete_messages(Entries=entries)
 
     def delete_message_entry(self, message: schemas.Message, idx: int = 0) -> Dict[str, str]:
         """

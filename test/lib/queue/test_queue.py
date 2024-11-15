@@ -112,11 +112,11 @@ class TestQueueWorker(unittest.TestCase):
         mock_queue1 = MagicMock()
         mock_queue1.receive_messages.return_value = [
             FakeSQSMessage(
-                receipt_handle="blah", 
+                receipt_handle="blah",
                 body=json.dumps({"body": {"id": 1, "callback_url": "http://example.com", "text": "This is a test"}})
-            ), 
+            ),
             FakeSQSMessage(
-                receipt_handle="blah", 
+                receipt_handle="blah",
                 body=json.dumps({"body": {"id": 2, "callback_url": "http://example.com", "text": "This is another test"}})
             )
         ]
@@ -163,7 +163,8 @@ class TestQueueWorker(unittest.TestCase):
             FakeSQSMessage(receipt_handle="r1", body=json.dumps({"body": "msg1"})),
             FakeSQSMessage(receipt_handle="r2", body=json.dumps({"body": "msg2"}))
         ]
-        self.queue.delete_messages_from_queue(self.mock_input_queue, mock_messages)
+        self.queue.get_or_create_queue = MagicMock(return_value=[self.mock_input_queue])
+        self.queue.delete_messages_from_queue(self.queue_name_input, mock_messages)
         # Check if the correct number of calls to delete_messages were made
         self.mock_input_queue.delete_messages.assert_called_once()
 
@@ -259,7 +260,7 @@ class TestQueueWorker(unittest.TestCase):
         }
         message = schemas.parse_input_message(message_data)
         message.body.content_hash = "test_hash"
-        
+
         # Simulate an error in the process method
         self.model.process = MagicMock(side_effect=Exception("Test error"))
 
