@@ -122,7 +122,7 @@ class Queue:
         """
         Send a message to a specific queue.
         """
-        queue = self.get_or_create_queue(queue_name)
+        queue = self.get_or_create_queue(queue_name)[0]
         message_data = {"MessageBody": json.dumps(message.dict())}
         if queue_name.endswith('.fifo'):
             message_data["MessageGroupId"] = message.body.id
@@ -169,7 +169,7 @@ class Queue:
         """
         Receive messages from a queue.
         """
-        queue = self.get_or_create_queue(self.input_queue_name)
+        queue = self.get_or_create_queue(self.input_queue_name)[0]
         return queue.receive_messages(MaxNumberOfMessages=min(batch_size, SQS_MAX_BATCH_SIZE))
 
     def find_queue_by_name(self, queue_name: str) -> boto3.resources.base.ServiceResource:

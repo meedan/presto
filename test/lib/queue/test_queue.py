@@ -1,4 +1,3 @@
-import pdb
 import json
 import os
 import unittest
@@ -109,14 +108,25 @@ class TestQueueWorker(unittest.TestCase):
 
     def test_receive_messages(self):
         self.queue.input_queue = self.queue_name_input
+        # Mocking the queue and messages
         mock_queue1 = MagicMock()
-        mock_queue1.receive_messages.return_value = [FakeSQSMessage(receipt_handle="blah", body=json.dumps({"body": {"id": 1, "callback_url": "http://example.com", "text": "This is a test"}})), FakeSQSMessage(receipt_handle="blah", body=json.dumps({"body": {"id": 2, "callback_url": "http://example.com", "text": "This is another test"}}))]
-        self.queue.get_or_create_queue = MagicMock(return_value=mock_queue1)
+        mock_queue1.receive_messages.return_value = [
+            FakeSQSMessage(
+                receipt_handle="blah", 
+                body=json.dumps({"body": {"id": 1, "callback_url": "http://example.com", "text": "This is a test"}})
+            ), 
+            FakeSQSMessage(
+                receipt_handle="blah", 
+                body=json.dumps({"body": {"id": 2, "callback_url": "http://example.com", "text": "This is another test"}})
+            )
+        ]
+        # Set up get_or_create_queue to return mock_queue1
+        self.queue.get_or_create_queue = MagicMock(return_value=[mock_queue1])
         received_messages = self.queue.receive_messages(5)
-        # Check if the right number of messages were received and the content is correct
+        # Assertions
         self.assertEqual(len(received_messages), 2)
-        self.assertIn("a test", received_messages[0].body)
-        self.assertIn("another test", received_messages[1].body)
+        self.assertIn("a test", json.loads(received_messages[0].body)["body"]["text"])
+        self.assertIn("another test", json.loads(received_messages[1].body)["body"]["text"])
 
     def test_restrict_queues_by_suffix(self):
         queues = [
