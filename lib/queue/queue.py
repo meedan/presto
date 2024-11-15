@@ -170,7 +170,7 @@ class Queue:
         Receive messages from a queue.
         """
         queue = self.get_or_create_queue(self.input_queue_name)[0]
-        return queue.receive_messages(MaxNumberOfMessages=min(batch_size, SQS_MAX_BATCH_SIZE))
+        return [(m, self.input_queue_name) for m in queue.receive_messages(MaxNumberOfMessages=min(batch_size, SQS_MAX_BATCH_SIZE))]
 
     def find_queue_by_name(self, queue_name: str) -> boto3.resources.base.ServiceResource:
         """
