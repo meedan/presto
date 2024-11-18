@@ -1,10 +1,12 @@
 #!/bin/sh
 
-# Start the first process in the background
-uvicorn main:app --host 0.0.0.0 --port ${PRESTO_PORT} --reload &
+if [ "$ROLE" != "worker" ]; then
+  # Start the HTTP server process in the background if not a worker
+  uvicorn main:app --host 0.0.0.0 --port ${PRESTO_PORT} --reload &
+fi
 
-# Check if ROLE is set to "worker" and start workers if true
 if [ "$ROLE" = "worker" ]; then
+  # Start worker processes
   NUM_WORKERS=${NUM_WORKERS:-1}  # Default to 1 worker if not specified
 
   for i in $(seq 1 $NUM_WORKERS)
@@ -16,9 +18,9 @@ if [ "$ROLE" = "worker" ]; then
         echo "run_worker.py instance $i exited. Restarting..."
         sleep 30  # Prevent potential rapid restart loop
       done
-    ) &  # run workers as background processes
+    ) &  # Run workers as background processes
   done
 fi
 
-# Start the second process in the foreground
+# Start the processor process in the foreground
 python run_processor.py
