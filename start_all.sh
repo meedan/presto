@@ -21,7 +21,7 @@ if [ "$ROLE" = "worker" ]; then
       done
     ) &  # Run workers as background processes
   done
-fi
 
-# Start the processor process in the foreground
-python run_processor.py
+  # Start the processor process in the foreground
+  python run_processor.py
+fi
