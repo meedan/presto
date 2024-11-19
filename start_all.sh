@@ -1,5 +1,4 @@
 #!/bin/sh
-
 if [ "$ROLE" != "worker" ]; then
 
   # Start the HTTP server process in the background if not a worker
