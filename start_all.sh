@@ -6,7 +6,7 @@ if [ "$ROLE" != "worker" ]; then
 
 fi
 
-if [ "$ROLE" = "worker" ]; then
+if [ "$ROLE" == "worker" ]; then
   # Start worker processes
   NUM_WORKERS=${NUM_WORKERS:-1}  # Default to 1 worker if not specified
 
