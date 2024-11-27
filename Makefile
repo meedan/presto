@@ -4,11 +4,7 @@ run:
 	./start_all.sh
 
 run_http:
-ifeq ($(filter $(DEPLOY_ENV),qa live),)
-	uvicorn main:app --host 0.0.0.0 --reload
-else
 	uvicorn main:app --host 0.0.0.0
-endif
 
 run_worker:
 	python run_worker.py
