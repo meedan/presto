@@ -2,7 +2,7 @@
 if [ "$ROLE" != "worker" ]; then
 
   # Start the HTTP server process in the background if not a worker
-  uvicorn main:app --host 0.0.0.0 --port ${PRESTO_PORT} --reload
+  uvicorn main:app --host 0.0.0.0 --port ${PRESTO_PORT}
 
 else
   # Start worker processes in background
