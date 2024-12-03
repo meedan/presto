@@ -1,5 +1,4 @@
 import json
-import time
 from typing import List, Dict, Tuple
 import os
 import threading
@@ -171,8 +170,7 @@ class Queue:
         Receive messages from a queue.
         """
         queue = self.get_or_create_queue(self.input_queue_name)[0]
-        time.sleep(0.5)
-        return [(m, self.input_queue_name) for m in queue.receive_messages(MaxNumberOfMessages=min(batch_size, SQS_MAX_BATCH_SIZE))]
+        return [(m, self.input_queue_name) for m in queue.receive_messages(MaxNumberOfMessages=min(batch_size, SQS_MAX_BATCH_SIZE), WaitTimeoutSeconds=20)]
 
     def find_queue_by_name(self, queue_name: str) -> boto3.resources.base.ServiceResource:
         """
