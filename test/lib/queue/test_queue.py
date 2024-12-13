@@ -12,16 +12,16 @@ from lib import schemas
 from test.lib.queue.fake_sqs_message import FakeSQSMessage
 from concurrent.futures import TimeoutError
 
-class TestModelTimeout:
+class MockModelTimeout:
     def __init__(self):
-        self.model_name = "timeout.TestModelTimeout"
+        self.model_name = "timeout.MockModelTimeout"
 
     def respond(self, messages: Union[List[schemas.Message], schemas.Message]) -> List[schemas.Message]:
         raise TimeoutError
 
-class TestModelNoTimeout:
+class MockModelNoTimeout:
     def __init__(self):
-        self.model_name = "timeout.TestModelNoTimeout"
+        self.model_name = "timeout.MockModelNoTimeout"
 
     def respond(self, messages: Union[List[schemas.Message], schemas.Message]) -> List[schemas.Message]:
         return ["response"]
@@ -77,7 +77,7 @@ class TestQueueWorker(unittest.TestCase):
     @patch('lib.queue.worker.QueueWorker.log_and_handle_error')
     @patch('lib.queue.worker.time.time', side_effect=[0, 1])
     def test_execute_with_timeout_failure(self, mock_time, mock_log_error):
-        responses, success = self.queue.execute_with_timeout(TestModelTimeout(), [], timeout_seconds=1)
+        responses, success = self.queue.execute_with_timeout(MockModelTimeout(), [], timeout_seconds=1)
         self.assertEqual(responses, [])
         self.assertFalse(success)
         mock_log_error.assert_called_once_with("Model respond timeout exceeded.")
@@ -87,12 +87,12 @@ class TestQueueWorker(unittest.TestCase):
     @patch('lib.queue.worker.QueueWorker.log_execution_time')
     @patch('lib.queue.worker.QueueWorker.log_execution_status')
     def test_execute_with_timeout_success(self, mock_log_execution_status, mock_log_execution_time, mock_time, mock_log_error):
-        responses, success = self.queue.execute_with_timeout(TestModelNoTimeout(), [], timeout_seconds=1)
+        responses, success = self.queue.execute_with_timeout(MockModelNoTimeout(), [], timeout_seconds=1)
         self.assertEqual(responses in [[], ["response"]], True)
         self.assertTrue(success)
         mock_log_error.assert_not_called()
-        mock_log_execution_time.assert_called_once_with('timeout.TestModelNoTimeout', 0.5)
-        mock_log_execution_status.assert_called_once_with('timeout.TestModelNoTimeout', 'successful_message_response')
+        mock_log_execution_time.assert_called_once_with('timeout.MockModelNoTimeout', 0.5)
+        mock_log_execution_status.assert_called_once_with('timeout.MockModelNoTimeout', 'successful_message_response')
 
     def test_process(self):
         self.queue.receive_messages = MagicMock(return_value=[(FakeSQSMessage(receipt_handle="blah", body=json.dumps({

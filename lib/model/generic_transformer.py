@@ -64,13 +64,12 @@ class GenericTransformerModel(Model):
         Vectorize the uncached texts and store the results in the cache.
         """
         try:
-            
             vectorized = self.vectorize(texts_to_vectorize)
             for doc, vector in zip(docs_to_process, vectorized):
                 doc.body.result = vector
                 Cache.set_cached_result(doc.body.content_hash, vector)
         except Exception as e:
-            self.handle_fingerprinting_error(e, 500, {"texts_to_vectorize": texts_to_vectorize, "docs_to_process": [e.body for e in docs_to_process]})
+            self.handle_fingerprinting_error(e, 500, {"texts_to_vectorize": texts_to_vectorize, "docs_to_process": [e.body.model_dump() for e in docs_to_process]})
 
     def vectorize(self, texts: List[str]) -> List[List[float]]:
         """
