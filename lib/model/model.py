@@ -70,9 +70,9 @@ class Model(ABC):
                 Cache.set_cached_result(message.body.content_hash, result)
             except Exception as e:
                 if isinstance(e, PrestoBaseException):
-                    return self.handle_fingerprinting_error(e, e.error_code)
+                    return self.handle_fingerprinting_error(e, e.error_code, {"message_body": message.body})
                 else:
-                    return self.handle_fingerprinting_error(e)
+                    return self.handle_fingerprinting_error(e, 500, {"message_body": message.body})
         return result
 
     def respond(self, messages: Union[List[schemas.Message], schemas.Message]) -> List[schemas.Message]:
