@@ -69,7 +69,6 @@ class Model(ABC):
                 result = self.process(message)
                 Cache.set_cached_result(message.body.content_hash, result)
             except Exception as e:
-                import code;code.interact(local=dict(globals(), **locals())) 
                 if isinstance(e, PrestoBaseException):
                     return self.handle_fingerprinting_error(e, e.error_code, {"message_body": message.body.model_dump()})
                 else:
