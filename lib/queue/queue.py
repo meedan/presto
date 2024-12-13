@@ -123,7 +123,7 @@ class Queue:
         Send a message to a specific queue.
         """
         queue = self.get_or_create_queue(queue_name)[0]
-        message_data = {"MessageBody": json.dumps(message.dict())}
+        message_data = {"MessageBody": json.dumps(message.model_dump())}
         if queue_name.endswith('.fifo'):
             message_data["MessageGroupId"] = message.body.id
         queue.send_message(**message_data)
@@ -182,7 +182,7 @@ class Queue:
         """
         Actual SQS logic for pushing a message to a queue
         """
-        message_data = {"MessageBody": json.dumps(message.dict())}
+        message_data = {"MessageBody": json.dumps(message.model_dump())}
         if queue_name.endswith('.fifo'):
             message_data["MessageGroupId"] = message.body.id
         self.find_queue_by_name(queue_name).send_message(**message_data)
