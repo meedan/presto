@@ -56,8 +56,8 @@ jobs:
     - name: Install AWS CLI and jq
       run: |
         sudo apt-get update
-        sudo apt-get install -y awscli 
         sudo apt-get install -y jq
+        sudo snap install aws-cli --classic
     
     - name: Retrieve Presto test parameters from SSM
       id: get-ssm-params

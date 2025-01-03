@@ -42,13 +42,13 @@ class TestQueueProcessor(unittest.TestCase):
         self.queue_processor.send_callback(message_body)
         mock_post.assert_called_once_with("http://example.com", timeout=30, json=message_body)
 
+    @patch('lib.queue.processor.capture_custom_message')
     @patch('lib.queue.processor.requests.post')
-    def test_send_callback_failure(self, mock_post):
+    def test_send_callback_failure(self, mock_post, mock_capture_custom_message):
         mock_post.side_effect = Exception("Request Failed!")
         message_body = {"body": {"callback_url": "http://example.com", "text": "This is a test", "id": 123, "result": {"hash_value": [1,2,3]}}, "model_name": "mean_tokens__Model"}
-        with self.assertLogs(level='ERROR') as cm:
-            self.queue_processor.send_callback(message_body)
-        self.assertIn("Failed with Request Failed! on http://example.com with message of", cm.output[0])
+        self.queue_processor.send_callback(message_body)
+        mock_capture_custom_message.assert_called_once()
 
 if __name__ == '__main__':
     unittest.main()

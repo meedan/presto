@@ -74,13 +74,13 @@ class TestQueueWorker(unittest.TestCase):
     def test_get_dead_letter_queue_name(self):
         self.assertEqual(self.queue.get_dead_letter_queue_name().replace(".fifo", ""), (self.queue.get_input_queue_name()+'_dlq').replace(".fifo", ""))
 
-    @patch('lib.queue.worker.QueueWorker.log_and_handle_error')
+    @patch('lib.queue.worker.capture_custom_message')
     @patch('lib.queue.worker.time.time', side_effect=[0, 1])
-    def test_execute_with_timeout_failure(self, mock_time, mock_log_error):
+    def test_execute_with_timeout_failure(self, mock_time, mock_capture_custom_message):
         responses, success = self.queue.execute_with_timeout(MockModelTimeout(), [], timeout_seconds=1)
         self.assertEqual(responses, [])
         self.assertFalse(success)
-        mock_log_error.assert_called_once_with("Model respond timeout exceeded.")
+        mock_capture_custom_message.assert_called_once()
 
     @patch('lib.queue.worker.QueueWorker.log_and_handle_error')
     @patch('lib.queue.worker.time.time', side_effect=[0, 0.5])
@@ -235,10 +235,10 @@ class TestQueueWorker(unittest.TestCase):
         self.assertEqual(extracted_messages[1].body.text, "Test message 2")
         self.assertEqual(extracted_messages[0].model_name, "audio__Model")
 
-    @patch('lib.queue.worker.logger.error')
-    def test_log_and_handle_error(self, mock_logger_error):
+    @patch('lib.queue.worker.capture_custom_message')
+    def test_log_and_handle_error(self, mock_capture_custom_message):
         self.queue.log_and_handle_error("Test error")
-        mock_logger_error.assert_called_once_with("Test error")
+        mock_capture_custom_message.assert_called_once()
 
     @patch('lib.queue.worker.QueueWorker.delete_messages')
     def test_delete_processed_messages(self, mock_delete_messages):
