@@ -1,5 +1,5 @@
 transformers==4.38.0
-boto3==1.18.64
+boto3==1.18.64 --break-system-packages
 pyacoustid==1.2.2
 sentence-transformers==2.2.2
 tmkpy==0.1.1
