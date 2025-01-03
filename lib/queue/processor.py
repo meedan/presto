@@ -68,7 +68,7 @@ class QueueProcessor(Queue):
                 # headers={"Content-Type": "application/json"},
             )
             if response.ok != True:
-                capture_custom_message("Callback response not ok", 'error', {"response": response, "callback_url": callback_url})
+                capture_custom_message(f"Callback response not ok: error code {response.status_code}", 'error', {"status_code": response.status_code, "response": response, "callback_url": callback_url})
         except Exception as e:
             duration = (datetime.now() - start_time).total_seconds()
             capture_custom_message("Presto callback failure", 'error', {"error": e, "callback_url": callback_url, "message": message, "duration": duration})
