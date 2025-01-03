@@ -57,7 +57,7 @@ jobs:
       run: |
         sudo apt-get update
         sudo apt-get install -y jq
-        pip install awscli==1.29.59 botocore==1.31.59 boto3==1.28.58 ecs-deploy==1.14.0 --break-system-packages
+        snap install aws-cli --classic
     
     - name: Retrieve Presto test parameters from SSM
       id: get-ssm-params
