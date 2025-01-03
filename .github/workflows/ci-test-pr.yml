@@ -57,7 +57,7 @@ jobs:
       run: |
         sudo apt-get update
         sudo apt-get install -y jq
-        snap install aws-cli --classic
+        sudo snap install aws-cli --classic
     
     - name: Retrieve Presto test parameters from SSM
       id: get-ssm-params
