@@ -235,10 +235,10 @@ class TestQueueWorker(unittest.TestCase):
         self.assertEqual(extracted_messages[1].body.text, "Test message 2")
         self.assertEqual(extracted_messages[0].model_name, "audio__Model")
 
-    @patch('lib.queue.worker.logger.error')
-    def test_log_and_handle_error(self, mock_logger_error):
+    @patch('lib.sentry.capture_custom_message')
+    def test_log_and_handle_error(self, mock_capture_custom_message):
         self.queue.log_and_handle_error("Test error")
-        mock_logger_error.assert_called_once_with("Test error")
+        mock_capture_custom_message.assert_called_once_with("Test error")
 
     @patch('lib.queue.worker.QueueWorker.delete_messages')
     def test_delete_processed_messages(self, mock_delete_messages):
