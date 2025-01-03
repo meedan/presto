@@ -3,7 +3,7 @@ import boto3
 from botocore.client import Config
 from botocore.exceptions import ClientError
 from lib.logger import logger
-
+from lib.sentry import capture_custom_message
 
 def upload_file_to_s3_using_filename(bucket: str, filename: str):
     """
@@ -18,7 +18,7 @@ def upload_file_to_s3_using_filename(bucket: str, filename: str):
         s3_client.upload_file(filename, bucket, file_name)
         logger.info(f'Successfully uploaded file {file_name} to S3 bucket.')
     except Exception as e:
-        logger.error(f'Failed to upload file {file_name} to S3 bucket: {e}')
+        capture_custom_message("Failed to upload file", 'error', {"error": e, "file_name": file_name, "bucket": bucket})
 
 
 def create_bucket_if_not_exists(s3_client, bucket, filename=""):
@@ -32,7 +32,7 @@ def create_bucket_if_not_exists(s3_client, bucket, filename=""):
             logger.info(f'Created bucket {bucket} in S3 (or MinIO, if running locally).')
         else:
             # Other errors like permissions issues
-            logger.error(f'Error in accessing bucket {bucket}: {e}, {bucket} {filename}')
+            capture_custom_message("Error in accessing bucket", 'error', {"error": e, "filename": filename, "bucket": bucket})
             raise e
 
 
@@ -40,7 +40,7 @@ def upload_file_to_s3(bucket: str, filename: str, content: str):
     try:
         s3_client = get_s3_client()
     except Exception as e:
-        logger.error(f'Failed to establish connection to the S3 client: {e}')
+        capture_custom_message("Failed to establish connection to the S3 client", 'error', {"error": e})
         return
 
     create_bucket_if_not_exists(s3_client, bucket, filename)  # throws error in case of permission/other issues
@@ -51,14 +51,14 @@ def upload_file_to_s3(bucket: str, filename: str, content: str):
         )
         logger.info(f'Successfully uploaded {filename} content to S3 bucket {bucket}.')
     except Exception as e:
-        logger.error(f'Failed to upload {filename} content to S3 bucket {bucket}: {e}')
+        capture_custom_message("Failed to upload to the S3 client", 'error', {"error": e, "filename": filename, "bucket": bucket})
 
 
 def load_file_from_s3(bucket: str, filename: str):
     try:
         s3_client = get_s3_client()
     except Exception as e:
-        logger.error(f'Failed to establish connection to the S3 client: {e}')
+        capture_custom_message("Failed to establish connection to the S3 client", 'error', {"error": e})
         return None
     try:
         response = s3_client.get_object(
@@ -67,7 +67,7 @@ def load_file_from_s3(bucket: str, filename: str):
         logger.info(f'Successfully loaded file {filename} from S3 bucket {bucket}.')
         return response['Body'].read().decode('utf-8')
     except Exception as e:
-        logger.error(f'Failed to load file {filename} from S3 bucket {bucket}: {e}')
+        capture_custom_message("Failed to download from the S3 client", 'error', {"error": e, "filename": filename, "bucket": bucket})
         return None
 
 
@@ -75,7 +75,7 @@ def file_exists_in_s3(bucket: str, filename: str):
     try:
         s3_client = get_s3_client()
     except Exception as e:
-        logger.error(f'Failed to establish connection to the S3 client: {e}')
+        capture_custom_message("Failed to establish connection to the S3 client", 'error', {"error": e})
         return False
     try:
         s3_client.head_object(Bucket=bucket, Key=filename)

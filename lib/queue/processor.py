@@ -6,7 +6,7 @@ import requests
 from lib import schemas
 from lib.logger import logger
 from lib.queue.queue import Queue
-
+from lib.sentry import capture_custom_message
 
 class QueueProcessor(Queue):
     @classmethod
@@ -68,9 +68,7 @@ class QueueProcessor(Queue):
                 # headers={"Content-Type": "application/json"},
             )
             if response.ok != True:
-                logger.error(f"Callback error responding to {callback_url} :{response}")
+                capture_custom_message("Callback response not ok", 'error', {"response": response, "callback_url": callback_url})
         except Exception as e:
             duration = (datetime.now() - start_time).total_seconds()
-            logger.error(
-                f"Callback fail! Failed with {e} on {callback_url} with message of {message}, duration was {duration}"
-            )
+            capture_custom_message("Presto callback failure", 'error', {"error": e, "callback_url": callback_url, "message": message, "duration": duration})

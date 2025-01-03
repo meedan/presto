@@ -149,7 +149,7 @@ class QueueWorker(Queue):
         Parameters:
         - error (Exception or str): The error to log, can be an Exception object or a string message.
         """
-        logger.error(error)
+        capture_custom_message(error, 'error')
 
     def delete_processed_messages(self, messages_with_queues: List[Tuple]):
         """
