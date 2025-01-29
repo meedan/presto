@@ -207,12 +207,16 @@ class TestQueueWorker(unittest.TestCase):
         self.queue.input_queue = self.queue_name_input
         # Mocking the queue and messages
         mock_queue1 = MagicMock()
-        mock_queue1.receive_messages.return_value = [(self.queue_name_input, [])]
+        mock_queue1.receive_messages.return_value = []
+        mock_model = MagicMock()
+        mock_model.BATCH_SIZE = 5
+        mock_model.model_name = "mean_tokens.Model"
         # Set up get_or_create_queue to return mock_queue1
         self.queue.get_or_create_queue = MagicMock(return_value=[mock_queue1])
-        received_messages = self.queue.receive_messages(5)
+        messages = self.queue.process(mock_model)
         # Assertions
-        self.assertEqual(len(received_messages), 0)
+        # should have returned None, since thats what it does for no messages
+        assert messages is None, f"found {len(messages)} messages in queue"
         assert (
             not mock_log_status.called
         ), "processing status message logged for empty queue"
