@@ -22,15 +22,25 @@ Depending on your environment, and if you are using Docker directly or not, thes
 #### Architecture
 ![Architecture Diagram](img/presto_architectural_diagram.png?raw=true "Architecture Diagram")
 
+[Source](https://docs.google.com/drawings/d/1ZWiUwMfMDdJprloUZEYm9GxUUisxmOXotdlX_aRprp8/edit)
+
 #### Execution Flowchart
 ![Architecture Flowchart](img/presto_flowchart.png?raw=true "Architecture Flowchart")
+
+[Source](https://docs.google.com/drawings/d/1_UEb8k5wZUSJ3Jnz_G-hDVh5xpkBjGrN6Mn--RVhVMY/edit)
 
 #### External Services Flowchart
 ![External Architectural Flowchart](img/presto_flowchart_external.png?raw=true "External Architecture Flowchart")
 
+[Source](https://docs.google.com/drawings/d/1lsNS68YsGUMT1YBKQrpqZq1o3XPsZ1BWNIXlLv7-u78/edit)
+
+#### Swimlane Chart
+![Swimlane Diagram](img/presto_swimlane.png?raw=true "Swimlane Diagram")
+
+[Source](https://docs.google.com/drawings/d/1EqgLmbXJgk-DJrfEJwpT4WIduv-L3EWDRFpvUJAOxWA/edit)
 
 ### Setup
-To run the project, you can use the provided `Dockerfile`, or start via `docker-compose build && docker-compose up`. This file sets up the environment by installing the required dependencies and running the `run.py` file when the container is started. To build and run the Docker image from the Dockerfile directly, run the following commands:
+To run the project, you can use the provided `Dockerfile`, or start via `docker compose build && docker compose up`. This file sets up the environment by installing the required dependencies and running the `run.py` file when the container is started. To build and run the Docker image from the Dockerfile directly, run the following commands:
 
 ```
 docker build -t text-vectorization .
@@ -41,6 +51,12 @@ Here, we require at least one environment variable - `model_name`. If left unspe
 
 Currently supported `model_name` values are just module names keyed from the `model` directory, and currently are as follows:
 
+* `classycat.Model` - ClassyCat Parent Model
+* `classycat_classify.Model` - ClassyCat Text Classifier
+* `classycat_schema_create.Model` - ClassyCat Schema Creation
+* `classycat_schema_lookup.Model` - ClassyCat Schema Lookup
+* `fasttext.Model` - fasttext Language Model
+* `yake_keywords.Model` - YAKE Keyword Extractor
 * `fptg.Model` - text model, uses `meedan/paraphrase-filipino-mpnet-base-v2`
 * `indian_sbert.Model` - text model, uses `meedan/indian-sbert`
 * `mean_tokens.Model` - text model, uses `xlm-r-bert-base-nli-stsb-mean-tokens`
@@ -49,17 +65,20 @@ Currently supported `model_name` values are just module names keyed from the `mo
 * `audio.Model` - audio model
 
 ### Makefile
-The Makefile contains four targets, `run`, `run_http`, `run_worker`, and `run_test`. `run` runs the `run.py` file when executed - if `RUN_MODE` is set to `http`, it will run the `run_http` command, else it will `run_worker`. Alternatively, you can call `run_http` or `run_worker` directly. Remember to have the environment variables described above defined. `run_test` runs the test suite which is expected to be passing currently - reach out if it fails on your hardware!
+The Makefile contains five targets, `run`, `run_http`, `run_worker`, `run_processor`, and `run_test`. `run` runs the `run.py` file when executed - if `RUN_MODE` is set to `http`, it will run the `run_http` command, else it will `run_worker` as well as a `run_processor`. Alternatively, you can call `run_http`, `run_processor`, or `run_worker` directly. Remember to have the environment variables described above defined. `run_test` runs the test suite which is expected to be passing currently - reach out if it fails on your hardware!
 
-### run.py
-The `run.py` file is the main routine that runs the vectorization process. It sets up the queue and model instances, receives messages from the queue, applies the model to the messages, responds to the queue with the vectorized text, and deletes the original messages in a loop within the `queue.process_messages` function. The `os.environ` statements retrieve environment variables to create the queue and model instances.
+### run_worker.py
+The `run_worker.py` file is the main routine that runs the fingerprinting process. It sets up the queue and model instances, receives messages from the queue, applies the model to the messages, responds to the queue with the vectorized text, and deletes the original messages in a loop within the `queue.process_messages` function. The `os.environ` statements retrieve environment variables to create the queue and model instances.
+
+### run_processor.py
+The `run_processor.py` file is a simple script that listens to output queues and sends callbacks to original requestors via HTTP.
 
 ### main.py
 The `main.py` file is the HTTP server. We use FastAPI and provide two endpoints, which are described lower in this document. The goal of this HTTP server is to add items into a queue, and take messages from a queue and use them to fire HTTP call backs with the queue body to external services.
 
 ### Queues
 
-Presto is able to `process_messages` via ElasticMQ or SQS. In practice, we use ElasticMQ for local development, and SQS for production environments. When interacting with a `queue`, we use the generic superclass `queue`. `queue.fingerprint` takes as an argument a `model` instance. The `fingerprint` routine collects a batch of `BATCH_SIZE` messages appropriate to the `BATCH_SIZE` for the `model` specified. Once pulled from the `input_queue`, those messages are processed via `model.respond`. The resulting fingerprint outputs from the model are then zipped with the original message pulled from the `input_queue`, and a message is placed onto the `output_queue` that consists of exactly: `{"request": message, "response": response}`.
+Presto is able to `process_messages` via ElasticMQ or SQS. In practice, we use ElasticMQ for local development, and SQS for production environments. When interacting with a `queue`, we use the generic superclass `queue`. `queue.fingerprint` takes as an argument a `model` instance. The `fingerprint` routine collects a batch of `BATCH_SIZE` messages appropriate to the `BATCH_SIZE` for the `model` specified. Once pulled from the `input_queue`, those messages are processed via `model.respond`. The resulting fingerprint outputs from the model are then packed with the original message pulled from the `input_queue`, and a message is placed onto the `output_queue` that consists of exactly: `{"request": message, "response": response}`.
 
 ### Models
 
