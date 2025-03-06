@@ -18,23 +18,23 @@ jobs:
     outputs:
       image: ${{ steps.build-image.outputs.image }}
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
 
     - name: Configure AWS Credentials
-      uses: aws-actions/configure-aws-credentials@v2
+      uses: aws-actions/configure-aws-credentials@v4
       with:
         role-to-assume: ${{ secrets.AWS_OIDC_ROLE_TO_ASSUME }}
         aws-region: eu-west-1
 
     - name: Login to Amazon ECR
       id: login-ecr
-      uses: aws-actions/amazon-ecr-login@v1
+      uses: aws-actions/amazon-ecr-login@v2
 
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v1
+    - name: Set up Docker Build
+      uses: docker/setup-buildx-action@v3
 
     - name: Cache Docker layers
-      uses: actions/cache@v2
+      uses: actions/cache@v4
       id: cache
       with:
         path: /tmp/.buildx-cache
@@ -83,7 +83,7 @@ jobs:
       id: sysops-deploy
       if: github.event_name == 'push' && startsWith(github.ref, 'refs/heads/master')
       run: |
-        curl \
+        curl --fail-with-body \
           -X POST \
           -H "Accept: application/vnd.github+json" \
           -H "Authorization: Bearer ${{ secrets.SYSOPS_RW_GITHUB_TOKEN }}" \
@@ -95,7 +95,7 @@ jobs:
       id: sysops-deploy-live
       if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
       run: |
-        curl \
+        curl --fail-with-body \
           -X POST \
           -H "Accept: application/vnd.github+json" \
           -H "Authorization: Bearer ${{ secrets.SYSOPS_RW_GITHUB_TOKEN }}" \
