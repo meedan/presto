@@ -3,7 +3,7 @@ boto3==1.18.64
 pyacoustid==1.2.2
 sentence-transformers==2.2.2
 tmkpy==0.1.1
-torch==1.13.1
+torch==2.6.0
 transformers>=4.6.0
 fastapi==0.109.1
 uvicorn[standard]==0.19.0
