@@ -13,7 +13,7 @@ RUN ln -s /usr/bin/ffmpeg /usr/local/bin/ffmpeg
 
 COPY ./threatexchange /app/threatexchange
 RUN make -C /app/threatexchange/tmk/cpp
-RUN git clone https://github.com/meedan/chromaprint.git
+RUN git clone https://github.com/acoustid/chromaprint.git
 RUN cd chromaprint && cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_TOOLS=ON .
 RUN cd chromaprint && make
 RUN cd chromaprint && make install
