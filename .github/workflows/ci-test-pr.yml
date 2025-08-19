@@ -1,7 +1,9 @@
 name: Build and Run Integration Test
 
 on:
-  pull_request
+  push:
+    branches:
+    - '**'
 
 permissions:
   id-token: write
