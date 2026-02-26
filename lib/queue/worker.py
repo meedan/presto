@@ -12,7 +12,10 @@ from lib.helpers import get_environment_setting
 from lib.telemetry import OpenTelemetryExporter
 
 TIMEOUT_SECONDS = int(os.getenv("WORK_TIMEOUT_SECONDS", "60"))
-OPEN_TELEMETRY_EXPORTER = OpenTelemetryExporter(service_name="QueueWorkerService", local_debug=False)
+OPEN_TELEMETRY_EXPORTER = OpenTelemetryExporter(
+    service_name="QueueWorkerService", local_debug=False
+)
+
 
 class QueueWorker(Queue):
     @classmethod
@@ -23,10 +26,17 @@ class QueueWorker(Queue):
         """
         input_queue_name = Queue.get_input_queue_name(model_name)
         output_queue_name = Queue.get_output_queue_name(model_name)
-        logger.info(f"Starting queue with: ('{input_queue_name}', '{output_queue_name}')")
+        logger.info(
+            f"Starting queue with: ('{input_queue_name}', '{output_queue_name}')"
+        )
         return QueueWorker(input_queue_name, output_queue_name)
 
-    def __init__(self, input_queue_name: str, output_queue_name: str = None, dlq_queue_name: str = None):
+    def __init__(
+        self,
+        input_queue_name: str,
+        output_queue_name: str = None,
+        dlq_queue_name: str = None,
+    ):
         """
         Start a specific queue - must pass input_queue_name, optionally pass output_queue_name, dlq_queue_name.
         """
@@ -36,10 +46,22 @@ class QueueWorker(Queue):
         self.dlq_queue_name = dlq_queue_name or Queue.get_dead_letter_queue_name()
         q_suffix = f"_output" + Queue.get_queue_suffix()
         dlq_suffix = f"_dlq" + Queue.get_queue_suffix()
-        self.input_queues = self.restrict_queues_by_suffix(self.get_or_create_queue(input_queue_name), q_suffix)
+        self.input_queues = self.restrict_queues_by_suffix(
+            self.get_or_create_queue(input_queue_name), q_suffix
+        )
         self.output_queues = self.get_or_create_queue(self.output_queue_name)
         self.dead_letter_queues = self.get_or_create_queue(self.dlq_queue_name)
-        self.all_queues = self.store_queue_map([item for row in [self.input_queues, self.output_queues, self.dead_letter_queues] for item in row])
+        self.all_queues = self.store_queue_map(
+            [
+                item
+                for row in [
+                    self.input_queues,
+                    self.output_queues,
+                    self.dead_letter_queues,
+                ]
+                for item in row
+            ]
+        )
         logger.info(f"Worker listening to queues of {self.all_queues}")
 
     def process(self, model: Model):
@@ -63,7 +85,9 @@ class QueueWorker(Queue):
         if not messages_with_queues:
             return []
         messages = self.extract_messages(messages_with_queues, model)
-        responses, success = self.execute_with_timeout(model, messages, timeout_seconds=TIMEOUT_SECONDS)
+        responses, success = self.execute_with_timeout(
+            model, messages, timeout_seconds=TIMEOUT_SECONDS
+        )
         if success:
             self.delete_processed_messages(messages_with_queues)
         else:
@@ -71,7 +95,9 @@ class QueueWorker(Queue):
         return responses
 
     @staticmethod
-    def extract_messages(messages_with_queues: List[Tuple], model: Model) -> List[schemas.Message]:
+    def extract_messages(
+        messages_with_queues: List[Tuple], model: Model
+    ) -> List[schemas.Message]:
         """
         Extracts and transforms messages from a list of (message, queue) tuples into a list of Message schema objects.
 
@@ -81,11 +107,17 @@ class QueueWorker(Queue):
         Returns:
         - List[schemas.Message]: A list of Message objects ready for processing.
         """
-        return [schemas.parse_input_message({**json.loads(message.body), **{"model_name": model.model_name}})
-                for message, queue in messages_with_queues]
+        return [
+            schemas.parse_input_message(
+                {**json.loads(message.body), **{"model_name": model.model_name}}
+            )
+            for message, queue in messages_with_queues
+        ]
 
     @staticmethod
-    def execute_with_timeout(model, args, timeout_seconds: int) -> List[schemas.Message]:
+    def execute_with_timeout(
+        model, args, timeout_seconds: int
+    ) -> List[schemas.Message]:
         """
         Executes a given hasher/fingerprinter with a specified timeout. If the hasher/fingerprinter execution time exceeds the timeout,
         logs an error and returns an empty list.
@@ -105,12 +137,16 @@ class QueueWorker(Queue):
                 result = future.result(timeout=timeout_seconds)
                 execution_time = time.time() - start_time
                 QueueWorker.log_execution_time(model.model_name, execution_time)
-                QueueWorker.log_execution_status(model.model_name, "successful_message_response")
+                QueueWorker.log_execution_status(
+                    model.model_name, "successful_message_response"
+                )
                 return result, True
         except TimeoutError:
             error_message = "Model respond timeout exceeded."
             QueueWorker.log_and_handle_error(error_message)
-            QueueWorker.log_execution_status(model.model_name, "timeout_message_response")
+            QueueWorker.log_execution_status(
+                model.model_name, "timeout_message_response"
+            )
             return [], False
         except Exception as e:
             QueueWorker.log_and_handle_error(str(e))
@@ -149,7 +185,7 @@ class QueueWorker(Queue):
         Parameters:
         - error (Exception or str): The error to log, can be an Exception object or a string message.
         """
-        capture_custom_message(error, 'error')
+        capture_custom_message(error, "error")
 
     def delete_processed_messages(self, messages_with_queues: List[Tuple]):
         """
@@ -169,12 +205,20 @@ class QueueWorker(Queue):
         """
         for message, queue in messages_with_queues:
             message_body = json.loads(message.body)
-            retry_count = message_body.get('retry_count', 0) + 1
+            retry_count = message_body.get("retry_count", 0) + 1
 
             if retry_count > MAX_RETRIES:
-                logger.info(f"Message {message_body} exceeded max retries. Moving to DLQ.")
-                capture_custom_message("Message exceeded max retries. Moving to DLQ.", 'info', {"message_body": message_body})
-                self.push_to_dead_letter_queue(schemas.parse_input_message(message_body))
+                logger.info(
+                    f"Message {message_body} exceeded max retries. Moving to DLQ."
+                )
+                capture_custom_message(
+                    "Message exceeded max retries. Moving to DLQ.",
+                    "info",
+                    {"message_body": message_body},
+                )
+                self.push_to_dead_letter_queue(
+                    schemas.parse_input_message(message_body)
+                )
             else:
                 updated_message = schemas.parse_input_message(message_body)
                 updated_message.retry_count = retry_count
