@@ -12,7 +12,6 @@ from lib.helpers import get_environment_setting
 from lib.telemetry import OpenTelemetryExporter
 
 TIMEOUT_SECONDS = int(os.getenv("WORK_TIMEOUT_SECONDS", "60"))
-OPEN_TELEMETRY_EXPORTER = OpenTelemetryExporter(service_name="QueueWorkerService", local_debug=False)
 
 class QueueWorker(Queue):
     @classmethod
@@ -127,7 +126,6 @@ class QueueWorker(Queue):
         - execution_time (float): The time taken to execute the function.
         """
         logger.debug(f"Function {func_name} executed in {execution_time:.2f} seconds.")
-        OPEN_TELEMETRY_EXPORTER.log_execution_time(func_name, execution_time)
 
     @staticmethod
     def log_execution_status(func_name: str, logging_metric: str):
@@ -139,7 +137,6 @@ class QueueWorker(Queue):
         - logging_metric (func): The function to log the message status to - log as success, timeout, or error
         """
         logger.info(f"Function {func_name} executed, passing to {logging_metric}")
-        OPEN_TELEMETRY_EXPORTER.log_execution_status(func_name, logging_metric)
 
     @staticmethod
     def log_and_handle_error(error):
