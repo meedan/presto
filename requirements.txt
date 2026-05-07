@@ -15,6 +15,9 @@ requests==2.32.2
 pytest==7.4.0
 sentry-sdk==2.8.0
 yake==0.4.8
+opentelemetry-api==1.24.0
+opentelemetry-exporter-otlp-proto-http==1.24.0
+opentelemetry-sdk==1.24.0
 redis==5.0.6
 pact-python==2.2.0
 numpy==1.26.4

@@ -2,7 +2,9 @@ import redis
 import json
 from typing import Any, Optional
 from lib.helpers import get_environment_setting
+from lib.telemetry import OpenTelemetryExporter
 
+OPEN_TELEMETRY_EXPORTER = OpenTelemetryExporter(service_name="QueueWorkerService", local_debug=False)
 REDIS_URL = get_environment_setting("REDIS_URL")
 DEFAULT_TTL = int(get_environment_setting("CACHE_DEFAULT_TTL") or 24*60*60)
 CACHE_PREFIX = "presto_media_cache:"
@@ -37,6 +39,7 @@ class Cache:
                 if reset_ttl:
                     client.expire(CACHE_PREFIX+content_hash, ttl)
                 response = json.loads(cached_result)
+                OPEN_TELEMETRY_EXPORTER.log_execution_status("cache_hit_response", "cache_hit_response")
                 return response
         return None
 
@@ -53,3 +56,4 @@ class Cache:
         if content_hash:
             client = Cache.get_client()
             client.setex(CACHE_PREFIX+content_hash, ttl, json.dumps(result))
+            OPEN_TELEMETRY_EXPORTER.log_execution_status("cache_miss_response", "cache_hit_response")

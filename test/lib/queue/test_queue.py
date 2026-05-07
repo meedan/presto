@@ -29,6 +29,7 @@ class MockModelNoTimeout:
 class TestQueueWorker(unittest.TestCase):
     @patch('lib.queue.queue.boto3.resource')
     @patch('lib.helpers.get_environment_setting', return_value='us-west-1')
+    @patch('lib.telemetry.OpenTelemetryExporter.log_execution_time')
     def setUp(self, mock_log_execution_time, mock_get_env_setting, mock_boto_resource):
         self.model = AudioModel()
         self.model.model_name = "audio__Model"
