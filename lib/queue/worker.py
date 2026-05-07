@@ -118,7 +118,7 @@ class QueueWorker(Queue):
     @staticmethod
     def log_execution_time(func_name: str, execution_time: float):
         """
-        Logs the execution time of a function to OpenTelemetry.
+        Logs the execution time of a function.
 
         Parameters:
         - func_name (str): The name of the function that was executed.
