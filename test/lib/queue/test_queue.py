@@ -29,8 +29,7 @@ class MockModelNoTimeout:
 class TestQueueWorker(unittest.TestCase):
     @patch('lib.queue.queue.boto3.resource')
     @patch('lib.helpers.get_environment_setting', return_value='us-west-1')
-    @patch('lib.telemetry.OpenTelemetryExporter.log_execution_time')
-    def setUp(self, mock_log_execution_time, mock_get_env_setting, mock_boto_resource):
+    def setUp(self, mock_get_env_setting, mock_boto_resource):
         self.model = AudioModel()
         self.model.model_name = "audio__Model"
         self.mock_model = MagicMock()
@@ -75,24 +74,18 @@ class TestQueueWorker(unittest.TestCase):
         self.assertEqual(self.queue.get_dead_letter_queue_name().replace(".fifo", ""), (self.queue.get_input_queue_name()+'_dlq').replace(".fifo", ""))
 
     @patch('lib.queue.worker.capture_custom_message')
-    @patch('lib.queue.worker.time.time', side_effect=[0, 1])
-    def test_execute_with_timeout_failure(self, mock_time, mock_capture_custom_message):
+    def test_execute_with_timeout_failure(self, mock_capture_custom_message):
         responses, success = self.queue.execute_with_timeout(MockModelTimeout(), [], timeout_seconds=1)
         self.assertEqual(responses, [])
         self.assertFalse(success)
         mock_capture_custom_message.assert_called_once()
 
     @patch('lib.queue.worker.QueueWorker.log_and_handle_error')
-    @patch('lib.queue.worker.time.time', side_effect=[0, 0.5])
-    @patch('lib.queue.worker.QueueWorker.log_execution_time')
-    @patch('lib.queue.worker.QueueWorker.log_execution_status')
-    def test_execute_with_timeout_success(self, mock_log_execution_status, mock_log_execution_time, mock_time, mock_log_error):
+    def test_execute_with_timeout_success(self, mock_log_error):
         responses, success = self.queue.execute_with_timeout(MockModelNoTimeout(), [], timeout_seconds=1)
         self.assertEqual(responses in [[], ["response"]], True)
         self.assertTrue(success)
         mock_log_error.assert_not_called()
-        mock_log_execution_time.assert_called_once_with('timeout.MockModelNoTimeout', 0.5)
-        mock_log_execution_status.assert_called_once_with('timeout.MockModelNoTimeout', 'successful_message_response')
 
     def test_process(self):
         self.queue.receive_messages = MagicMock(return_value=[(FakeSQSMessage(receipt_handle="blah", body=json.dumps({
