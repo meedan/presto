@@ -74,16 +74,14 @@ class TestQueueWorker(unittest.TestCase):
         self.assertEqual(self.queue.get_dead_letter_queue_name().replace(".fifo", ""), (self.queue.get_input_queue_name()+'_dlq').replace(".fifo", ""))
 
     @patch('lib.queue.worker.capture_custom_message')
-    @patch('lib.queue.worker.time.time', side_effect=[0, 1])
-    def test_execute_with_timeout_failure(self, mock_time, mock_capture_custom_message):
+    def test_execute_with_timeout_failure(self, mock_capture_custom_message):
         responses, success = self.queue.execute_with_timeout(MockModelTimeout(), [], timeout_seconds=1)
         self.assertEqual(responses, [])
         self.assertFalse(success)
         mock_capture_custom_message.assert_called_once()
 
     @patch('lib.queue.worker.QueueWorker.log_and_handle_error')
-    @patch('lib.queue.worker.time.time', side_effect=[0, 0.5])
-    def test_execute_with_timeout_success(self, mock_time, mock_log_error):
+    def test_execute_with_timeout_success(self, mock_log_error):
         responses, success = self.queue.execute_with_timeout(MockModelNoTimeout(), [], timeout_seconds=1)
         self.assertEqual(responses in [[], ["response"]], True)
         self.assertTrue(success)
