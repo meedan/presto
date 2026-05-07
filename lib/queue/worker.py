@@ -9,7 +9,6 @@ from lib.queue.queue import Queue, MAX_RETRIES
 from lib.model.model import Model
 from lib.sentry import capture_custom_message
 from lib.helpers import get_environment_setting
-from lib.telemetry import OpenTelemetryExporter
 
 TIMEOUT_SECONDS = int(os.getenv("WORK_TIMEOUT_SECONDS", "60"))
 

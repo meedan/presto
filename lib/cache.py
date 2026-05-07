@@ -2,7 +2,6 @@ import redis
 import json
 from typing import Any, Optional
 from lib.helpers import get_environment_setting
-from lib.telemetry import OpenTelemetryExporter
 
 REDIS_URL = get_environment_setting("REDIS_URL")
 DEFAULT_TTL = int(get_environment_setting("CACHE_DEFAULT_TTL") or 24*60*60)
