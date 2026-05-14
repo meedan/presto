@@ -81,7 +81,7 @@ jobs:
 
     - name: Kick off Terraform QA deploy in sysops/
       id: sysops-deploy-qa
-      if: github.event_name == 'push' && startsWith(github.ref, 'refs/heads/main')
+      if: github.event_name == 'push' && startsWith(github.ref, 'refs/heads/master')
       run: |
         curl --fail-with-body \
           -X POST \
